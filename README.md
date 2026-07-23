@@ -1,69 +1,56 @@
 # SQL Analyst Academy
 
-SQL Analyst Academy is a lightweight, browser-based learning application for practicing SQL queries using real-world business datasets. It runs entirely on client-side WebAssembly using SQLite (`sql.js`), so you can write, test, and debug queries offline without needing to set up a database server.
+SQL Analyst Academy is a browser-based tool I built to practice SQL queries using realistic Indian business datasets. It runs locally in the browser using SQLite compiled to WebAssembly (`sql.js`), so there's no need to install or configure any database server.
 
----
+## Features
 
-## What's Inside
+- **43 Learning Modules**: Covers everything from basic `SELECT` and `WHERE` clauses up to CTEs, window functions (`ROW_NUMBER`, `RANK`, `LAG/LEAD`), conditional logic, and schema DDL/DML.
+- **Interactive ERD & Schema Explorer**: Clickable schema diagrams and column metrics to inspect table structures.
+- **Query Plan Visualizer**: Shows bottom-up execution flow, scan types (full table scan vs index search), and estimated query costs.
+- **Side-by-Side Performance Comparison**: Benchmark two queries side-by-side to check relative execution time and output matching.
+- **Mock Interviews**: Timed practice sets styled after actual data analyst technical rounds (Swiggy, Zomato, Paytm, Google, Stripe).
+- **Offline Support**: Caches static assets and the WASM engine so you can use the app offline.
+- **Results Export**: One-click CSV and JSON exports for query results.
 
-- **43 Guided Modules**: Starts with basic `SELECT` and `WHERE` filters, moving up to CTEs, window functions (`ROW_NUMBER`, `RANK`, `LAG/LEAD`), conditional aggregates, and schema management.
-- **Interactive ERD & Schema Profiler**: Clickable schema diagrams and column distributions to inspect table relationships and data types.
-- **Visual Query Planner**: Bottom-up query execution tree showing full table scans, index searches, and operator costs.
-- **Side-by-Side Performance Comparison**: Compare two SQL queries to evaluate execution speed, result matching, and relative query efficiency.
-- **Mock Interviews**: Timed assessment sessions modeled after real data analyst interview sets (e.g. Swiggy, Zomato, Paytm, Google, Stripe).
-- **Offline PWA Support**: Caches static assets and the WebAssembly database engine so the app works seamlessly without an internet connection.
-- **CSV & JSON Export**: Export query results directly to CSV or JSON with a single click.
-
----
-
-## Tech Stack
+## Stack
 
 - **Frontend**: React 18, TypeScript, Vite
-- **Database Engine**: SQLite via WebAssembly (`sql.js`)
-- **Code Editor**: Monaco Editor (VS Code core)
-- **Icons & Styling**: Lucide React, Vanilla CSS with custom tokens
+- **Database**: SQLite via WebAssembly (`sql.js`)
+- **Editor**: Monaco Editor
+- **Icons & Styling**: Lucide React, Vanilla CSS
 
----
+## Running Locally
 
-## Getting Started
-
-### Quick Start (Windows)
-Double-click `run-locally.bat` in the project root. It will install missing packages (if needed) and launch the app in your default browser.
+### Windows (Quick Start)
+Just double-click `run-locally.bat`. It handles dependency installation if needed and opens the app in your default browser.
 
 ### Manual Setup
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/karthikeyatether/sql-analyst-academy.git
-   cd sql-analyst-academy
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the dev server:
-   ```bash
-   npm run dev
-   ```
-4. Open `http://localhost:5173` in your browser.
+```bash
+# Clone the repo
+git clone https://github.com/karthikeyatether/sql-analyst-academy.git
+cd sql-analyst-academy
 
----
+# Install packages
+npm install
 
-## Testing & Validation
+# Start local server
+npm run dev
+```
 
-To validate that all practice problems and debug puzzle solutions execute correctly against the database engine, run:
+Then open `http://localhost:5173`.
 
+## Verification
+
+To run the automated SQL query test suite:
 ```bash
 node --import tsx testRunner.ts
 ```
 
-To create a production build:
-
+For production builds:
 ```bash
 npm run build
 ```
 
----
-
 ## License
 
-MIT License. Free for educational and personal use.
+MIT
