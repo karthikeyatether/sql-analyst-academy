@@ -1693,7 +1693,7 @@ export default function App() {
           message: "Cheat Detection Alert",
           details:
             "Your query must query data from the database using a 'FROM' clause " +
-      "instead of returning hardcoded constant values.",
+            "instead of returning hardcoded constant values.",
         };
       }
 
@@ -1723,6 +1723,52 @@ export default function App() {
             message: "Cheat Detection Alert",
             details: `Your query must reference the appropriate database tables ` +
                  `(e.g., ${referencedTables.join(", ")}).`,
+          };
+        }
+      }
+
+      // Hardcoded Literal Output Bypass Detection
+      const selectMatch = userClean.match(/SELECT\s+([\s\S]+?)\s+\bFROM\b/i);
+      if (selectMatch) {
+        const selectClause = selectMatch[1].trim();
+        const strLiterals = Array.from(selectClause.matchAll(/'([^']*)'/g)).map((m) => m[1]);
+        const numLiterals = Array.from(selectClause.matchAll(/\b(?<!\w)(\d+(?:\.\d+)?)\b(?!\w)/g)).map((m) => m[1]);
+        const scalarSubqueries = /\(\s*SELECT\s+[^)]+\)/i.test(selectClause);
+        const staticCases = /\bCASE\b[\s\S]+?\bEND\b/i.test(selectClause);
+
+        const expValuesSet = new Set<string>();
+        if (expRes && expRes.rows) {
+          expRes.rows.forEach((row: Record<string, unknown>) => {
+            Object.values(row).forEach((val) => {
+              if (val !== null && val !== undefined) {
+                expValuesSet.add(String(val).trim().toLowerCase());
+              }
+            });
+          });
+        }
+
+        const solSelectMatch = solClean.match(/SELECT\s+([\s\S]+?)\s+\bFROM\b/i);
+        const solSelect = solSelectMatch ? solSelectMatch[1].toLowerCase() : "";
+
+        let matchingLiterals = 0;
+        [...strLiterals, ...numLiterals].forEach((lit) => {
+          const litStr = String(lit).trim().toLowerCase();
+          if (expValuesSet.has(litStr) && !solSelect.includes(litStr)) {
+            matchingLiterals++;
+          }
+        });
+
+        const hasColumnRefs =
+          /\b[a-zA-Z_][a-zA-Z0-9_]*\.[a-zA-Z_][a-zA-Z0-9_]*\b/.test(selectClause) ||
+          /\b(COUNT|SUM|AVG|MIN|MAX|DENSE_RANK|RANK|ROW_NUMBER|LAG|LEAD|FIRST_VALUE|LAST_VALUE|COALESCE|UPPER|LOWER|SUBSTR|SUBSTRING|ROUND)\b/i.test(selectClause);
+
+        if ((matchingLiterals >= 1 || scalarSubqueries || staticCases) && !hasColumnRefs) {
+          return {
+            isCorrect: false,
+            message: "Cheat Detection Alert",
+            details:
+              "Hardcoded literal output values detected in SELECT clause without referencing table columns. " +
+              "Write a query that computes values directly from column data.",
           };
         }
       }

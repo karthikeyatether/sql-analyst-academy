@@ -7806,10 +7806,7 @@ WHERE status = 'Delivered'
             businessScenario: "The operations team wants to identify the runner-up high-value purchase in each " +
                               "city to understand mid-tier customer transactions.",
 
-            prompt: "Write a query to find the 2nd highest order total_amount for each city. Return " +
-                    "city, full_name (of the customer), and the total_amount. Use DENSE_RANK() " +
-                    "partitioned by city and ordered by total_amount descending. Filter where the " +
-                    "rank is exactly 2. Order the output by city ascending.",
+            prompt: "Write a query to find the runner-up (2nd highest) order total_amount for each city to assist the operations team in establishing mid-tier purchasing benchmarks. Return city, full_name (of the customer), and total_amount. Order the final output by city ascending.",
 
             starterQuery: "WITH ranked_orders AS (\n  SELECT\n    c.city,\n    c.full_name,\n   " +
                           "o.total_amount,\n    DENSE_RANK() OVER (PARTITION BY c.city ORDER BY " +
@@ -7855,10 +7852,7 @@ WHERE status = 'Delivered'
             businessScenario: "The finance team needs to track monthly business scaling by monitoring the " +
                               "month-over-month revenue growth rate.",
 
-            prompt: "Calculate the month-over-month percentage change in total net revenue (defined " +
-                    "as total_amount - discount_amount) for all delivered orders. Output columns: " +
-                    "month (formatted YYYY-MM), current_month_revenue, previous_month_revenue, and " +
-                    "mom_growth_pct (rounded to 2 decimal places). Order by month ascending.",
+            prompt: "Finance needs a revenue velocity report tracking month-over-month percentage scaling for delivered orders. For each month (YYYY-MM format), compute net revenue (total_amount minus discount_amount), previous month net revenue, and mom_growth_pct rounded to 2 decimal places. Order output by month ascending.",
 
             starterQuery: "WITH monthly_revenue AS (\n  SELECT\n    SUBSTR(order_date, 1, 7) AS month,\n  " +
                           " SUM(total_amount - discount_amount) AS current_month_revenue\n  FROM orders\n " +
@@ -7912,10 +7906,7 @@ WHERE status = 'Delivered'
             businessScenario: "The growth team wants to identify highly engaged customers who made purchases " +
                               "on at least 2 consecutive days.",
 
-            prompt: "Identify customers who placed orders on at least 2 consecutive days. Find the " +
-                    "customer_id, full_name, start_date (first day of consecutive streak), and " +
-                    "consecutive_days (length of streak). Return results ordered by consecutive_days " +
-                    "descending, then customer_id.",
+            prompt: "Growth analytics needs to detect power users with daily purchasing velocity. Find customers who placed orders on at least 2 consecutive days, returning customer_id, full_name, start_date (first day of streak), and consecutive_days. Order results by consecutive_days descending, then customer_id.",
 
             starterQuery: "WITH distinct_dates AS (\n  SELECT DISTINCT customer_id, SUBSTR(order_date, 1, " +
                           "10) as o_date\n  FROM orders\n),\nislands AS (\n  SELECT\n    customer_id,\n   " +
@@ -7970,10 +7961,7 @@ WHERE status = 'Delivered'
             businessScenario: "Inspect product stickiness by tracking what percentage of monthly signup " +
                               "cohorts return to make purchases in the subsequent two months.",
 
-            prompt: "For customers signing up in each month, calculate the percentage of those " +
-                    "customers who placed at least one order in the 1st month after signup, and the " +
-                    "percentage who ordered in the 2nd month. Output columns: cohort_month, " +
-                    "cohort_size, retention_month_1, retention_month_2. Order by cohort_month.",
+            prompt: "Measure product stickiness across customer signup cohorts. For each signup cohort_month, calculate cohort_size, the percentage of users ordering in month 1 post-signup (retention_month_1), and percentage ordering in month 2 (retention_month_2). Order output by cohort_month.",
 
             starterQuery: "WITH cohort_sizes AS (\n  SELECT SUBSTR(signup_date, 1, 7) as cohort_month, " +
                           "COUNT(*) as cohort_size\n  FROM customers\n  GROUP BY 1\n),\norder_diffs AS (\n " +
@@ -8034,11 +8022,7 @@ WHERE status = 'Delivered'
             businessScenario: "Audit checkout flow friction by tracking the drop-off rates from order " +
                               "placement to payment success and refund states.",
 
-            prompt: "Calculate the total number of orders, the percentage of orders that resulted in " +
-                    "a successful payment (payment_status = 'Success'), and the percentage of " +
-                    "successful payments that were subsequently refunded (payment_status = " +
-                    "'Refunded'). Output columns: total_orders, payment_success_rate_pct, and " +
-                    "refund_rate_pct.",
+            prompt: "Audit checkout drop-off rates across payment states. Return total_orders, payment_success_rate_pct (percentage of orders with payment_status 'Success'), and refund_rate_pct (percentage of successful payments with status 'Refunded').",
 
             starterQuery: "SELECT\n  COUNT(o.order_id) AS total_orders,\n  ROUND(COUNT(CASE WHEN " +
                           "p.payment_status = 'Success' THEN 1 END) * 100.0 / COUNT(o.order_id), 2) AS " +
@@ -8086,9 +8070,7 @@ WHERE status = 'Delivered'
             businessScenario: "The CRM platform database occasionally creates duplicate records. We need to " +
                               "identify duplicates and keep only the earliest record.",
 
-            prompt: "Write a DELETE query to purge duplicate customer records that have the same " +
-                    "full_name and city combinations, keeping only the record with the minimum " +
-                    "customer_id (the earliest signup).",
+            prompt: "Clean up duplicate customer CRM profiles. Delete duplicate records sharing the same full_name and city combinations, preserving only the earliest record (lowest customer_id).",
 
             starterQuery: "DELETE FROM customers\nWHERE customer_id NOT IN (\n  SELECT MIN(customer_id)\n " +
                           "FROM customers\n  GROUP BY full_name, city\n);",
@@ -8126,9 +8108,7 @@ WHERE status = 'Delivered'
             businessScenario: "Averages are skewed by high-value outliers. The marketing team requires the " +
                               "median order total_amount to design discounts.",
 
-            prompt: "Calculate the median order total_amount. Output column: median_amount (rounded " +
-                    "to 2 decimal places). Use ROW_NUMBER() and COUNT() window functions to find the " +
-                    "middle records and average them.",
+            prompt: "Compute the unskewed median order total_amount to establish spending baselines for marketing promotions. Output a single column median_amount rounded to 2 decimal places.",
 
             starterQuery: "WITH ranked_orders AS (\n  SELECT\n    total_amount,\n    ROW_NUMBER() OVER " +
                           "(ORDER BY total_amount) AS row_num,\n    COUNT(*) OVER () AS total_count\n  FROM " +
@@ -8172,12 +8152,7 @@ WHERE status = 'Delivered'
             businessScenario: "The financial operations team wants to run a referential integrity audit to " +
                               "identify orphaned records between orders and payments.",
 
-            prompt: "Write a query to find all discrepancies between orders and payments: (1) orders " +
-                    "that have no matching record in the payments table, or (2) payments that have no " +
-                    "matching record in the orders table. Return three columns: source_mismatch " +
-                    "(either 'Order Without Payment' or 'Payment Without Order'), order_id, and " +
-                    "amount_discrepancy (the total_amount from orders or the amount from payments). " +
-                    "Order the results by source_mismatch, then order_id.",
+            prompt: "Execute a financial integrity audit identifying orphaned records between orders and payments. Return source_mismatch ('Order Without Payment' or 'Payment Without Order'), order_id, and amount_discrepancy (total_amount from orders or amount from payments). Order by source_mismatch, then order_id.",
 
             starterQuery: "WITH unmatched_orders AS (\n  SELECT\n    'Order Without Payment' AS " +
                           "source_mismatch,\n    o.order_id,\n    o.total_amount AS amount_discrepancy\n " +
@@ -8230,10 +8205,7 @@ WHERE status = 'Delivered'
       title: "Extract JSON device info",
             businessScenario: "The mobile product team wants to segment customers by their device type " +
                               "recorded in the metadata JSON column to analyze app adoption.",
-            prompt: "Write a query to retrieve customer_id, full_name, and the extracted device type " +
-                    "from the metadata JSON column. Use json_extract(metadata, '$.device') to pull " +
-                    "out the device key. Alias the extracted column as 'device_type'. Sort by " +
-                    "customer_id.",
+            prompt: "Extract device types stored in customer metadata JSON strings for mobile adoption analysis. Return customer_id, full_name, and device_type. Sort by customer_id.",
             starterQuery: "SELECT customer_id, full_name, json_extract(metadata, '$.device') AS " +
                           "device_type FROM customers ORDER BY customer_id;",
             solution: "SELECT customer_id, full_name, json_extract(metadata, '$.device') AS " +

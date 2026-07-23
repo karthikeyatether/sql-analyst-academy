@@ -311,6 +311,7 @@ export default function PlaygroundView({
   const [erdModalOpen, setErdModalOpen] = useState(false);
   const [lessonModalOpen, setLessonModalOpen] = useState(false);
   const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [showInlineRefSol, setShowInlineRefSol] = useState(false);
   const [visibleHints, setVisibleHints] = useState(1);
 
   // Derived active module check
@@ -322,6 +323,7 @@ export default function PlaygroundView({
   // Reset states on problem/puzzle switch
   useEffect(() => {
     setSolutionRevealed(false);
+    setShowInlineRefSol(false);
     setVisibleHints(1);
     if (playgroundMode === "puzzle") {
       setActiveRightTab("hints");
@@ -2468,6 +2470,39 @@ const editorContent = (
                       {graderFeedback.warning && (
                         <div className="grader-feedback-warning">⚠️ {graderFeedback.warning}</div>
                       )}
+                      {!graderFeedback.isCorrect && selectedProblem && selectedProblem.solution && (() => {
+                        const attempts = JSON.parse(localStorage.getItem("sql-aa-failed-attempts") || "{}");
+                        const failedCount = attempts[selectedProblem.id] || 0;
+                        if (failedCount >= 3) {
+                          return (
+                            <div style={{ marginTop: "8px", paddingTop: "8px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+                              <button
+                                className="icon-button labeled"
+                                style={{ background: "rgba(56, 217, 255, 0.1)", color: "var(--cyan)", border: "1px solid rgba(56, 217, 255, 0.2)", width: "100%", justifyContent: "center", cursor: "pointer" }}
+                                onClick={() => setShowInlineRefSol((prev) => !prev)}
+                              >
+                                <Code2 size={13} /> {showInlineRefSol ? "Hide Reference Solution" : "Compare with Reference Solution (3+ attempts)"}
+                              </button>
+                              {showInlineRefSol && (
+                                <div style={{ marginTop: "8px", background: "#0a0e14", padding: "10px", borderRadius: "6px", border: "1px solid #1f2630" }}>
+                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                                    <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--muted)" }}>Reference Solution SQL</span>
+                                    <button
+                                      className="icon-button labeled"
+                                      style={{ fontSize: "11px", padding: "2px 8px" }}
+                                      onClick={() => updateEditorQuery(selectedProblem.solution)}
+                                    >
+                                      <Play size={11} /> Load into Editor
+                                    </button>
+                                  </div>
+                                  <pre className="sql-pre small" style={{ margin: 0 }}>{selectedProblem.solution}</pre>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                   </div>
                 )}
