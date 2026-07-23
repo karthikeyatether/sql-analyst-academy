@@ -1758,17 +1758,18 @@ export default function App() {
           }
         });
 
-        const hasColumnRefs =
-          /\b[a-zA-Z_][a-zA-Z0-9_]*\.[a-zA-Z_][a-zA-Z0-9_]*\b/.test(selectClause) ||
-          /\b(COUNT|SUM|AVG|MIN|MAX|DENSE_RANK|RANK|ROW_NUMBER|LAG|LEAD|FIRST_VALUE|LAST_VALUE|COALESCE|UPPER|LOWER|SUBSTR|SUBSTRING|ROUND)\b/i.test(selectClause);
+        const numExpCols = expRes?.columns?.length ?? 1;
+        const isBypass =
+          (matchingLiterals >= 2 || (matchingLiterals >= 1 && numExpCols === 1)) &&
+          (scalarSubqueries || staticCases || matchingLiterals >= numExpCols * 0.5);
 
-        if ((matchingLiterals >= 1 || scalarSubqueries || staticCases) && !hasColumnRefs) {
+        if (isBypass) {
           return {
             isCorrect: false,
             message: "Cheat Detection Alert",
             details:
-              "Hardcoded literal output values detected in SELECT clause without referencing table columns. " +
-              "Write a query that computes values directly from column data.",
+              "Hardcoded literal output values detected in SELECT projection matching expected output. " +
+              "Write a query that computes values dynamically from column data.",
           };
         }
       }
