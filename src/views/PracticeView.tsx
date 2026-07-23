@@ -15,7 +15,7 @@ interface PracticeViewProps {
   selectedProblem: PracticeProblem;
   selectProblem: (p: PracticeProblem) => void;
   openInPlayground: (p: PracticeProblem) => void;
-  markProblemSolved: (p: PracticeProblem) => void;
+  markProblemSolved: (p: PracticeProblem, quality?: number) => void;
   updateEditorQuery: (newVal: string, pMode?: any, targetId?: string, moveCursorToEnd?: boolean) => void;
   copyToClipboard: (text: string) => void;
   classForDiff: (d: Difficulty) => string;
@@ -288,7 +288,7 @@ export default function PracticeView({
             >
               <Lightbulb size={14} /> Hint
             </button>
-            <button className="icon-button labeled" onClick={() => setSolutionRevealed(true)}>
+            <button className="icon-button labeled" onClick={() => { setSolutionRevealed(true); if (selectedProblem) markProblemSolved(selectedProblem, 1); }}>
               <Sparkles size={14} /> Reveal Answer
             </button>
             <button className="icon-button labeled" onClick={() => markProblemSolved(selectedProblem)}>

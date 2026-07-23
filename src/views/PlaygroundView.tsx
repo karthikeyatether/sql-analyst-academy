@@ -77,7 +77,7 @@ interface PlaygroundViewProps {
   runCurrentQuery: () => void;
   copyToClipboard: (text: string) => void;
   openInPlayground: (p: PracticeProblem) => void;
-  markProblemSolved: (p: PracticeProblem) => void;
+  markProblemSolved: (p: PracticeProblem, quality?: number) => void;
   handleRightNavKeyDown: (e: React.KeyboardEvent<HTMLElement>) => void;
   classForDiff: (d: Difficulty) => string;
   editorRef: React.MutableRefObject<any>;
@@ -3966,6 +3966,7 @@ const rightContent = (
                   if (!solutionRevealed) {
                     showConfirm("Are you sure you want to reveal the answer? Try using the hints first!", () => {
                       setSolutionRevealed(true);
+                        if (selectedProblem) markProblemSolved(selectedProblem, 1);
                     });
                   } else {
                     setSolutionRevealed(false);

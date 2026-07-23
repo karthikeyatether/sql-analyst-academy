@@ -14,7 +14,7 @@ interface ModulesViewProps {
   setActiveView: (view: any) => void;
   openInPlayground: (p: PracticeProblem) => void;
   markModuleDone: (id: number) => void;
-  markProblemSolved: (p: PracticeProblem) => void;
+  markProblemSolved: (p: PracticeProblem, quality?: number) => void;
   updateEditorQuery: (newVal: string, pMode?: any, targetId?: string, moveCursorToEnd?: boolean) => void;
   copyToClipboard: (text: string) => void;
   classForDiff: (d: Difficulty) => string;

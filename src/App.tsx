@@ -2445,7 +2445,16 @@ export default function App() {
       if (isCorrect) {
         triggerConfetti();
         if (playgroundMode === "practice" && selectedProblem) {
-          markProblemSolved(selectedProblem);
+          const attempts = JSON.parse(localStorage.getItem("sql-aa-failed-attempts") || "{}");
+          const failedCount = attempts[selectedProblem.id] || 0;
+          const hintsCount = Math.max(0, visibleHints);
+          let quality = 5;
+          if (failedCount > 0 || hintsCount >= 2) {
+            quality = 3;
+          } else if (hintsCount === 1) {
+            quality = 4;
+          }
+          markProblemSolved(selectedProblem, quality);
         } else if (playgroundMode === "puzzle" && activePuzzle) {
           markPuzzleSolved(activePuzzle);
         }

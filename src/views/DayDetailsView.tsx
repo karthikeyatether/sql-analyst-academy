@@ -21,7 +21,7 @@ interface DayDetailsViewProps {
   toggleChecklistItem: (id: string) => void;
   selectModule: (m: RoadmapModule) => void;
   openInPlayground: (p: PracticeProblem) => void;
-  markProblemSolved: (p: PracticeProblem) => void;
+  markProblemSolved: (p: PracticeProblem, quality?: number) => void;
   markPuzzleSolved: (p: any) => void;
   setActivePuzzleId: (id: string) => void;
   setPlaygroundMode: (mode: "practice" | "puzzle" | "free") => void;
