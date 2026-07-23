@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import React, { useCallback, useEffect, useMemo, useRef, useState, Suspense, lazy } from "react";
+import { calculateSM2, loadSM2Progress, saveSM2Progress, isProblemDueForReview, SM2ProgressMap } from "./utils/sm2Engine";
 // Build hash test update v2
 const APP_BUILD_HASH_MARKER = "v2.0";
 import DashboardView from "./views/DashboardView";
@@ -2644,10 +2645,18 @@ export default function App() {
     });
   }
 
-  function markProblemSolved(p: PracticeProblem) {
+  const [sm2Progress, setSm2Progress] = useState<SM2ProgressMap>(() => loadSM2Progress());
+
+  function markProblemSolved(p: PracticeProblem, quality = 4) {
     if (!progress.solvedProblems.includes(p.id)) {
       triggerConfetti();
     }
+    const updatedSM2 = calculateSM2(sm2Progress[p.id], p.id, quality);
+    setSm2Progress((prev) => {
+      const next = { ...prev, [p.id]: updatedSM2 };
+      saveSM2Progress(next);
+      return next;
+    });
     setProgress((prev) => {
       const alreadySolved = prev.solvedProblems.includes(p.id);
       const nextSolved = alreadySolved ? prev.solvedProblems : [...prev.solvedProblems, p.id];
