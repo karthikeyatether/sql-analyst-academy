@@ -1,0 +1,30 @@
+{
+  "name": "sql-analyst-academy",
+  "description": "Interactive SQL learning platform with 43 modules, real business datasets, execution plan visualizers, and performance benchmarking.",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc && vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
+    "lucide-react": "^0.468.0",
+    "monaco-editor": "^0.52.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sql.js": "^1.14.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/sql.js": "^1.4.11",
+    "@vitejs/plugin-react": "^4.3.4",
+    "prettier": "^3.9.5",
+    "tsx": "^4.22.4",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3"
+  }
+}
