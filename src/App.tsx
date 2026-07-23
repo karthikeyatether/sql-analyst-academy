@@ -1351,7 +1351,15 @@ export default function App() {
       const idleTimeMs = Date.now() - lastActiveRef.current;
       // If user was active in the last 2 minutes, count this minute as studied
       if (idleTimeMs < 120 * 1000) {
-        setProgress((p) => ({ ...p, minutesStudied: p.minutesStudied + 1 }));
+        setProgress((p) => {
+          try {
+            const stored = localStorage.getItem("sql-aa-progress-v3");
+            const current = stored ? { ...p, ...JSON.parse(stored) } : p;
+            return { ...current, minutesStudied: (current.minutesStudied || 0) + 1 };
+          } catch {
+            return { ...p, minutesStudied: (p.minutesStudied || 0) + 1 };
+          }
+        });
       }
     }, 60000); // Check every 60 seconds
 
@@ -1759,9 +1767,11 @@ export default function App() {
         });
 
         const numExpCols = expRes?.columns?.length ?? 1;
+        const hasAggFuncs = /\b(COUNT|SUM|AVG|MIN|MAX|DENSE_RANK|RANK|ROW_NUMBER|LAG|LEAD)\b/i.test(selectClause);
+
         const isBypass =
-          (matchingLiterals >= 2 || (matchingLiterals >= 1 && numExpCols === 1)) &&
-          (scalarSubqueries || staticCases || matchingLiterals >= numExpCols * 0.5);
+          matchingLiterals >= 1 &&
+          (scalarSubqueries || staticCases || matchingLiterals >= numExpCols * 0.5 || !hasAggFuncs);
 
         if (isBypass) {
           return {
@@ -2100,6 +2110,12 @@ export default function App() {
         setLiveSchema(getLiveSchema());
       } catch (err) {
         console.error("Database initialization failed:", err);
+        setQueryResult({
+          columns: [],
+          rows: [],
+          message: "Database Engine Initialization Failed",
+          error: "Failed to initialize SQLite WASM database engine. Please refresh the page to reload the engine.",
+        });
       }
     };
     init();

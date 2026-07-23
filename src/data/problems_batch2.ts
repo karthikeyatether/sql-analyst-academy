@@ -461,9 +461,8 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
                     "JOIN by starting with the products table on the right side of a LEFT JOIN (or " +
                     "LEFT JOIN order_items onto products). Return product_id and product_name.",
             starterQuery: "SELECT p.product_id, p.product_name\nFROM order_items oi\nRIGHT JOIN products p " +
-                          "ON oi.product_id = p.product_id\nWHERE oi.order_item_id IS NULL;\n-- Wait, " +
-                          "SQLite does not support RIGHT JOIN. Let's rewrite as LEFT JOIN starting with " +
-                          "products!",
+                          "ON oi.product_id = p.product_id\nWHERE oi.order_item_id IS NULL;\n-- Modern " +
+                          "SQLite 3.39+ supports RIGHT JOIN natively, or you can swap table order with LEFT JOIN!",
             solution: "SELECT p.product_id, p.product_name FROM products p LEFT JOIN order_items oi ON " +
                       "p.product_id = oi.product_id WHERE oi.order_item_id IS NULL;",
       hints: ["Write: SELECT ... FROM products LEFT JOIN order_items ON ... WHERE order_item_id IS NULL."],

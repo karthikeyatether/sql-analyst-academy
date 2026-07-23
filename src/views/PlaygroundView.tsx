@@ -232,6 +232,14 @@ export default function PlaygroundView({
   const [queryPlanSteps, setQueryPlanSteps] = useState<QueryPlanStep[]>([]);
   const [resetStatus, setResetStatus] = useState(false);
   const resetTimeoutRef = useRef<any>(null);
+  useEffect(() => {
+    return () => {
+      if (resetTimeoutRef.current) {
+        clearTimeout(resetTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const triggerResetStatus = () => {
     setResetStatus(true);
     if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current);

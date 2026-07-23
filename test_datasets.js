@@ -1,10 +1,10 @@
-export type SchemaColumn = {
+ SchemaColumn = {
   name: string;
   type: string;
   note: string;
 };
 
-export type TableSchema = {
+ TableSchema = {
   name: string;
   domain: string;
   description: string;
@@ -13,12 +13,12 @@ export type TableSchema = {
   columns: SchemaColumn[];
 };
 
-export type SeedTable = {
+ SeedTable = {
   name: string;
   rows: Record<string, string | number | boolean | null>[];
 };
 
-export const tableSchemas: TableSchema[] = [
+ tableSchemas: TableSchema[] = [
   {
     name: "customers",
     domain: "E-Commerce",
@@ -158,7 +158,7 @@ export const tableSchemas: TableSchema[] = [
   }
 ];
 
-export const seedTables: SeedTable[] = [
+ seedTables: SeedTable[] = [
   {
     name: "customers",
     rows: [
@@ -173,8 +173,7 @@ export const seedTables: SeedTable[] = [
       { customer_id: 9, full_name: "Nisha Verma", city: "Jaipur", region: "North", signup_date: "2023-07-09", segment: "Premium", metadata: '{"device": "Web", "app_version": "v1.0.9", "referred_by": 4}' },
       { customer_id: 10, full_name: "Arjun Das", city: "Kolkata", region: "East", signup_date: "2023-07-30", segment: "Value", metadata: '{"device": "Mobile", "app_version": "v4.2.2", "referred_by": null}' },
       { customer_id: 11, full_name: "Tara Sen", city: "Gurugram", region: "North", signup_date: "2023-08-16", segment: "Premium", metadata: '{"device": "Mobile", "app_version": "v4.2.3", "referred_by": 9}' },
-      { customer_id: 12, full_name: "Dev Malhotra", city: "Indore", region: "Central", signup_date: "2023-09-01", segment: "Student", metadata: '{"device": "Web", "app_version": "v1.0.7", "referred_by": null}' },
-      { customer_id: 13, full_name: "Aarav Mehta", city: "Mumbai", region: "West", signup_date: "2023-10-10", segment: "Value", metadata: '{"device": "Mobile", "app_version": "v4.2.1", "referred_by": 1}' }
+      { customer_id: 12, full_name: "Dev Malhotra", city: "Indore", region: "Central", signup_date: "2023-09-01", segment: "Student", metadata: '{"device": "Web", "app_version": "v1.0.7", "referred_by": null}' }
     ]
   },
   {
@@ -307,6 +306,8 @@ export const seedTables: SeedTable[] = [
   }
 ];
 
-export const tableNames = tableSchemas.map((table) => table.name);
+ tableNames = tableSchemas.map((table) => table.name);
 
-export const datasetDomains = Array.from(new Set(tableSchemas.map((table) => table.domain)));
+ datasetDomains = Array.from(new Set(tableSchemas.map((table) => table.domain)));
+
+module.exports = { seedTables, tableSchemas };

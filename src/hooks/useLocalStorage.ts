@@ -10,7 +10,26 @@ export function useLocalStorage<T>(key: string, fallback: T) {
     }
   });
   useEffect(() => {
-    localStorage.setItem(key, JSON.stringify(value));
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (err) {
+      console.warn(`[useLocalStorage] QuotaExceededError writing key "${key}":`, err);
+    }
   }, [key, value]);
+
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === key && e.newValue !== null) {
+        try {
+          setValue(JSON.parse(e.newValue) as T);
+        } catch (err) {
+          console.warn(`[useLocalStorage] Failed parsing updated storage key "${key}":`, err);
+        }
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, [key]);
+
   return [value, setValue] as const;
 }
