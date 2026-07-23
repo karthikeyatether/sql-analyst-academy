@@ -1,5 +1,5 @@
-const CACHE_VERSION = '1.0.0-' + new Date().toISOString().split('T')[0];
-const CACHE_NAME = 'sql-academy-v' + CACHE_VERSION;
+const CACHE_VERSION = '__SW_VERSION__';
+const CACHE_NAME = 'sql-academy-' + (CACHE_VERSION.includes('__SW') ? '1.0.0-dev' : CACHE_VERSION);
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

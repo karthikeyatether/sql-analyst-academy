@@ -43,6 +43,8 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import React, { useCallback, useEffect, useMemo, useRef, useState, Suspense, lazy } from "react";
+// Build hash test update v2
+const APP_BUILD_HASH_MARKER = "v2.0";
 import DashboardView from "./views/DashboardView";
 import RoadmapView from "./views/RoadmapView";
 import ModulesView from "./views/ModulesView";

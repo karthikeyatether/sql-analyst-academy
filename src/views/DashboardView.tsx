@@ -207,7 +207,7 @@ export default function DashboardView({
           <span className="eyebrow-badge">SQL Analyst Academy</span>
           <h1>Master SQL for the Data Analyst role</h1>
           <p className="hero-subtext">
-            {roadmapModules.length} modules · Beginner to Advanced · Real Indian business datasets
+            {roadmapModules.length} modules · Beginner to Advanced · Real Indian enterprise business datasets
           </p>
           <div className="engine-badge-wrap">
             <div className="engine-badge">
