@@ -1752,7 +1752,15 @@ export default function App() {
       return false;
     };
 
-    // Value equality comparison with floating-point tolerance
+    // Precision-aware numerical equality comparison
+    const getDecimalPrecision = (val: unknown): number => {
+      const str = String(val).trim();
+      if (str.includes(".")) {
+        return str.split(".")[1].length;
+      }
+      return 0;
+    };
+
     const isEqualValues = (a: unknown, b: unknown): boolean => {
       const normA = normalizeVal(a);
       const normB = normalizeVal(b);
@@ -1760,7 +1768,13 @@ export default function App() {
       if (normA === null || normB === null) return false;
 
       if (isNumeric(normA) && isNumeric(normB)) {
-        return Math.abs(Number(normA) - Number(normB)) < 0.01;
+        const numA = Number(normA);
+        const numB = Number(normB);
+        const precision = Math.min(10, getDecimalPrecision(normA));
+        const factor = Math.pow(10, precision);
+        const roundedA = Math.round(numA * factor) / factor;
+        const roundedB = Math.round(numB * factor) / factor;
+        return Math.abs(roundedA - roundedB) < 1e-9;
       }
 
       return String(normA) === String(normB);

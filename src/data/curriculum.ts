@@ -8656,6 +8656,22 @@ const modulePrerequisites: Record<number, number[]> = {
   43: [33, 35]
 };
 
+const validateUniqueProblemIds = (modules: RoadmapModule[]) => {
+  const seenIds = new Set<string>();
+  const duplicates: string[] = [];
+  modules.forEach((m) => {
+    m.problems.forEach((p) => {
+      if (seenIds.has(p.id)) {
+        duplicates.push(p.id);
+      }
+      seenIds.add(p.id);
+    });
+  });
+  if (duplicates.length > 0) {
+    throw new Error(`[Curriculum Integrity Error] Duplicate problem IDs detected: ${duplicates.join(", ")}`);
+  }
+};
+
 export const roadmapModules: RoadmapModule[] = moduleTitles.map((title, index) => {
 
   const id = index + 1;
@@ -9525,3 +9541,5 @@ export const interviewQuestionBank = [
   }
 ];
 
+
+validateUniqueProblemIds(roadmapModules);

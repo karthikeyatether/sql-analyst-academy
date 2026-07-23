@@ -1,7 +1,9 @@
-const CACHE_NAME = 'sql-academy-v1';
+const CACHE_VERSION = '1.0.0-' + new Date().toISOString().split('T')[0];
+const CACHE_NAME = 'sql-academy-v' + CACHE_VERSION;
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
+  '/offline.html',
   '/favicon.png',
   '/sql-wasm.wasm',
   '/manifest.json'
@@ -32,7 +34,6 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Return cached asset, fetch update in background
         fetch(event.request)
           .then((networkResponse) => {
             if (networkResponse.status === 200) {
@@ -42,7 +43,11 @@ self.addEventListener('fetch', (event) => {
           .catch(() => {});
         return cachedResponse;
       }
-      return fetch(event.request);
+      return fetch(event.request).catch(() => {
+        if (event.request.headers.get('accept')?.includes('text/html')) {
+          return caches.match('/offline.html');
+        }
+      });
     })
   );
 });

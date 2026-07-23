@@ -500,7 +500,7 @@ SELECT * FROM customers LIMIT 10;`;
   const exportResultAsCsv = (cols: string[], rows: any[], filename = "query-results.csv") => {
     if (!cols.length || !rows.length) return;
     const escapeCsv = (val: any) => {
-      if (val === null || val === undefined) return '""';
+      if (val === null || val === undefined) return '';
       const str = String(val).replace(/"/g, '""');
       return `"${str}"`;
     };
