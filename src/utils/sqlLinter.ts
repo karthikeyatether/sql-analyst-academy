@@ -354,6 +354,40 @@ export function lintSqlQuery(sql: string): LintError[] {
     }
   }
 
+  // Rule 11: UPDATE/DELETE without WHERE clause (Unbounded Mutation Warning)
+  const mutationNoWhereRegex = /\b(UPDATE\s+[a-zA-Z0-9_]+|DELETE\s+FROM\s+[a-zA-Z0-9_]+)\s*(?![\s\S]*?\bWHERE\b)[\s\S]*?$/gi;
+  while ((match = mutationNoWhereRegex.exec(maskedSql)) !== null) {
+    if (!/\bWHERE\b/i.test(maskedSql)) {
+      const offset = match.index;
+      const { line, col } = getLineAndColFromOffset(sql, offset);
+      errors.push({
+        id: "unbounded_mutation_no_where",
+        severity: "warning",
+        message: "UPDATE or DELETE statement without a WHERE clause will affect ALL rows in the table.",
+        line,
+        column: col,
+        length: match[1].length,
+        suggestion: "Add a WHERE clause (e.g., WHERE id = 10) to target specific rows and avoid accidentally modifying or deleting the entire dataset."
+      });
+    }
+  }
+
+  // Rule 12: Deeply Nested Subquery Complexity (Recommend CTE)
+  const nestedSubqueryRegex = /\(\s*SELECT[\s\S]*?\(\s*SELECT[\s\S]*?\(\s*SELECT/gi;
+  while ((match = nestedSubqueryRegex.exec(maskedSql)) !== null) {
+    const offset = match.index;
+    const { line, col } = getLineAndColFromOffset(sql, offset);
+    errors.push({
+      id: "deeply_nested_subquery_use_cte",
+      severity: "info",
+      message: "Deeply nested subqueries detected (3+ levels deep).",
+      line,
+      column: col,
+      length: match[0].length,
+      suggestion: "Refactor deeply nested subqueries into Common Table Expressions (CTEs using WITH) to improve query readability and modularity."
+    });
+  }
+
   return errors;
 }
 
