@@ -3,9 +3,7 @@ const CACHE_NAME = 'sql-academy-' + (CACHE_VERSION.includes('__SW') ? '1.0.0-dev
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  '/offline.html',
   '/favicon.png',
-  '/sql-wasm.wasm',
   '/manifest.json'
 ];
 
