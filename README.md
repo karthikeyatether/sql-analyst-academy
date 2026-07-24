@@ -1,56 +1,102 @@
-# SQL Analyst Academy
+# ⚡ SQL Analyst Academy
 
-SQL Analyst Academy is a browser-based tool I built to practice SQL queries using realistic Indian business datasets. It runs locally in the browser using SQLite compiled to WebAssembly (`sql.js`), so there's no need to install or configure any database server.
+> **An Interactive, Browser-Based SQL Learning & Technical Interview Preparation Platform for Data Analysts.**
 
-## Features
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18.3-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
+[![SQLite WASM](https://img.shields.io/badge/SQLite-WASM_3.39+-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://sqlite.org/)
+[![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Tests](https://img.shields.io/badge/SQL_Validation-202%2F202_Passing-10B981?style=flat-square)](https://github.com/karthikeyatether/sql-analyst-academy)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
-- **43 Learning Modules**: Covers everything from basic `SELECT` and `WHERE` clauses up to CTEs, window functions (`ROW_NUMBER`, `RANK`, `LAG/LEAD`), conditional logic, and schema DDL/DML.
-- **Interactive ERD & Schema Explorer**: Clickable schema diagrams and column metrics to inspect table structures.
-- **Query Plan Visualizer**: Shows bottom-up execution flow, scan types (full table scan vs index search), and estimated query costs.
-- **Side-by-Side Performance Comparison**: Benchmark two queries side-by-side to check relative execution time and output matching.
-- **Mock Interviews**: Timed practice sets styled after actual data analyst technical rounds (Swiggy, Zomato, Paytm, Google, Stripe).
-- **Offline Support**: Caches static assets and the WASM engine so you can use the app offline.
-- **Results Export**: One-click CSV and JSON exports for query results.
+---
 
-## Stack
+## 🌟 Overview
 
-- **Frontend**: React 18, TypeScript, Vite
-- **Database**: SQLite via WebAssembly (`sql.js`)
-- **Editor**: Monaco Editor
-- **Icons & Styling**: Lucide React, Vanilla CSS
+**SQL Analyst Academy** is an offline-first, client-side web application built to help aspiring Data Analysts master practical SQL through real-world Indian business scenarios (E-Commerce, FinTech, Quick-Commerce, Logistics).
 
-## Running Locally
+It runs **100% in-browser** using **SQLite compiled to WebAssembly (`sql.js`)** — requiring zero database installation, zero server setup, and zero cloud API credentials.
 
-### Windows (Quick Start)
-Just double-click `run-locally.bat`. It handles dependency installation if needed and opens the app in your default browser.
+---
 
-### Manual Setup
+## ✨ Key Features
+
+### 📚 43 Learning Modules & 202 Execution Challenges
+- **142 SQL Practice Problems**: From fundamental `SELECT` & `WHERE` clauses to CTEs, Window Functions (`ROW_NUMBER`, `RANK`, `DENSE_RANK`, `LAG`/`LEAD`), `CASE WHEN`, `GROUP BY`, `HAVING`, `CTAS`, and Temporary Tables.
+- **60 Interactive Debug Puzzles**: Identify and fix buggy SQL queries (SQL Anti-patterns, NOT IN NULL traps, implicit cartesian joins, window frame errors).
+
+### 🎯 Company-Specific Mock Interview Simulators
+- Timed 30 to 60 minute technical interview environments styled after real Data Analyst hiring rounds at **Blinkit**, **Zomato**, **Paytm**, **Swiggy**, **CRED**, **Myntra**, and **Flipkart**.
+
+### 🔍 Execution Plan Visualizer & A/B Query Profiler
+- **Visual EXPLAIN Plans**: Inspect physical execution trees, full table scans vs. index searches, and relative cost metrics.
+- **A/B Performance Benchmarker**: Compare two SQL queries side-by-side to evaluate execution speed and verify output row equality.
+
+### 🔒 Built-In Anti-Cheat & Dynamic Quality Signals
+- **Anti-Cheat Grader**: Detects and rejects hardcoded projection values matching expected answers when queries do not dynamically compute results from table data.
+- **SM-2 Spaced Repetition Engine**: Calculates optimal review intervals based on hint usage and first-attempt correctness.
+
+---
+
+## 📊 Business Datasets & Schema
+
+The platform seeds 9 realistic relational tables:
+
+| Table Name | Description | Key Columns |
+| :--- | :--- | :--- |
+| `customers` | E-Commerce customer profiles | `customer_id`, `full_name`, `city`, `region`, `signup_date`, `segment`, `metadata` (JSON) |
+| `orders` | Order transaction records | `order_id`, `customer_id`, `order_date`, `channel`, `status`, `total_amount`, `discount_amount` |
+| `order_items` | Line items per order | `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price` |
+| `products` | Product catalog | `product_id`, `product_name`, `category`, `sub_category`, `brand`, `list_price`, `cost_price` |
+| `payments` | Payment transaction audit logs | `payment_id`, `order_id`, `payment_date`, `payment_method`, `payment_status`, `amount` |
+| `subscriptions` | SaaS subscription plans | `subscription_id`, `customer_id`, `plan_name`, `start_date`, `end_date`, `status`, `monthly_fee` |
+
+---
+
+## 🚀 Quick Start
+
+### Windows (Instant Startup)
+Double-click `run-locally.bat` or the **SQL Analyst Academy** Desktop shortcut. It launches the production preview server instantly at `http://127.0.0.1:4173`.
+
+### Manual Developer Setup
 ```bash
-# Clone the repo
+# Clone the repository
 git clone https://github.com/karthikeyatether/sql-analyst-academy.git
 cd sql-analyst-academy
 
-# Install packages
+# Install dependencies
 npm install
 
-# Start local server
+# Start development server
 npm run dev
 ```
 
-Then open `http://localhost:5173`.
+Open `http://127.0.0.1:5173` in your browser.
 
-## Verification
+---
 
-To run the automated SQL query test suite:
+## 🧪 Verification & Build Commands
+
+### Run Automated SQL Test Suite (202 Queries)
 ```bash
 node --import tsx testRunner.ts
 ```
 
-For production builds:
+### Production Build
 ```bash
 npm run build
 ```
 
-## License
+---
 
-MIT
+## 📖 Complete Study Roadmap
+
+All study guides, day-wise watch trackers, and curriculum inventories are consolidated in the [`docs/`](docs/) directory:
+- 📄 **[docs/DA_COMPLETE_STUDY_ROADMAP.docx](docs/DA_COMPLETE_STUDY_ROADMAP.docx)**: 30-Day Day-Wise Study Plan & Milestone Exam Schedule.
+- 📄 **[docs/DA_COMPLETE_STUDY_ROADMAP.md](docs/DA_COMPLETE_STUDY_ROADMAP.md)**: Markdown Study Roadmap.
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for details.
