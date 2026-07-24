@@ -2,18 +2,16 @@
 setlocal
 cd /d "%~dp0"
 
-where npm >nul 2>nul
+where node >nul 2>nul
 if errorlevel 1 (
-  echo Node.js and npm are required to run this app.
+  echo Node.js is required to run this app. Please install Node.js from https://nodejs.org/
   pause
   exit /b 1
 )
 
 if not exist dist (
-  echo Building production app for instant load...
+  echo Building production app bundle for instant load...
   call npm run build
 )
 
-echo Launching SQL Analyst Academy instantly...
-start http://127.0.0.1:4173
-call npx vite preview --port 4173 --host 127.0.0.1
+node serve-dist.cjs
