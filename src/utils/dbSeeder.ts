@@ -53,67 +53,72 @@ export function seedDatabaseInstance(dbInstance: initSqlJs.Database): void {
   }
 
   dbInstance.run("BEGIN TRANSACTION;");
+  try {
+    for (const table of seedTables) {
+      const schema = tableSchemas.find(s => s.name === table.name);
+      const pk = schema?.primaryKey;
 
-  for (const table of seedTables) {
-    const schema = tableSchemas.find(s => s.name === table.name);
-    const pk = schema?.primaryKey;
-
-    const firstRow = table.rows[0] ?? {};
-    const columnsDef = Object.keys(firstRow).map(c => {
-      const baseType = inferType(firstRow[c]);
-      if (pk && c.toLowerCase() === pk.toLowerCase()) {
-        return `[${c}] ${baseType} PRIMARY KEY`;
-      }
-      return `[${c}] ${baseType}`;
-    });
-
-    const fkDefs: string[] = [];
-    Object.keys(firstRow).forEach(c => {
-      const fkDef = getForeignKeyDefinition(c, table.name, pk);
-      if (fkDef) {
-        fkDefs.push(fkDef);
-      }
-    });
-
-    const allDefs = [...columnsDef, ...fkDefs].join(", ");
-    dbInstance.run(`CREATE TABLE [${table.name}] (${allDefs})`);
-
-    if (table.rows.length > 0) {
-      const colNames = Object.keys(firstRow).map(c => `[${c}]`).join(", ");
-      const placeholders = Object.keys(firstRow).map(() => "?").join(", ");
-      const insertSql = `INSERT INTO [${table.name}] (${colNames}) VALUES (${placeholders})`;
-
-      let stmt: initSqlJs.Statement | null = null;
-      try {
-        stmt = dbInstance.prepare(insertSql);
-        for (const row of table.rows) {
-          const values = Object.keys(firstRow).map(c => {
-            const val = row[c];
-            if (val === undefined) return null;
-            if (typeof val === "boolean") return val ? 1 : 0;
-            return val as string | number | null;
-          });
-          stmt.run(values as initSqlJs.SqlValue[]);
+      const firstRow = table.rows[0] ?? {};
+      const columnsDef = Object.keys(firstRow).map(c => {
+        const baseType = inferType(firstRow[c]);
+        if (pk && c.toLowerCase() === pk.toLowerCase()) {
+          return `[${c}] ${baseType} PRIMARY KEY`;
         }
-      } finally {
-        if (stmt) {
-          stmt.free();
-        }
-      }
-    }
+        return `[${c}] ${baseType}`;
+      });
 
-    // Automatically create indexes on foreign key columns (columns ending with _id that are not PK)
-    Object.keys(firstRow).forEach(c => {
-      if (c.toLowerCase().endsWith("_id") && (!pk || c.toLowerCase() !== pk.toLowerCase())) {
-        const indexName = `idx_${table.name}_${c}`;
+      const fkDefs: string[] = [];
+      Object.keys(firstRow).forEach(c => {
+        const fkDef = getForeignKeyDefinition(c, table.name, pk);
+        if (fkDef) {
+          fkDefs.push(fkDef);
+        }
+      });
+
+      const allDefs = [...columnsDef, ...fkDefs].join(", ");
+      dbInstance.run(`CREATE TABLE [${table.name}] (${allDefs})`);
+
+      if (table.rows.length > 0) {
+        const colNames = Object.keys(firstRow).map(c => `[${c}]`).join(", ");
+        const placeholders = Object.keys(firstRow).map(() => "?").join(", ");
+        const insertSql = `INSERT INTO [${table.name}] (${colNames}) VALUES (${placeholders})`;
+
+        let stmt: initSqlJs.Statement | null = null;
         try {
-          dbInstance.run(`CREATE INDEX IF NOT EXISTS [${indexName}] ON [${table.name}] ([${c}])`);
-        } catch (err) {
-          console.warn(`Failed to create index ${indexName}:`, err);
+          stmt = dbInstance.prepare(insertSql);
+          for (const row of table.rows) {
+            const values = Object.keys(firstRow).map(c => {
+              const val = row[c];
+              if (val === undefined) return null;
+              if (typeof val === "boolean") return val ? 1 : 0;
+              return val as string | number | null;
+            });
+            stmt.run(values as initSqlJs.SqlValue[]);
+          }
+        } finally {
+          if (stmt) {
+            stmt.free();
+          }
         }
       }
-    });
-  }
 
-  dbInstance.run("COMMIT;");
+      // Automatically create indexes on foreign key columns
+      Object.keys(firstRow).forEach(c => {
+        if (c.toLowerCase().endsWith("_id") && (!pk || c.toLowerCase() !== pk.toLowerCase())) {
+          const indexName = `idx_${table.name}_${c}`;
+          try {
+            dbInstance.run(`CREATE INDEX IF NOT EXISTS [${indexName}] ON [${table.name}] ([${c}])`);
+          } catch (err) {
+            console.warn(`Failed to create index ${indexName}:`, err);
+          }
+        }
+      });
+    }
+    dbInstance.run("COMMIT;");
+  } catch (err) {
+    try {
+      dbInstance.run("ROLLBACK;");
+    } catch (_) {}
+    throw err;
+  }
 }
