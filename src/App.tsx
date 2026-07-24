@@ -184,7 +184,7 @@ function injectConfettiStyles() {
   document.head.appendChild(style);
 }
 
-function createConfettiParticle(xOrigin: number, yOrigin: number, angleDeg: number, colors: string[]) {
+function createConfettiParticleNode(xOrigin: number, yOrigin: number, angleDeg: number, colors: string[]) {
   const p = document.createElement("div");
   p.className = "confetti-particle";
   p.style.left = xOrigin + "vw";
@@ -206,25 +206,27 @@ function createConfettiParticle(xOrigin: number, yOrigin: number, angleDeg: numb
 
   p.style.animation = "confetti-burst 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards";
 
-  document.body.appendChild(p);
   const timer = setTimeout(() => {
     p.remove();
     const idx = confettiTimeouts.indexOf(timer);
     if (idx !== -1) confettiTimeouts.splice(idx, 1);
   }, 1600);
   confettiTimeouts.push(timer);
+  return p;
 }
 
 function triggerConfetti() {
   injectConfettiStyles();
   const colors = ["#f29b9b", "#9be1f2", "#b1f29b", "#f2df9b", "#d89bf2", "#f29be1", "#38d9ff", "#fbbf24"];
   const particleCount = 80;
+  const fragment = document.createDocumentFragment();
   for (let i = 0; i < particleCount / 2; i++) {
-    createConfettiParticle(0, 100, Math.random() * 45 - 15, colors);
+    fragment.appendChild(createConfettiParticleNode(0, 100, Math.random() * 45 - 15, colors));
   }
   for (let i = 0; i < particleCount / 2; i++) {
-    createConfettiParticle(100, 100, Math.random() * 45 + 150, colors);
+    fragment.appendChild(createConfettiParticleNode(100, 100, Math.random() * 45 + 150, colors));
   }
+  document.body.appendChild(fragment);
 }
 
 function cleanupConfetti() {

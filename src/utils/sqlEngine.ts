@@ -297,12 +297,18 @@ export function exportDatabaseState(): Uint8Array | null {
   return db.export();
 }
 
+const PRECOMPILED_KEYWORDS = [
+  "SELECT", "FROM", "WHERE", "JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL JOIN",
+  "INNER JOIN", "GROUP BY", "HAVING", "ORDER BY", "LIMIT", "WITH", "UNION ALL", "UNION", "ON"
+].sort((a, b) => b.length - a.length).map(kw => ({
+  kw: `\n${kw}`,
+  regex: new RegExp(`\\b${kw}\\b`, "gi")
+}));
+
 export function formatSql(sql: string): string {
-  const keywords = ["SELECT", "FROM", "WHERE", "JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL JOIN",
-    "INNER JOIN", "GROUP BY", "HAVING", "ORDER BY", "LIMIT", "WITH", "UNION ALL", "UNION", "ON"];
   let f = sql.replace(/\s+/g, " ").trim();
-  for (const kw of keywords.sort((a, b) => b.length - a.length)) {
-    f = f.replace(new RegExp(`\\b${kw}\\b`, "gi"), `\n${kw}`);
+  for (const item of PRECOMPILED_KEYWORDS) {
+    f = f.replace(item.regex, item.kw);
   }
   return f.replace(/^\n/, "").replace(/,\s*/g, ",\n  ");
 }
