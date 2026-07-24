@@ -29,3 +29,4 @@ dist-ssr/
 .env.local
 .gemini/
 sql-analyst-academy.zip
+~$*.docx
