@@ -1,41 +1,44 @@
-# Data Analyst Complete Study Roadmap, HackerRank Plan & Video Targets
+# Data Analyst Master Study Roadmap: 5 HackerRank Daily & Platform Next Steps
 
-## Current Status & Date Tracker
+## Current Status & Execution Plan
 - **Current Date**: **July 24, 2026**
 - **Course Progress**: **Videos #1 to #30 completed (Studied till SQL Views)** `[✅ COMPLETED]`
-- **HackerRank Progress**: **HackerRank Easy SQL Problems** `[✅ EASY COMPLETED]`
-- **HackerRank Target**: **15-20 Medium + 5-10 Hard Problems** `[⏳ TO DO DAY-BY-DAY]`
-- **Project Target**: **Videos #55 & #56 (EDA & DA Portfolio Projects)** `[⏳ UPCOMING - AUG 08-09]`
+- **Daily Practice Target**: **5 HackerRank Problems Daily (3 Medium + 2 Hard)** `[🔥 5/DAY GOAL]`
+- **Concurrent Project Track**: **Studying Portfolio Project (Videos #55 & #56) alongside daily SQL** `[🎯 PARALLEL TRACK]`
+- **Next Platform Recommendation**: **DataLemur FIRST, followed by StrataScratch** `[⭐ DATALEMUR FIRST]`
 
-## SECTION 1: UPCOMING DAY-WISE SCHEDULE & HACKERRANK PLAN (FIRST PAGES)
+## SECTION 1: UPCOMING SCHEDULE & DAILY 5 HACKERRANK PLAN (FIRST PAGES)
 
-### Upcoming Day-by-Day Schedule (July 25 – August 10, 2026)
-| Day | Date | Primary Video Watch Target | HackerRank Daily Practice Target | Action Step |
+### Upcoming Day-by-Day Schedule with 5 Daily HackerRank Target (July 25 – August 10, 2026)
+| Day | Date | Primary Video & Project Track | Daily HackerRank Practice Target (5/Day) | Action Step |
 |---|---|---|---|---|
-| Day 16 | July 25, 2026 | Video #31 (SQL CTAS) & Video #32 (Temp Tables) | HackerRank Medium #1-3 (Subqueries & Temp Tables) | ⏳ Watch & Solve |
-| Day 17 | July 26, 2026 | Video #33 (Subquery vs CTE vs Views vs CTAS vs Temp) | HackerRank Medium #4-6 (CTEs & Derived Tables) | ⏳ Watch & Solve |
-| Day 18 | July 27, 2026 | **Paytm & Swiggy Business Analyst Milestone Mocks** | HackerRank Medium #7-9 (Multi-table Joins) | ⏳ Practice Mocks |
-| Day 19 | July 28, 2026 | Video #34 (Clustered/Nonclustered) & Video #35 (Columnstore) | HackerRank Medium #10-12 (Aggregations & HAVING) | ⏳ Watch & Solve |
-| Day 20 | July 29, 2026 | Video #36 (Filtered Indexes) & Video #37 (Right Index Choice) | HackerRank Medium #13-15 (CASE WHEN & Pivoting) | ⏳ Watch & Solve |
-| Day 21 | July 30, 2026 | Video #38 (Index Maintenance) & Video #39 (Execution Plans) | HackerRank Hard #1-2 (Window Functions ROW_NUMBER) | ⏳ Watch & Solve |
-| Day 22 | July 31, 2026 | Video #40 (Indexing Strategy) & Video #41 (Table Partitioning) | HackerRank Hard #3-4 (RANK & DENSE_RANK) | ⏳ Watch & Solve |
-| Day 23 | Aug 01, 2026 | Video #42 (30 SQL Performance Tips from 18 Yrs Exp) | HackerRank Hard #5-6 (LEAD & LAG Consecutive Rows) | ⏳ Watch & Solve |
-| Day 24 | Aug 02, 2026 | **CRED Risk Analyst Milestone Mock Exam** | HackerRank Hard #7-8 (Median & Percentiles) | ⏳ Practice Mocks |
-| Day 25 | Aug 03, 2026 | Video #43 (Stored Procedures) & Video #44 (Triggers) [DE] | HackerRank Hard #9-10 (Complex Query Challenges) | 💡 Optional DE |
-| Day 26 | Aug 04, 2026 | Video #45 (ChatGPT & GitHub Copilot Workflow) | Practice 5 App Debug Puzzles in SQL Academy | 💡 Optional AI |
-| Day 27 | Aug 05-07 | Videos #46-54 (Data Warehouse ETL Star Schema Project) | Review Data Architecture & ETL Concepts | 🏗️ Optional DE |
-| Day 28 | Aug 08, 2026 | **Video #55 (Exploratory Data Analysis EDA Project)** | 🎯 **START PROJECT 1**: SQL EDA Portfolio Project | 🎯 **MUST WATCH** |
-| Day 29 | Aug 09, 2026 | **Video #56 (Full SQL Data Analyst Portfolio Project)** | 🎯 **START PROJECT 2**: Full Data Analyst Portfolio | 🎯 **MUST WATCH** |
-| Day 30 | Aug 10, 2026 | **Flipkart Data Engineer Capstone Exam** | Final Portfolio Review & GitHub Repo Push | 🏆 Capstone |
+| Day 16 | July 25, 2026 | Video #31 (CTAS) & Video #32 (Temp Tables) + Start Project Code Review | **5 HackerRank Medium** (Subqueries & Temp Tables) | ⏳ Watch, Code & Solve |
+| Day 17 | July 26, 2026 | Video #33 (Subquery vs CTE vs Views vs CTAS vs Temp) + Project Setup | **5 HackerRank Medium** (CTEs & Derived Tables) | ⏳ Watch, Code & Solve |
+| Day 18 | July 27, 2026 | **Paytm & Swiggy Business Analyst Milestone Mocks** | **3 Medium + 2 Hard HackerRank** (Multi-table Joins) | ⏳ Practice Mocks & Solve |
+| Day 19 | July 28, 2026 | Video #34 (Clustered/Nonclustered) & Video #35 (Columnstore) | **3 Medium + 2 Hard HackerRank** (HAVING & Aggregations) | ⏳ Watch, Code & Solve |
+| Day 20 | July 29, 2026 | Video #36 (Filtered Indexes) & Video #37 (Right Index Choice) | **3 Medium + 2 Hard HackerRank** (CASE WHEN & Pivoting) | ⏳ Watch, Code & Solve |
+| Day 21 | July 30, 2026 | Video #38 (Index Maintenance) & Video #39 (Execution Plans) | **3 Medium + 2 Hard HackerRank** (ROW_NUMBER Window Funcs) | ⏳ Watch, Code & Solve |
+| Day 22 | July 31, 2026 | Video #40 (Indexing Strategy) & Video #41 (Table Partitioning) | **3 Medium + 2 Hard HackerRank** (RANK & DENSE_RANK) | ⏳ Watch, Code & Solve |
+| Day 23 | Aug 01, 2026 | Video #42 (30 SQL Performance Tips from 18 Yrs Exp) | **3 Medium + 2 Hard HackerRank** (LEAD & LAG Streaks) | ⏳ Watch, Code & Solve |
+| Day 24 | Aug 02, 2026 | **CRED Risk Analyst Milestone Mock Exam** | **3 Medium + 2 Hard HackerRank** (Medians & Percentiles) | ⏳ Practice Mocks & Solve |
+| Day 25 | Aug 03, 2026 | Video #43 (Stored Procedures) & Video #44 (Triggers) [Optional DE] | **5 HackerRank Hard** (Advanced Query Challenges) | 💡 Optional DE & Solve |
+| Day 26 | Aug 04, 2026 | Video #45 (ChatGPT & GitHub Copilot Workflow) | **5 HackerRank Hard** (Complex Aggregations) | 💡 Optional AI & Solve |
+| Day 27 | Aug 05-07 | Videos #46-54 (Data Warehouse ETL Star Schema Project) | **Complete 5 Daily HackerRank (Final Set)** | 🏗️ Optional DE & Solve |
+| Day 28 | Aug 08, 2026 | **Video #55 (Exploratory Data Analysis EDA Project)** | 🎯 **DataLemur Day 1**: Start Top Tech Company SQL | 🎯 **DATALEMUR START** |
+| Day 29 | Aug 09, 2026 | **Video #56 (Full SQL Data Analyst Portfolio Project)** | 🎯 **DataLemur Day 2**: Solve FAANG Interview Questions | 🎯 **DATALEMUR PRACTICE** |
+| Day 30 | Aug 10, 2026 | **Flipkart Data Engineer Capstone Exam** | Final Portfolio GitHub Push & StrataScratch Prep | 🏆 Capstone & GitHub |
 
-### HackerRank Strategy & Target Counts for DA Roles
-1. **Easy Problems (`Completed`)**: Excellent for syntax muscle memory.
-2. **Medium Problems (`Target: 15–20 Problems`)**: Focus on 2+ table JOINs, `GROUP BY` / `HAVING`, `CASE WHEN`, and `CTEs` / Subqueries. This is the exact difficulty level tested in 80% of Data Analyst screening interviews.
-3. **Hard Problems (`Target: 5–10 Problems`)**: Focus on Window Functions (`ROW_NUMBER`, `DENSE_RANK`, `LEAD`/`LAG`), consecutive day streaks, and median calculation challenges.
+### DataLemur vs. StrataScratch: Which to Start First?
+#### ⭐ START DATALEMUR FIRST (Recommended)
+- **Why DataLemur First**: DataLemur is 100% focused on real SQL interview questions from top tech companies (Tesla, Amazon, Meta, Spotify). Its in-browser editor, instant grading, and detailed solution walk-throughs match the exact format of SQL Analyst Academy and HackerRank.
+- **DataLemur Goal**: Solve 15 to 20 Medium/Hard questions on DataLemur (topics: Window Functions, CTEs, self-joins, monthly retention rates).
 
-### How to Learn from Portfolio Projects (Videos #55 & #56)
-- **Project 1: SQL Exploratory Data Analysis (EDA) (Video #55)**: Learn how to analyze raw e-commerce customer datasets to find top revenue channels, customer retention rate, and peak ordering months.
-- **Project 2: Complete Data Analyst Portfolio Project (Video #56)**: Learn how to organize a clean GitHub portfolio repository with `.sql` script files, business insights, and executive summaries.
+#### 🛠️ MOVE TO STRATASCRATCH SECOND
+- **Why StrataScratch Second**: StrataScratch is great for advanced analytics datasets and multi-language practice (SQL + Python/Pandas). Use it after DataLemur to practice real company case studies from Airbnb, Forbes, and Microsoft.
+
+### Concurrent Project Learning Strategy (Videos #55 & #56)
+- **Start Now**: Don't wait until August 08 to think about the project! Review the dataset structure and query topics from Video #55 (EDA) and Video #56 (Portfolio Project) in parallel while doing your daily 5 HackerRank problems.
+- **Building Your GitHub Portfolio**: When you finish Video #56, upload your `.sql` query files, data insights summary, and `README.md` to GitHub to present to recruiters.
 
 
 ---
