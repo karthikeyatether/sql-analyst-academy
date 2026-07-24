@@ -38,6 +38,9 @@ export async function initDatabase(): Promise<void> {
       });
       db = new SQL.Database();
       db.run("PRAGMA foreign_keys = ON;");
+      db.run("PRAGMA synchronous = OFF;");
+      db.run("PRAGMA journal_mode = MEMORY;");
+      db.run("PRAGMA temp_store = MEMORY;");
       resetDatabase(true); // Initial seed forced
     } catch (err: unknown) {
       console.error("Failed to initialize sql.js:", err);

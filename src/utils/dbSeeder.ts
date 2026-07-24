@@ -52,6 +52,8 @@ export function seedDatabaseInstance(dbInstance: initSqlJs.Database): void {
     return null;
   }
 
+  dbInstance.run("BEGIN TRANSACTION;");
+
   for (const table of seedTables) {
     const schema = tableSchemas.find(s => s.name === table.name);
     const pk = schema?.primaryKey;
@@ -113,9 +115,5 @@ export function seedDatabaseInstance(dbInstance: initSqlJs.Database): void {
     });
   }
 
-  try {
-    dbInstance.run("VACUUM;");
-  } catch (err) {
-    // Ignore
-  }
+  dbInstance.run("COMMIT;");
 }
