@@ -509,6 +509,10 @@ export default function DashboardView({
                   strokeDashoffset={strokeDashoffset}
                   strokeLinecap="round"
                   transform="rotate(-90 70 70)"
+                  style={{
+                    transition: "stroke-dashoffset 1.5s cubic-bezier(0.2, 0.8, 0.2, 1)",
+                    transformOrigin: "center"
+                  }}
                 />
               </svg>
               <div className="gauge-center-text">

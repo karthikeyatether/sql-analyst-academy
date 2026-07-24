@@ -219,7 +219,7 @@ export default function SqlJoinVennDiagram() {
             fill={isCrescentAActive ? "rgba(56, 217, 255, 0.35)" : "rgba(255, 255, 255, 0.02)"}
             stroke={isCrescentAActive ? "var(--cyan)" : "rgba(255, 255, 255, 0.1)"}
             strokeWidth={isCrescentAActive ? "2.5" : "1"}
-            style={{ cursor: "pointer", outline: "none" }}
+            style={{ cursor: "pointer", outline: "none", transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)", filter: hoveredRegion === "left" ? "brightness(1.3) drop-shadow(0 0 10px rgba(56,217,255,0.4))" : "none" }}
             tabIndex={0}
             role="button"
             aria-label="Left table exclusive region (Table A only)"
@@ -236,7 +236,7 @@ export default function SqlJoinVennDiagram() {
             fill={isCrescentBActive ? "rgba(48, 230, 149, 0.35)" : "rgba(255, 255, 255, 0.02)"}
             stroke={isCrescentBActive ? "var(--emerald)" : "rgba(255, 255, 255, 0.1)"}
             strokeWidth={isCrescentBActive ? "2.5" : "1"}
-            style={{ cursor: "pointer", outline: "none" }}
+            style={{ cursor: "pointer", outline: "none", transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)", filter: hoveredRegion === "right" ? "brightness(1.3) drop-shadow(0 0 10px rgba(48,230,149,0.4))" : "none" }}
             tabIndex={0}
             role="button"
             aria-label="Right table exclusive region (Table B only)"
@@ -258,7 +258,7 @@ export default function SqlJoinVennDiagram() {
             }
             stroke={isIntersectionActive ? "var(--violet)" : "rgba(255, 255, 255, 0.1)"}
             strokeWidth={isIntersectionActive ? "2.5" : "1"}
-            style={{ cursor: "pointer", outline: "none" }}
+            style={{ cursor: "pointer", outline: "none", transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)", filter: hoveredRegion === "intersection" ? "brightness(1.3) drop-shadow(0 0 10px rgba(155,124,255,0.4))" : "none" }}
             tabIndex={0}
             role="button"
             aria-label="Intersection region (Matching keys)"
