@@ -50,6 +50,11 @@ export async function initDatabase(): Promise<void> {
   return initPromise;
 }
 
+// Eagerly pre-initialize WASM engine on module evaluation
+if (typeof window !== "undefined") {
+  initDatabase().catch(() => {});
+}
+
 
 
 export function resetDatabase(force: boolean = false): void {
