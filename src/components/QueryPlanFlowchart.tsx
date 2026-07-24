@@ -148,6 +148,13 @@ export default function QueryPlanFlowchart({ planSteps }: FlowchartProps) {
             transition: 'width 0.15s ease, height 0.15s ease'
           }}
         >
+          <defs>
+            <style>{`
+              @keyframes flowAnimation { to { stroke-dashoffset: -12; } }
+              .plan-node { transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.2s ease; cursor: pointer; }
+              .plan-node:hover { transform: translateY(-3px) scale(1.02); filter: drop-shadow(0 6px 16px rgba(0,0,0,0.4)); }
+            `}</style>
+          </defs>
           {layout.links.map((link, idx) => {
             const dy = Math.abs(link.to.y - link.from.y) * 0.45;
             const pathData = `M ${link.from.x} ${link.from.y} C ${link.from.x} ${link.from.y - dy}, ${link.to.x} ${link.to.y + dy}, ${link.to.x} ${link.to.y}`;
@@ -158,8 +165,8 @@ export default function QueryPlanFlowchart({ planSteps }: FlowchartProps) {
                   fill="none"
                   stroke="var(--border)"
                   strokeWidth="2"
-                  strokeDasharray="4 4"
-                  style={{ transition: "stroke 0.2s" }}
+                  strokeDasharray="6 6"
+                  style={{ animation: "flowAnimation 0.8s linear infinite", transition: "stroke 0.2s" }}
                 />
                 <circle cx={link.to.x} cy={link.to.y} r="3" fill="var(--muted)" />
               </g>
@@ -211,7 +218,7 @@ export default function QueryPlanFlowchart({ planSteps }: FlowchartProps) {
             }
 
             return (
-              <g key={`node-${node.id}`} transform={`translate(${node.x - 95}, ${node.y - 28})`}>
+              <g key={`node-${node.id}`} className="plan-node" transform={`translate(${node.x - 95}, ${node.y - 28})`}>
                 <rect
                   width="190"
                   height="56"
