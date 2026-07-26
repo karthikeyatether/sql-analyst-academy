@@ -1,0 +1,16 @@
+{
+  "name": "SQL Analyst Academy",
+  "short_name": "SQL Academy",
+  "description": "Interactive SQL Learning Platform with SQLite Engine",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#06090c",
+  "theme_color": "#38d9ff",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
