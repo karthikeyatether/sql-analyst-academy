@@ -55,7 +55,6 @@ export async function initDatabase(): Promise<void> {
         if (!workerInstance) {
           workerInstance = new Worker(
             new URL("../workers/sqlWorker.ts", import.meta.url),
-            { type: "module" },
           );
 
           workerInstance.onmessage = (e: MessageEvent) => {
@@ -71,8 +70,14 @@ export async function initDatabase(): Promise<void> {
             }
           };
 
-          workerInstance.onerror = (err) => {
-            console.error("SQL Worker Runtime Error:", err);
+          workerInstance.onerror = (err: ErrorEvent | Event) => {
+            if ("message" in err) {
+              console.error(
+                `SQL Worker Runtime Error: ${err.message} at ${err.filename}:${err.lineno}:${err.colno}`,
+              );
+            } else {
+              console.error("SQL Worker Runtime Error:", err);
+            }
           };
         }
 

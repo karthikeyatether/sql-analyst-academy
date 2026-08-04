@@ -48,7 +48,7 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "p ON oi.product_id = p.product_id\n  INNER JOIN orders o ON oi.order_id = " +
         "o.order_id\n  WHERE o.status = 'Delivered'\n  GROUP BY p.category, " +
         "p.product_name\n)\nSELECT category, product_name, total_revenue,\n      " +
-        "DENSE_RANK() OVER (PARTITION BY category ORDER BY total_revenue DESC) AS " +
+        "DENSE_RANK() OVER (PARTITION BY ??? ORDER BY ???) AS " +
         "revenue_rank\nFROM product_revenue\nORDER BY category, revenue_rank;",
       solution:
         "WITH product_revenue AS (SELECT p.category, p.product_name, SUM(oi.quantity * " +
@@ -95,7 +95,7 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "p.product_id\n  INNER JOIN orders o ON oi.order_id = o.order_id\n  WHERE " +
         "o.status = 'Delivered'\n  GROUP BY p.category, p.product_name\n)\nSELECT " +
         "category, product_name, total_revenue, revenue_rank\nFROM ranked_products\nWHERE " +
-        "revenue_rank = 2\nORDER BY category, total_revenue DESC;",
+        "revenue_rank = ???\nORDER BY category, total_revenue DESC;",
       solution:
         "WITH ranked_products AS (SELECT p.category, p.product_name, SUM(oi.quantity * " +
         "oi.unit_price) AS total_revenue, DENSE_RANK() OVER (PARTITION BY p.category " +
@@ -105,10 +105,9 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "p.product_name) SELECT category, product_name, total_revenue, revenue_rank FROM " +
         "ranked_products WHERE revenue_rank = 2 ORDER BY category, total_revenue DESC;",
       hints: [
-        "Build a CTE that groups by category and product_name with SUM(oi.quantity * oi.unit_price).",
-        "Apply DENSE_RANK() inside the CTE, partitioned by category.",
-        "Filter WHERE revenue_rank = 2 in the outer query.",
-        "You need INNER JOINs to both products and orders tables.",
+        "Create a CTE joining order_items, products, and orders for delivered orders to sum revenue by category and product.",
+        "Apply DENSE_RANK() OVER (PARTITION BY category ORDER BY SUM(quantity * unit_price) DESC) inside the CTE.",
+        "Filter for revenue_rank = 2 in the main SELECT query and order by category, total_revenue DESC.",
       ],
       detailedExplanation:
         "This pattern \u2014 CTE + window rank + outer filter \u2014 is the canonical " +
@@ -140,7 +139,7 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
       prompt:
         "Retrieve customer_id, total_spend, and spending_quartile (calculated using NTILE(4) OVER (ORDER BY SUM(total_amount) DESC)). Only include delivered orders. Group by customer_id. Sort by customer_id.",
       starterQuery:
-        "SELECT customer_id, SUM(total_amount) AS total_spend,\n  NTILE(4) OVER (ORDER BY SUM(total_amount) DESC) AS spending_quartile\nFROM orders\nWHERE status = 'Delivered'\nGROUP BY customer_id\nORDER BY customer_id;",
+        "SELECT customer_id, SUM(total_amount) AS total_spend,\n  NTILE(4) OVER (ORDER BY ???) AS spending_quartile\nFROM orders\nWHERE status = 'Delivered'\nGROUP BY customer_id\nORDER BY customer_id;",
       solution:
         "SELECT customer_id, SUM(total_amount) AS total_spend, NTILE(4) OVER (ORDER BY SUM(total_amount) DESC) AS spending_quartile FROM orders WHERE status = 'Delivered' GROUP BY customer_id ORDER BY customer_id;",
       hints: [
@@ -199,7 +198,7 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "month's revenue and calculate: current_revenue - prev_revenue as revenue_growth. " +
         "Order by month.",
       starterQuery:
-        "WITH monthly_revenue AS (\n  SELECT SUBSTR(order_date, 1, 7) AS order_month, " +
+        "WITH monthly_rev AS (SELECT SUBSTR(order_date, 1, 7) as month, SUM(???) as revenue FROM orders GROUP BY ???) SELECT month, revenue, LAG(???, 1) OVER (ORDER BY ???) as prev_revenue FROM monthly_rev;" +
         "SUM(total_amount) AS revenue\n  FROM orders\n  GROUP BY order_month\n)\nSELECT " +
         "order_month, revenue,\n       LAG(revenue) OVER (ORDER BY order_month ASC) AS " +
         "prev_month_revenue,\n       revenue - LAG(revenue) OVER (ORDER BY order_month " +
@@ -246,8 +245,7 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "(PARTITION BY customer_id ORDER BY order_date ASC) AS amount_change,\n   " +
         "ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date DESC) AS rn\n " +
         "FROM orders\n)\nSELECT customer_id, order_id, order_date, total_amount, " +
-        "prev_amount, amount_change\nFROM order_changes\nWHERE rn = 1 AND prev_amount IS " +
-        "NOT NULL AND amount_change < 0\nORDER BY amount_change ASC;",
+        "prev_amount, amount_change\nFROM order_changes\nWHERE ???\nORDER BY amount_change ASC;",
       solution:
         "WITH order_changes AS (SELECT customer_id, order_id, order_date, total_amount, " +
         "LAG(total_amount) OVER (PARTITION BY customer_id ORDER BY order_date ASC) AS " +
@@ -258,12 +256,9 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "order_changes WHERE rn = 1 AND prev_amount IS NOT NULL AND amount_change < 0 " +
         "ORDER BY amount_change ASC;",
       hints: [
-        "Use LAG(total_amount) OVER (PARTITION BY customer_id ORDER BY order_date ASC) for prev_amount.",
-        "Compute amount_change = total_amount - prev_amount inside the CTE.",
-        "Add ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date DESC) AS rn " +
-          "to find the most recent order.",
-        "In the outer query: WHERE rn = 1 AND prev_amount IS NOT NULL AND amount_change < 0.",
-        "ORDER BY amount_change ASC puts the biggest declines first.",
+        "Use LAG(total_amount) OVER (PARTITION BY customer_id ORDER BY order_date ASC) to compare against previous spend.",
+        "Include ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date DESC) inside your CTE to flag recent orders.",
+        "Filter for rn = 1 AND prev_amount IS NOT NULL AND amount_change < 0 in the main query.",
       ],
       detailedExplanation:
         "This chains three window functions (LAG, ROW_NUMBER) inside a CTE, then applies " +
@@ -302,7 +297,8 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "customer's previous order month. Finally, select customer_id, order_month, and " +
         "prev_month, and check if they are consecutive (i.e. if the difference is exactly " +
         "1 month). Return rows where they are consecutive, ordered by customer_id.",
-      starterQuery: "-- Write your SQL query here\n",
+      starterQuery:
+        "WITH customer_dates AS (SELECT DISTINCT customer_id, signup_date FROM customers) SELECT customer_id, signup_date, LAG(???, 1) OVER (ORDER BY ???) as prev_signup FROM customer_dates;",
       solution:
         "WITH user_months AS (SELECT DISTINCT customer_id, SUBSTR(order_date, 1, 7) AS " +
         "order_month FROM orders), month_lags AS (SELECT customer_id, order_month, " +
@@ -379,7 +375,7 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
       starterQuery:
         "WITH daily_sales AS (\n  SELECT order_date, SUM(total_amount - discount_amount) " +
         "AS revenue\n  FROM orders\n  GROUP BY order_date\n)\nSELECT order_date, " +
-        "revenue,\n  ROUND(AVG(revenue) OVER (ORDER BY order_date ROWS BETWEEN 6 " +
+        "revenue,\n  ROUND(AVG(revenue) OVER (ORDER BY order_date ROWS BETWEEN ??? " +
         "PRECEDING AND CURRENT ROW), 2) AS moving_avg_revenue\nFROM daily_sales\nORDER BY " +
         "order_date;",
       solution:
@@ -388,9 +384,9 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "ROUND(AVG(revenue) OVER (ORDER BY order_date ROWS BETWEEN 6 PRECEDING AND " +
         "CURRENT ROW), 2) AS moving_avg_revenue FROM daily_sales ORDER BY order_date;",
       hints: [
-        "Identify target tables and primary columns for 7-Day moving average revenue.",
-        "Filter rows using appropriate WHERE or JOIN clauses as required by the business prompt.",
-        "Format target result columns and apply sorting as specified.",
+        "Aggregate daily revenue in a CTE using SUM(total_amount - discount_amount) GROUP BY order_date.",
+        "Use AVG(revenue) OVER(ORDER BY order_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) to compute a 7-day sliding window.",
+        "Round the result to 2 decimal places using ROUND(..., 2).",
       ],
       detailedExplanation:
         "By specifying ROWS BETWEEN 6 PRECEDING AND CURRENT ROW, the window frame " +
@@ -424,7 +420,8 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "Return customer_id, order_id, total_amount, and spend_percentage (rounded to 2 " +
         "decimal places, calculated as: total_amount * 100.0 / SUM(total_amount) " +
         "OVER(PARTITION BY customer_id)).",
-      starterQuery: "-- Write your SQL query here\n",
+      starterQuery:
+        "SELECT order_id, customer_id, total_amount, SUM(???) OVER (PARTITION BY ???) as customer_total, ROUND(total_amount * 100.0 / SUM(total_amount) OVER (PARTITION BY ???), 2) as share_pct FROM orders;",
       solution:
         "SELECT customer_id, order_id, total_amount, ROUND(total_amount * 100.0 / " +
         "SUM(total_amount) OVER (PARTITION BY customer_id), 2) AS spend_percentage FROM " +
@@ -513,7 +510,8 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "of total_amount, 2), 'Total Discounts' (ROUND SUM of discount_amount, 2), 'Avg " +
         "Order Value' (ROUND AVG of total_amount, 2). Columns: metric_name (TEXT), " +
         "metric_value (REAL, rounded to 1 decimal).",
-      starterQuery: "-- Write your SQL query here\n",
+      starterQuery:
+        "SELECT 'Total Orders' AS metric_name, ROUND(COUNT(*) * 1.0, 1) AS metric_value FROM orders UNION ALL SELECT 'Delivered Orders', ROUND(COUNT(*) * 1.0, 1) FROM orders WHERE status = '???' UNION ALL SELECT 'Gross Revenue', ROUND(SUM(???), 1) FROM orders UNION ALL SELECT 'Total Discounts', ROUND(SUM(???), 1) FROM orders UNION ALL SELECT 'Avg Order Value', ROUND(AVG(???), 1) FROM orders;",
       solution:
         "SELECT 'Total Orders' AS metric_name, ROUND(COUNT(*) * 1.0, 1) AS metric_value " +
         "FROM orders UNION ALL SELECT 'Delivered Orders', ROUND(COUNT(*) * 1.0, 1) FROM " +
@@ -522,10 +520,9 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "ROUND(SUM(discount_amount), 1) FROM orders UNION ALL SELECT 'Avg Order Value', " +
         "ROUND(AVG(total_amount), 1) FROM orders;",
       hints: [
-        "Each UNION ALL leg must return exactly 2 columns: a string label and a numeric metric.",
-        "Use ROUND(..., 1) consistently to match the column type.",
-        "COUNT(*) * 1.0 converts integer to float so the column type is compatible with ROUND SUM results.",
-        "The 'Delivered Orders' leg needs a WHERE clause inside that SELECT.",
+        "Construct 5 individual SELECT queries each returning metric_name and ROUND(metric_value, 1).",
+        "Stack the 5 metric queries together vertically using UNION ALL.",
+        "Structure your query: SELECT 'Total Orders' AS metric_name, ROUND(COUNT(*) * 1.0, 1) AS metric_value FROM orders UNION ALL SELECT 'Delivered Orders', ROUND(COUNT(*) * 1.0, 1) FROM orders WHERE status = 'Delivered' UNION ALL SELECT 'Gross Revenue', ROUND(SUM(total_amount), 1) FROM orders UNION ALL SELECT 'Total Discounts', ROUND(SUM(discount_amount), 1) FROM orders UNION ALL SELECT 'Avg Order Value', ROUND(AVG(total_amount), 1) FROM orders;",
       ],
       detailedExplanation:
         "UNION ALL stacks heterogeneous aggregates into a single column pair. The mental " +
@@ -622,7 +619,7 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "3\nEXCEPT\nSELECT payment_mode, COUNT(*) AS success_count\nFROM payments\nWHERE " +
         "payment_status = 'Success' AND payment_mode IN (\n  SELECT payment_mode FROM " +
         "payments WHERE payment_status = 'Failed'\n)\nGROUP BY payment_mode\nHAVING " +
-        "COUNT(*) >= 3\nORDER BY success_count DESC;",
+        "COUNT(*) >= 3\nORDER BY ???;",
       solution:
         "SELECT payment_mode, COUNT(*) AS success_count FROM payments WHERE " +
         "payment_status = 'Success' GROUP BY payment_mode HAVING COUNT(*) >= 3 EXCEPT " +
@@ -631,12 +628,9 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "payments WHERE payment_status = 'Failed') GROUP BY payment_mode HAVING COUNT(*) " +
         ">= 3 ORDER BY success_count DESC;",
       hints: [
-        "First leg: SELECT payment_mode, COUNT(*) FROM payments WHERE status='Success' " +
-          "GROUP BY payment_mode HAVING COUNT(*) >= 3.",
-        "Second leg (to subtract): same query but also add AND payment_mode IN (SELECT " +
-          "payment_mode FROM payments WHERE status='Failed').",
-        "EXCEPT removes modes from the left side that appear in the right side.",
-        "ORDER BY success_count DESC at the end applies to the final combined result.",
+        "Query payment modes with >= 3 successful transactions using GROUP BY payment_mode HAVING COUNT(*) >= 3.",
+        "Use EXCEPT to subtract payment modes that have failed transactions.",
+        "Structure your query: SELECT payment_mode, COUNT(*) AS success_count FROM payments WHERE payment_status = 'Success' GROUP BY payment_mode HAVING COUNT(*) >= 3 EXCEPT SELECT payment_mode, COUNT(*) AS success_count FROM payments WHERE payment_status = 'Success' AND payment_mode IN (SELECT payment_mode FROM payments WHERE payment_status = 'Failed') GROUP BY payment_mode HAVING COUNT(*) >= 3 ORDER BY success_count DESC;",
       ],
       detailedExplanation:
         "EXCEPT operates on full row equality. By keeping the same two columns " +
@@ -674,11 +668,12 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "SELECT order_id, total_amount, CASE WHEN total_amount > 5000 THEN 'High Value' " +
         "ELSE 'Standard Value' END AS value_tier FROM orders;",
       hints: [
-        "Identify target tables and primary columns for Categorise orders by value tier.",
-        "Filter rows using appropriate WHERE or JOIN clauses as required by the business prompt.",
-        "Format target result columns and apply sorting as specified.",
+        "Use CASE WHEN total_amount > 5000 THEN 'High Value' ELSE 'Standard Value' END.",
+        "Alias the conditional output column as value_tier.",
+        "Structure your query: SELECT order_id, total_amount, CASE WHEN total_amount > 5000 THEN 'High Value' ELSE 'Standard Value' END AS value_tier FROM orders;",
       ],
-      detailedExplanation: "Conditional logic evaluated row by row.",
+      detailedExplanation:
+        "Evaluates CASE WHEN row by row to classify orders into revenue value tiers based on total transaction amount.",
       alternativeApproach: "None.",
       performanceNotes: "O(N) CPU evaluation.",
       concepts: ["CASE WHEN"],
@@ -734,7 +729,7 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "AS tier\n  FROM customer_spend\n)\nSELECT tier,\n  COUNT(*) AS customer_count,\n" +
         " SUM(total_spent) AS total_tier_revenue,\n  ROUND(SUM(total_spent) * 100.0 / " +
         "(SELECT SUM(total_spent) FROM customer_spend), 1) AS revenue_pct\nFROM " +
-        "tiered\nGROUP BY tier\nORDER BY total_tier_revenue DESC;",
+        "tiered\nGROUP BY ???\nORDER BY total_tier_revenue DESC;",
       solution:
         "WITH customer_spend AS (SELECT customer_id, SUM(total_amount) AS total_spent " +
         "FROM orders GROUP BY customer_id), tiered AS (SELECT customer_id, total_spent, " +
@@ -744,11 +739,9 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "100.0 / (SELECT SUM(total_spent) FROM customer_spend), 1) AS revenue_pct FROM " +
         "tiered GROUP BY tier ORDER BY total_tier_revenue DESC;",
       hints: [
-        "CTE 1 (customer_spend): GROUP BY customer_id, SUM(total_amount) as total_spent.",
-        "CTE 2 (tiered): Apply CASE WHEN on total_spent to assign tier.",
-        "Outer query: GROUP BY tier, COUNT(*), SUM(total_spent).",
-        "revenue_pct: SUM(total_spent) * 100.0 / (SELECT SUM(total_spent) FROM customer_spend).",
-        "ORDER BY total_tier_revenue DESC.",
+        "Compute total customer spend in a CTE using GROUP BY customer_id and SUM(total_amount).",
+        "Categorize total spend into High, Medium, and Low tiers using CASE WHEN.",
+        "Group by tier and calculate customer count, tier revenue, and revenue percentage rounded to 1 decimal place.",
       ],
       detailedExplanation:
         "This problem chains two CTEs, uses CASE WHEN for classification, applies GROUP " +
@@ -784,7 +777,7 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
       prompt:
         "Retrieve customer_id, app_orders_count (count of orders where channel = 'App'), and web_orders_count (count of orders where channel = 'Web') grouped by customer_id. Only include orders where status = 'Delivered'. Sort by customer_id.",
       starterQuery:
-        "SELECT customer_id, COUNT(CASE WHEN channel = 'App' THEN 1 END) AS app_orders_count,\n  COUNT(CASE WHEN channel = 'Web' THEN 1 END) AS web_orders_count\nFROM orders\nWHERE status = 'Delivered'\nGROUP BY customer_id\nORDER BY customer_id;",
+        "SELECT customer_id, COUNT(CASE WHEN channel = 'App' THEN 1 END) AS app_orders_count,\n  COUNT(CASE WHEN channel = 'Web' THEN 1 END) AS web_orders_count\nFROM orders\nWHERE status = 'Delivered'\nGROUP BY ???\nORDER BY customer_id;",
       solution:
         "SELECT customer_id, COUNT(CASE WHEN channel = 'App' THEN 1 END) AS app_orders_count, COUNT(CASE WHEN channel = 'Web' THEN 1 END) AS web_orders_count FROM orders WHERE status = 'Delivered' GROUP BY customer_id ORDER BY customer_id;",
       hints: [
@@ -837,7 +830,8 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "orders), return city, app_revenue (sum of total_amount for App orders), " +
         "web_revenue (sum of total_amount for Web orders), and app_ratio (app_revenue * " +
         "100.0 / total, rounded to 1 decimal place). Sort by city.",
-      starterQuery: "-- Write your SQL query here\n",
+      starterQuery:
+        "SELECT c.city, SUM(CASE WHEN p.category = '???' THEN ??? ELSE 0 END) as electronics_revenue, SUM(CASE WHEN p.category = '???' THEN ??? ELSE 0 END) as fashion_revenue, SUM(???) as total_revenue FROM customers c JOIN orders o ON c.customer_id = o.customer_id JOIN order_items oi ON o.order_id = oi.order_id JOIN products p ON oi.product_id = p.product_id GROUP BY c.city;",
       solution:
         "SELECT c.city, SUM(CASE WHEN o.channel = 'App' THEN o.total_amount ELSE 0 END) " +
         "AS app_revenue, SUM(CASE WHEN o.channel = 'Web' THEN o.total_amount ELSE 0 END) " +
@@ -871,7 +865,7 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "(TEXT).",
       starterQuery:
         "CREATE TABLE customer_feedback (\n  feedback_id INTEGER PRIMARY KEY,\n " +
-        "customer_id INTEGER NOT NULL,\n  comments TEXT\n);",
+        "customer_id INTEGER NOT NULL,\n  comments ???\n);",
       solution:
         "CREATE TABLE customer_feedback (feedback_id INTEGER PRIMARY KEY, customer_id " +
         "INTEGER NOT NULL, comments TEXT);",
@@ -898,7 +892,7 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "review_text (TEXT DEFAULT 'No comments').",
       starterQuery:
         "CREATE TABLE reviews (\n  review_id INTEGER PRIMARY KEY,\n  product_id INTEGER " +
-        "NOT NULL,\n  score INTEGER CHECK(score BETWEEN 1 AND 5),\n  review_text TEXT " +
+        "NOT NULL,\n  score INTEGER CHECK(???),\n  review_text TEXT " +
         "DEFAULT 'No comments'\n);",
       solution:
         "CREATE TABLE reviews (review_id INTEGER PRIMARY KEY, product_id INTEGER NOT " +
@@ -934,7 +928,7 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "inventory_ledger to verify both rows are present. Write all 3 statements " +
         "separated by semicolons.",
       starterQuery:
-        "-- Step 1: Create the constrained table\nCREATE TABLE inventory_ledger (\n " +
+        "CREATE TABLE inventory_ledger (ledger_id INTEGER PRIMARY KEY, product_id INTEGER NOT NULL, quantity INTEGER CHECK(???), transaction_type TEXT NOT NULL); INSERT INTO inventory_ledger VALUES ???; SELECT ??? FROM inventory_ledger;" +
         "ledger_id INTEGER PRIMARY KEY,\n  product_id INTEGER NOT NULL,\n  quantity " +
         "INTEGER CHECK(quantity != 0),\n  transaction_type TEXT CHECK(transaction_type IN " +
         "('IN', 'OUT')),\n  FOREIGN KEY (product_id) REFERENCES " +
@@ -949,10 +943,9 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "INSERT INTO inventory_ledger VALUES (2, 2, -30, 'OUT'); SELECT * FROM " +
         "inventory_ledger;",
       hints: [
-        "CREATE TABLE first with all 4 columns plus the FOREIGN KEY constraint.",
-        "INSERT uses VALUES (ledger_id, product_id, quantity, type).",
-        "The CHECK constraint rejects quantity = 0 — use non-zero values.",
-        "The final SELECT * confirms both rows were inserted successfully.",
+        "Execute CREATE TABLE inventory_ledger with ledger_id, product_id, quantity CHECK(quantity != 0), and transaction_type CHECK(transaction_type IN ('IN', 'OUT')).",
+        "Insert two records using INSERT INTO inventory_ledger VALUES (...).",
+        "Verify table contents using SELECT * FROM inventory_ledger;.",
       ],
       detailedExplanation:
         "This sequences CREATE TABLE (DDL) → INSERT (DML) → SELECT (DQL). The CHECK " +
@@ -991,16 +984,16 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "CREATE TABLE dim_products_scd (\n  product_key INTEGER PRIMARY KEY " +
         "AUTOINCREMENT,\n  product_id INTEGER NOT NULL,\n  product_name TEXT NOT NULL,\n " +
         "list_price DECIMAL NOT NULL,\n  start_date DATE NOT NULL,\n  end_date DATE,\n " +
-        "is_current INTEGER DEFAULT 1 CHECK(is_current IN (0, 1))\n);",
+        "is_current INTEGER DEFAULT 1 CHECK(???)\n);",
       solution:
         "CREATE TABLE dim_products_scd (product_key INTEGER PRIMARY KEY AUTOINCREMENT, " +
         "product_id INTEGER NOT NULL, product_name TEXT NOT NULL, list_price DECIMAL NOT " +
         "NULL, start_date DATE NOT NULL, end_date DATE, is_current INTEGER DEFAULT 1 " +
         "CHECK(is_current IN (0, 1)));",
       hints: [
-        "Identify target tables and primary columns for Create slowly changing dimension product history table.",
-        "Filter rows using appropriate WHERE or JOIN clauses as required by the business prompt.",
-        "Format target result columns and apply sorting as specified.",
+        "Use CREATE TABLE dim_products_scd to define the dimension table.",
+        "Define columns: product_key PRIMARY KEY AUTOINCREMENT, product_id, product_name, list_price, start_date, end_date, and is_current.",
+        "Add a CHECK constraint on is_current: CHECK(is_current IN (0, 1)).",
       ],
       detailedExplanation:
         "SCD Type 2 is the standard dimensional design pattern used to track historical " +
@@ -1038,11 +1031,12 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "INTEGER NOT NULL, comments TEXT); ALTER TABLE customer_feedback ADD COLUMN " +
         "status TEXT DEFAULT 'New';",
       hints: [
-        "Use ALTER TABLE table_name ADD COLUMN column_name type DEFAULT ...",
-        "Apply standard filtering and analytical clauses to isolate the exact target dataset.",
-        "Structure your query using clauses similar to: CREATE TABLE customer_feedback (feedback_id INTEGER PRIMARY KEY, customer_id.",
+        "Use ALTER TABLE customer_feedback ADD COLUMN status TEXT DEFAULT 'New'.",
+        "Ensure you specify column type TEXT and DEFAULT 'New'.",
+        "Structure your query: ALTER TABLE customer_feedback ADD COLUMN status TEXT DEFAULT 'New';",
       ],
-      detailedExplanation: "Modifies live catalog definitions.",
+      detailedExplanation:
+        "ALTER TABLE ADD COLUMN appends a new column definition to the existing live table schema without losing data.",
       alternativeApproach: "None.",
       performanceNotes: "Fast metadata alter.",
       concepts: ["ALTER TABLE", "ADD COLUMN"],
@@ -1056,17 +1050,19 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
       businessScenario: "Update field terminology.",
       prompt:
         "Write a query to rename the column `comments` in `customer_feedback` table to `user_comments`.",
-      starterQuery: "SELECT ???\nFROM ???\nWHERE ???;",
+      starterQuery:
+        "ALTER TABLE customer_feedback RENAME COLUMN comments TO ???;",
       solution:
         "CREATE TABLE customer_feedback (feedback_id INTEGER PRIMARY KEY, customer_id " +
         "INTEGER NOT NULL, comments TEXT); ALTER TABLE customer_feedback RENAME COLUMN " +
         "comments TO user_comments;",
       hints: [
-        "Use ALTER TABLE table RENAME COLUMN old TO new;",
-        "Apply standard filtering and analytical clauses to isolate the exact target dataset.",
-        "Structure your query using clauses similar to: CREATE TABLE customer_feedback (feedback_id INTEGER PRIMARY KEY, customer_id.",
+        "Use ALTER TABLE customer_feedback RENAME COLUMN comments TO user_comments.",
+        "Ensure you reference the target table customer_feedback.",
+        "Structure your query: ALTER TABLE customer_feedback RENAME COLUMN comments TO user_comments;",
       ],
-      detailedExplanation: "Renames column metadata.",
+      detailedExplanation:
+        "ALTER TABLE RENAME COLUMN modifies schema column identifiers directly in metadata without needing table drops or data migration.",
       alternativeApproach: "None.",
       performanceNotes: "Metadata alteration.",
       concepts: ["ALTER TABLE", "RENAME COLUMN"],
@@ -1090,7 +1086,7 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "comment. (4) SELECT * FROM feedback_staging to verify the schema is correct. " +
         "Write all 4 statements separated by semicolons.",
       starterQuery:
-        "-- Step 1: Create the staging table\nCREATE TABLE feedback_staging (\n " +
+        "CREATE TABLE sales_staging (staging_id INTEGER PRIMARY KEY, sale_date TEXT, amount REAL); ALTER TABLE sales_staging ADD COLUMN ???; ALTER TABLE sales_staging RENAME COLUMN ??? TO ???; SELECT ??? FROM sales_staging;" +
         "staging_id INTEGER PRIMARY KEY,\n  customer_id INTEGER NOT NULL,\n  raw_comment " +
         "TEXT\n);\n\n-- Step 2: Add status column\nALTER TABLE feedback_staging ADD " +
         "COLUMN status TEXT DEFAULT 'New';\n\n-- Step 3: Rename column for clarity\nALTER " +
@@ -1102,10 +1098,9 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "status TEXT DEFAULT 'New'; ALTER TABLE feedback_staging RENAME COLUMN " +
         "raw_comment TO comment; SELECT * FROM feedback_staging;",
       hints: [
-        "Execute CREATE TABLE first.",
-        "ADD COLUMN must reference the existing table name.",
-        "RENAME COLUMN uses the OLD column name as source.",
-        "The final SELECT * confirms the schema has 4 columns.",
+        "Execute CREATE TABLE feedback_staging with staging_id, customer_id, and raw_comment.",
+        "Use ALTER TABLE feedback_staging ADD COLUMN status TEXT DEFAULT 'New' and RENAME COLUMN raw_comment TO comment.",
+        "Verify the updated schema using SELECT * FROM feedback_staging;.",
       ],
       detailedExplanation:
         "Real schema evolution happens in steps: create, extend, rename. Each DDL " +
@@ -1193,7 +1188,7 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "zero orders). Use a NOT IN subquery.",
       starterQuery:
         "DELETE FROM customers\nWHERE customer_id NOT IN (\n  SELECT DISTINCT " +
-        "customer_id\n  FROM orders\n);",
+        "customer_id\n  FROM ???\n);",
       solution:
         "DELETE FROM customers WHERE customer_id NOT IN (SELECT DISTINCT customer_id FROM orders);",
       hints: [
@@ -1278,7 +1273,8 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
       prompt:
         "Create a view named executive_dashboard_view that joins customers (customer_id, " +
         "full_name, city) and orders (order_id, total_amount, status) on customer_id.",
-      starterQuery: "-- Write your SQL query here\n",
+      starterQuery:
+        "CREATE VIEW executive_dashboard_view AS SELECT c.customer_id, c.full_name, c.city, o.order_id, o.total_amount, o.status FROM customers c INNER JOIN orders o ON c.customer_id = ???;",
       solution:
         "CREATE VIEW executive_dashboard_view AS SELECT c.customer_id, c.full_name, " +
         "c.city, o.order_id, o.total_amount, o.status FROM customers c INNER JOIN orders " +
@@ -1361,7 +1357,7 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "orders(status, order_date). (3) Run the same EXPLAIN query again to " +
         "confirm the index is now used. Write all 3 statements separated by semicolons.",
       starterQuery:
-        "-- Step 1: Baseline plan (no index yet)\nEXPLAIN\nSELECT * FROM " +
+        "CREATE INDEX idx_orders_customer_date ON orders(???, ???); EXPLAIN QUERY PLAN SELECT order_id, total_amount FROM orders WHERE customer_id = 5 ORDER BY order_date DESC;" +
         "orders WHERE status = 'Delivered' AND order_date >= '2024-01-01';\n\n-- Step 2: " +
         "Create the composite index\nCREATE INDEX idx_orders_status_date ON " +
         "orders(status, order_date);\n\n-- Step 3: Re-check plan (should show INDEX " +
@@ -1373,11 +1369,9 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "orders(status, order_date); EXPLAIN SELECT * FROM orders WHERE status " +
         "= 'Delivered' AND order_date >= '2024-01-01';",
       hints: [
-        "Step 1: EXPLAIN before the index will show SCAN TABLE orders.",
-        "Step 2: CREATE INDEX idx_orders_status_date ON orders(status, order_date).",
-        "Step 3: After the index, EXPLAIN should show SEARCH TABLE orders USING INDEX.",
-        "The composite index order matters: put the equality column (status) first, the " +
-          "range column (order_date) second.",
+        "Run baseline EXPLAIN on the unindexed query.",
+        "Execute CREATE INDEX idx_orders_status_date ON orders(status, order_date).",
+        "Re-run EXPLAIN to verify the index is utilized by the query execution optimizer.",
       ],
       detailedExplanation:
         "Composite indexes accelerate queries that filter on the leading column(s) " +
@@ -1455,7 +1449,8 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
       prompt:
         "Write the explain command to inspect join order execution: `SELECT * FROM " +
         "orders o JOIN customers c ON o.customer_id = c.customer_id`.",
-      starterQuery: "-- Write your SQL query here\n",
+      starterQuery:
+        "EXPLAIN SELECT * FROM orders o INNER JOIN customers c ON o.customer_id = ???;",
       solution:
         "EXPLAIN SELECT * FROM orders o INNER JOIN customers c ON o.customer_id = c.customer_id;",
       hints: [
@@ -1544,7 +1539,7 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "'Refunded', amount = -2800.0. Wrap both in BEGIN TRANSACTION ... COMMIT. Then " +
         "verify by selecting order_id, status from orders WHERE order_id = 3.",
       starterQuery:
-        "BEGIN TRANSACTION;\n\n-- Step 1: Cancel the order\nUPDATE orders\nSET status = " +
+        "BEGIN TRANSACTION; UPDATE orders SET status = '???' WHERE order_id = 3 AND status = '???' ; INSERT INTO payments (payment_id, order_id, payment_mode, payment_status, amount) VALUES (???, 3, '???', '???', ???); COMMIT; SELECT order_id, status FROM orders WHERE order_id = 3;" +
         "'Cancelled'\nWHERE order_id = 3 AND status = 'Pending';\n\n-- Step 2: Insert " +
         "refund payment record\nINSERT INTO payments (payment_id, order_id, payment_mode, " +
         "payment_status, amount)\nVALUES (201, 3, 'UPI', 'Refunded', " +
@@ -1556,10 +1551,9 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
         "payment_mode, payment_status, amount) VALUES (201, 3, 'UPI', 'Refunded', " +
         "-2800.0); COMMIT; SELECT order_id, status FROM orders WHERE order_id = 3;",
       hints: [
-        "BEGIN TRANSACTION starts the atomic block.",
-        "UPDATE must come before INSERT since the payment references the order.",
-        "COMMIT makes both changes permanent only if both succeeded.",
-        "The final SELECT verifies atomicity by checking the updated row.",
+        "Wrap the UPDATE and INSERT statements inside BEGIN TRANSACTION and COMMIT.",
+        "Update order status to Cancelled and insert the refund payment record for order_id = 3.",
+        "Verify the transaction state with SELECT order_id, status FROM orders WHERE order_id = 3;.",
       ],
       detailedExplanation:
         "Atomicity means both the UPDATE and the INSERT succeed or both are rolled back. " +
@@ -1629,30 +1623,645 @@ export const problemsBatch3: Record<number, PracticeProblem[]> = {
       id: "m40-p3",
       moduleId: 40,
       difficulty: "Hard",
-      title: "Correlated Subquery to JOIN",
-      businessScenario: "Eliminate N+1 query patterns.",
+      title: "Refactor Correlated Subquery into Multi-Stage Analytical CTE",
+      businessScenario:
+        "Swiggy's database reliability team is auditing slow dashboard queries. Refactor a row-by-row correlated subquery into a clean CTE pipeline.",
       prompt:
-        "Optimize this correlated subquery as a JOIN to avoid running it N times: " +
-        "`SELECT o.order_id, o.total_amount, (SELECT full_name FROM customers WHERE " +
-        "customer_id = o.customer_id) FROM orders o`. Return order_id, total_amount, and " +
-        "customer full name (as customer_name).",
+        "Write a query using a WITH clause (CTE) customer_order_counts that computes total_customer_orders (COUNT of delivered orders per customer_id). Main query joins orders o, customers c, and customer_order_counts coc on customer_id, returning order_id, customer_name (c.full_name), total_amount, and total_customer_orders for delivered orders with total_amount > 5000. Order by total_amount DESC.",
       starterQuery:
-        "SELECT\n  o.order_id,\n  o.total_amount,\n  c.full_name AS customer_name\nFROM " +
-        "orders o\nLEFT JOIN customers c ON ??? = ???;",
+        "WITH customer_order_counts AS (SELECT customer_id, COUNT(*) AS total_customer_orders FROM orders WHERE status = '???' GROUP BY ???) SELECT o.order_id, c.full_name AS customer_name, o.total_amount, coc.total_customer_orders FROM orders o INNER JOIN customers c ON o.customer_id = c.customer_id INNER JOIN customer_order_counts coc ON o.customer_id = ??? WHERE o.status = '???' AND o.total_amount > ??? ORDER BY o.total_amount DESC;",
       solution:
-        "SELECT o.order_id, o.total_amount, c.full_name AS customer_name FROM orders o " +
-        "LEFT JOIN customers c ON o.customer_id = c.customer_id;",
+        "WITH customer_order_counts AS (SELECT customer_id, COUNT(*) AS total_customer_orders FROM orders WHERE status = 'Delivered' GROUP BY customer_id) SELECT o.order_id, c.full_name AS customer_name, o.total_amount, coc.total_customer_orders FROM orders o INNER JOIN customers c ON o.customer_id = c.customer_id INNER JOIN customer_order_counts coc ON o.customer_id = coc.customer_id WHERE o.status = 'Delivered' AND o.total_amount > 5000 ORDER BY o.total_amount DESC;",
       hints: [
-        "Use a LEFT JOIN instead of the subquery in SELECT.",
-        "Connect the primary table with related foreign key tables using INNER JOIN or LEFT JOIN.",
-        "Structure your query using clauses similar to: SELECT o.order_id, o.total_amount, c.full_name AS customer_name FROM orders o.",
+        "Create CTE customer_order_counts grouping by customer_id and calculating COUNT(*) AS total_customer_orders.",
+        "Join orders, customers, and the CTE, filtering by status = 'Delivered' and total_amount > 5000.",
+        "Structure your query: WITH customer_order_counts AS (SELECT customer_id, COUNT(*) AS total_customer_orders FROM orders WHERE status = 'Delivered' GROUP BY customer_id) SELECT o.order_id, c.full_name AS customer_name, o.total_amount, coc.total_customer_orders FROM orders o INNER JOIN customers c ON o.customer_id = c.customer_id INNER JOIN customer_order_counts coc ON o.customer_id = coc.customer_id WHERE o.status = 'Delivered' AND o.total_amount > 5000 ORDER BY o.total_amount DESC;",
       ],
       detailedExplanation:
-        "Converts row-by-row subquery calls into a set-level hash/index join.",
-      alternativeApproach: "None.",
-      performanceNotes: "Changes complexity from O(N^2) to O(N).",
-      concepts: ["Query Optimization", "LEFT JOIN"],
+        "Converts row-by-row N+1 correlated queries into a CTE set-based pipeline.",
+      alternativeApproach:
+        "Use window function COUNT(*) OVER(PARTITION BY customer_id).",
+      performanceNotes: "Reduces execution time from O(N^2) to O(N log N).",
+      concepts: ["Query Optimization", "CTE", "INNER JOIN", "GROUP BY"],
       companyTags: ["Swiggy"],
+    },
+  ],
+
+  41: [
+    {
+      id: "m41-p1",
+      moduleId: 41,
+      difficulty: "Hard",
+
+      title: "2nd Highest Order Value per City",
+
+      businessScenario:
+        "The operations team wants to identify the runner-up high-value purchase in each " +
+        "city to understand mid-tier customer transactions.",
+
+      prompt:
+        "Write a query to find the runner-up (2nd highest) order total_amount for each city to assist the operations team in establishing mid-tier purchasing benchmarks. Return city, full_name (of the customer), and total_amount. Order the final output by city ascending.",
+
+      starterQuery:
+        "WITH ranked_orders AS (SELECT c.city, c.full_name, o.total_amount, DENSE_RANK() OVER (PARTITION BY ??? ORDER BY ??? DESC) as rnk FROM customers c JOIN orders o ON c.customer_id = o.customer_id) SELECT city, full_name, total_amount FROM ranked_orders WHERE rnk = ??? ORDER BY city;" +
+        "o.total_amount,\n    DENSE_RANK() OVER (PARTITION BY c.city ORDER BY " +
+        "o.total_amount DESC) as rnk\n  FROM customers c\n  JOIN orders o ON " +
+        "c.customer_id = o.customer_id\n)\nSELECT\n  city,\n  full_name,\n " +
+        "total_amount\nFROM ranked_orders\nWHERE rnk = 2\nORDER BY city;",
+
+      solution:
+        "WITH ranked_orders AS (\n  SELECT\n    c.city,\n    c.full_name,\n   " +
+        "o.total_amount,\n    DENSE_RANK() OVER (PARTITION BY c.city ORDER BY " +
+        "o.total_amount DESC) as rnk\n  FROM customers c\n  JOIN orders o ON " +
+        "c.customer_id = o.customer_id\n)\nSELECT city, full_name, total_amount\nFROM " +
+        "ranked_orders\nWHERE rnk = 2\nORDER BY city;",
+
+      hints: [
+        "Use DENSE_RANK() OVER (PARTITION BY city ORDER BY total_amount DESC) inside a CTE.",
+
+        "Filter for rnk = 2 in the outer query.",
+
+        "Ensure you JOIN customers and orders tables on customer_id.",
+      ],
+
+      detailedExplanation:
+        "This query finds the runner-up highest purchase per city. DENSE_RANK() is " +
+        "useful here because if multiple orders tie for first place, the next distinct " +
+        "price still gets rank 2.",
+
+      alternativeApproach:
+        "Could use ROW_NUMBER() instead of DENSE_RANK() if ties don't need to be grouped together.",
+
+      performanceNotes:
+        "Partitioning and ranking require sorting city partitions. An index on " +
+        "orders(customer_id) is beneficial.",
+
+      concepts: ["DENSE_RANK", "PARTITION BY", "CTE", "JOIN"],
+    },
+
+    {
+      id: "m41-p2",
+      moduleId: 41,
+      difficulty: "Hard",
+
+      title: "Month-over-Month Revenue Growth Rate",
+
+      businessScenario:
+        "The finance team needs to track monthly business scaling by monitoring the " +
+        "month-over-month revenue growth rate.",
+
+      prompt:
+        "Finance needs a revenue velocity report tracking month-over-month percentage scaling for delivered orders. For each month (YYYY-MM format), compute net revenue (total_amount minus discount_amount), previous month net revenue, and mom_growth_pct rounded to 2 decimal places. Order output by month ascending.",
+
+      starterQuery:
+        "WITH monthly_revenue AS (SELECT SUBSTR(order_date, 1, 7) AS month, SUM(???) AS current_month_revenue FROM orders WHERE status = '???' GROUP BY 1), lagged_revenue AS (SELECT month, current_month_revenue, LAG(???, 1) OVER (ORDER BY month) AS previous_month_revenue FROM monthly_revenue) SELECT month, ROUND(current_month_revenue, 2) AS current_month_revenue, ROUND(previous_month_revenue, 2) AS previous_month_revenue, ROUND((current_month_revenue - previous_month_revenue) / ??? * 100.0, 2) AS mom_growth_pct FROM lagged_revenue ORDER BY month;" +
+        " SUM(total_amount - discount_amount) AS current_month_revenue\n  FROM orders\n " +
+        "WHERE status = 'Delivered'\n  GROUP BY 1\n),\nlagged_revenue AS (\n  SELECT\n   " +
+        "month,\n    current_month_revenue,\n    LAG(current_month_revenue, 1) OVER " +
+        "(ORDER BY month) AS previous_month_revenue\n  FROM monthly_revenue\n)\nSELECT\n " +
+        "month,\n  ROUND(current_month_revenue, 2) AS current_month_revenue,\n " +
+        "ROUND(previous_month_revenue, 2) AS previous_month_revenue,\n " +
+        "ROUND((current_month_revenue - previous_month_revenue) / previous_month_revenue " +
+        "* 100.0, 2) AS mom_growth_pct\nFROM lagged_revenue\nORDER BY month;",
+
+      solution:
+        "WITH monthly_revenue AS (\n  SELECT\n    SUBSTR(order_date, 1, 7) AS month,\n  " +
+        " SUM(total_amount - discount_amount) AS current_month_revenue\n  FROM orders\n " +
+        "WHERE status = 'Delivered'\n  GROUP BY 1\n),\nlagged_revenue AS (\n  SELECT\n   " +
+        "month,\n    current_month_revenue,\n    LAG(current_month_revenue, 1) OVER " +
+        "(ORDER BY month) AS previous_month_revenue\n  FROM monthly_revenue\n)\nSELECT\n " +
+        "month,\n  ROUND(current_month_revenue, 2) AS current_month_revenue,\n " +
+        "ROUND(previous_month_revenue, 2) AS previous_month_revenue,\n " +
+        "ROUND((current_month_revenue - previous_month_revenue) / previous_month_revenue " +
+        "* 100.0, 2) AS mom_growth_pct\nFROM lagged_revenue\nORDER BY month;",
+
+      hints: [
+        "First calculate total net revenue per month using SUM(total_amount - discount_amount).",
+
+        "Use LAG(current_month_revenue, 1) OVER (ORDER BY month) to fetch the previous month's revenue.",
+
+        "Calculate the percentage difference: (curr - prev) / prev * 100.0.",
+      ],
+
+      detailedExplanation:
+        "This query calculates month-over-month revenue growth. It leverages LAG to look " +
+        "back at the previous row's revenue inside a CTE.",
+
+      alternativeApproach:
+        "Could do a self-join of the monthly aggregate CTE on month differences, but LAG " +
+        "is cleaner and faster.",
+
+      performanceNotes:
+        "The aggregation is quick. The window function runs on the aggregated 12-row " +
+        "monthly dataset, which is tiny and fast.",
+
+      concepts: ["LAG", "OVER", "CTE", "arithmetic"],
+    },
+
+    {
+      id: "m41-p3",
+      moduleId: 41,
+      difficulty: "Hard",
+
+      title: "Customers with Consecutive Daily Orders",
+
+      businessScenario:
+        "The growth team wants to identify highly engaged customers who made purchases " +
+        "on at least 2 consecutive days.",
+
+      prompt:
+        "Growth analytics needs to detect power users with daily purchasing velocity. Find customers who placed orders on at least 2 consecutive days, returning customer_id, full_name, start_date (first day of streak), and consecutive_days. Order results by consecutive_days descending, then customer_id.",
+
+      starterQuery:
+        "WITH distinct_dates AS (SELECT DISTINCT customer_id, SUBSTR(order_date, 1, 10) as o_date FROM orders), islands AS (SELECT customer_id, o_date, TO_DAYS(o_date) - DENSE_RANK() OVER (PARTITION BY ??? ORDER BY ???) as group_id FROM distinct_dates), consecutive_counts AS (SELECT customer_id, MIN(o_date) as start_date, COUNT(*) as consecutive_days FROM islands GROUP BY ???, group_id) SELECT c.customer_id, c.full_name, cc.start_date, cc.consecutive_days FROM consecutive_counts cc JOIN customers c ON cc.customer_id = c.customer_id WHERE cc.consecutive_days >= ??? ORDER BY cc.consecutive_days DESC, c.customer_id;" +
+        "10) as o_date\n  FROM orders\n),\nislands AS (\n  SELECT\n    customer_id,\n   " +
+        "o_date,\n    TO_DAYS(o_date) - DENSE_RANK() OVER (PARTITION BY customer_id " +
+        "ORDER BY o_date) as group_id\n  FROM distinct_dates\n),\nconsecutive_counts AS " +
+        "(\n  SELECT\n    customer_id,\n    MIN(o_date) as start_date,\n    COUNT(*) as " +
+        "consecutive_days\n  FROM islands\n  GROUP BY customer_id, group_id\n)\nSELECT " +
+        "c.customer_id, c.full_name, cc.start_date, cc.consecutive_days\nFROM " +
+        "consecutive_counts cc\nJOIN customers c ON cc.customer_id = c.customer_id\nWHERE " +
+        "cc.consecutive_days >= 2\nORDER BY cc.consecutive_days DESC, c.customer_id;",
+
+      solution:
+        "WITH distinct_dates AS (\n  SELECT DISTINCT customer_id, SUBSTR(order_date, 1, " +
+        "10) as o_date\n  FROM orders\n),\nislands AS (\n  SELECT\n    customer_id,\n   " +
+        "o_date,\n    TO_DAYS(o_date) - DENSE_RANK() OVER (PARTITION BY customer_id " +
+        "ORDER BY o_date) as group_id\n  FROM distinct_dates\n),\nconsecutive_counts AS " +
+        "(\n  SELECT\n    customer_id,\n    MIN(o_date) as start_date,\n    COUNT(*) as " +
+        "consecutive_days\n  FROM islands\n  GROUP BY customer_id, group_id\n)\nSELECT " +
+        "c.customer_id, c.full_name, cc.start_date, cc.consecutive_days\nFROM " +
+        "consecutive_counts cc\nJOIN customers c ON cc.customer_id = c.customer_id\nWHERE " +
+        "cc.consecutive_days >= 2\nORDER BY cc.consecutive_days DESC, c.customer_id;",
+
+      hints: [
+        "The subtraction of DENSE_RANK() from TO_DAYS(o_date) creates a constant value " +
+          "(group_id) for consecutive date runs.",
+
+        "Aggregate by customer_id and group_id to count consecutive days.",
+
+        "Filter for streaks WHERE consecutive_days >= 2.",
+      ],
+
+      detailedExplanation:
+        "This is the classic Gaps & Islands pattern. By subtracting DENSE_RANK from the " +
+        "sequence of dates, consecutive days will decrement at the same rate, resulting " +
+        "in a constant group identifier.",
+
+      alternativeApproach:
+        "Can be solved using self-joins or LAG/LEAD with date comparisons, but " +
+        "group-state identifiers scale better.",
+
+      performanceNotes: "Uses DENSE_RANK on distinct customer order dates.",
+
+      concepts: ["Gaps and Islands", "DENSE_RANK", "TO_DAYS", "date math"],
+    },
+
+    {
+      id: "m41-p4",
+      moduleId: 41,
+      difficulty: "Hard",
+
+      title: "Two-Month Customer Cohort Retention",
+
+      businessScenario:
+        "Inspect product stickiness by tracking what percentage of monthly signup " +
+        "cohorts return to make purchases in the subsequent two months.",
+
+      prompt:
+        "Measure product stickiness across customer signup cohorts. For each signup cohort_month, calculate cohort_size, the percentage of users ordering in month 1 post-signup (retention_month_1), and percentage ordering in month 2 (retention_month_2). Order output by cohort_month.",
+
+      starterQuery:
+        "WITH cohort_sizes AS (SELECT SUBSTR(signup_date, 1, 7) as cohort_month, COUNT(*) as cohort_size FROM customers GROUP BY 1), order_diffs AS (SELECT c.customer_id, SUBSTR(c.signup_date, 1, 7) as cohort_month, o.order_date, TIMESTAMPDIFF(???, c.signup_date, o.order_date) AS months_diff FROM customers c JOIN orders o ON c.customer_id = o.customer_id) SELECT cs.cohort_month, cs.cohort_size, ROUND(COUNT(DISTINCT CASE WHEN od.months_diff = 1 THEN od.customer_id END) * 100.0 / cs.cohort_size, 2) as retention_month_1, ROUND(COUNT(DISTINCT CASE WHEN od.months_diff = 2 THEN od.customer_id END) * 100.0 / cs.cohort_size, 2) as retention_month_2 FROM cohort_sizes cs LEFT JOIN order_diffs od ON cs.cohort_month = od.cohort_month GROUP BY ???, cs.cohort_size ORDER BY cs.cohort_month;" +
+        "COUNT(*) as cohort_size\n  FROM customers\n  GROUP BY 1\n),\norder_diffs AS (\n " +
+        "SELECT\n    c.customer_id,\n    SUBSTR(c.signup_date, 1, 7) as cohort_month,\n  " +
+        " o.order_date,\n    TIMESTAMPDIFF(MONTH, c.signup_date, o.order_date) AS months_diff\n  FROM customers c\n  JOIN orders o ON " +
+        "c.customer_id = o.customer_id\n)\nSELECT\n  cs.cohort_month,\n " +
+        "cs.cohort_size,\n  ROUND(COUNT(DISTINCT CASE WHEN od.months_diff = 1 THEN " +
+        "od.customer_id END) * 100.0 / cs.cohort_size, 2) as retention_month_1,\n " +
+        "ROUND(COUNT(DISTINCT CASE WHEN od.months_diff = 2 THEN od.customer_id END) * " +
+        "100.0 / cs.cohort_size, 2) as retention_month_2\nFROM cohort_sizes cs\nLEFT JOIN " +
+        "order_diffs od ON cs.cohort_month = od.cohort_month\nGROUP BY cs.cohort_month, " +
+        "cs.cohort_size\nORDER BY cs.cohort_month;",
+
+      solution:
+        "WITH cohort_sizes AS (\n  SELECT SUBSTR(signup_date, 1, 7) as cohort_month, " +
+        "COUNT(*) as cohort_size\n  FROM customers\n  GROUP BY 1\n),\norder_diffs AS (\n " +
+        "SELECT\n    c.customer_id,\n    SUBSTR(c.signup_date, 1, 7) as cohort_month,\n  " +
+        " o.order_date,\n    TIMESTAMPDIFF(MONTH, c.signup_date, o.order_date) AS months_diff\n  FROM customers c\n  JOIN orders o ON " +
+        "c.customer_id = o.customer_id\n)\nSELECT\n  cs.cohort_month,\n " +
+        "cs.cohort_size,\n  ROUND(COUNT(DISTINCT CASE WHEN od.months_diff = 1 THEN " +
+        "od.customer_id END) * 100.0 / cs.cohort_size, 2) as retention_month_1,\n " +
+        "ROUND(COUNT(DISTINCT CASE WHEN od.months_diff = 2 THEN od.customer_id END) * " +
+        "100.0 / cs.cohort_size, 2) as retention_month_2\nFROM cohort_sizes cs\nLEFT JOIN " +
+        "order_diffs od ON cs.cohort_month = od.cohort_month\nGROUP BY cs.cohort_month, " +
+        "cs.cohort_size\nORDER BY cs.cohort_month;",
+
+      hints: [
+        "First build a cohort_sizes CTE to get the count of signups per cohort_month.",
+
+        "Calculate months_diff with MySQL TIMESTAMPDIFF(MONTH, signup_date, order_date).",
+
+        "Use conditional DISTINCT customer counts to calculate retention rates.",
+      ],
+
+      detailedExplanation:
+        "Cohort retention analysis measures buyer stickiness over time. We establish a " +
+        "signup cohort sizing baseline and track active customers in subsequent months.",
+
+      alternativeApproach:
+        "TIMESTAMPDIFF(MONTH, start_date, end_date) is clearer than manually subtracting year and month parts.",
+
+      performanceNotes:
+        "Performs left joins to ensure cohorts with 0 retention are still returned in the output.",
+
+      concepts: [
+        "cohort analysis",
+        "conditional aggregation",
+        "LEFT JOIN",
+        "date math",
+      ],
+    },
+
+    {
+      id: "m41-p5",
+      moduleId: 41,
+      difficulty: "Hard",
+
+      title: "Order to Payment Funnel Conversion",
+
+      businessScenario:
+        "Audit checkout flow friction by tracking the drop-off rates from order " +
+        "placement to payment success and refund states.",
+
+      prompt:
+        "Audit checkout drop-off rates across payment states. Return total_orders, payment_success_rate_pct (percentage of orders with payment_status 'Success'), and refund_rate_pct (percentage of successful payments with status 'Refunded').",
+
+      starterQuery:
+        "SELECT COUNT(o.order_id) AS total_orders, ROUND(COUNT(CASE WHEN p.payment_status = '???' THEN 1 END) * 100.0 / COUNT(o.order_id), 2) AS payment_success_rate_pct, ROUND(COUNT(CASE WHEN p.payment_status = '???' THEN 1 END) * 100.0 / NULLIF(COUNT(CASE WHEN p.payment_status = 'Success' OR p.payment_status = 'Refunded' THEN 1 END), 0), 2) AS refund_rate_pct FROM orders o LEFT JOIN payments p ON o.order_id = p.order_id;" +
+        "p.payment_status = 'Success' THEN 1 END) * 100.0 / COUNT(o.order_id), 2) AS " +
+        "payment_success_rate_pct,\n  ROUND(COUNT(CASE WHEN p.payment_status = 'Refunded' " +
+        "THEN 1 END) * 100.0 / NULLIF(COUNT(CASE WHEN p.payment_status = 'Success' OR " +
+        "p.payment_status = 'Refunded' THEN 1 END), 0), 2) AS refund_rate_pct\nFROM " +
+        "orders o\nLEFT JOIN payments p ON o.order_id = p.order_id;",
+
+      solution:
+        "SELECT\n  COUNT(o.order_id) AS total_orders,\n  ROUND(COUNT(CASE WHEN " +
+        "p.payment_status = 'Success' THEN 1 END) * 100.0 / COUNT(o.order_id), 2) AS " +
+        "payment_success_rate_pct,\n  ROUND(COUNT(CASE WHEN p.payment_status = 'Refunded' " +
+        "THEN 1 END) * 100.0 / NULLIF(COUNT(CASE WHEN p.payment_status = 'Success' OR " +
+        "p.payment_status = 'Refunded' THEN 1 END), 0), 2) AS refund_rate_pct\nFROM " +
+        "orders o\nLEFT JOIN payments p ON o.order_id = p.order_id;",
+
+      hints: [
+        "Join orders and payments on order_id.",
+
+        "Use CASE WHEN with payment_status values to count successes and refunds.",
+
+        "Use NULLIF to handle divisions by zero safely.",
+      ],
+
+      detailedExplanation:
+        "Funnel queries map drop-off points in user activation flows. The NULLIF " +
+        "function ensures that if a step has zero entries, the math fails safely to null " +
+        "rather than division by zero errors.",
+
+      alternativeApproach:
+        "Can also write using separate CTEs for each funnel step, but conditional " +
+        "aggregates are more performant.",
+
+      performanceNotes: "Runs in a single scan of matched order-payment rows.",
+
+      concepts: ["funnel analysis", "CASE WHEN", "conditional count", "NULLIF"],
+    },
+
+    {
+      id: "m41-p6",
+      moduleId: 41,
+      difficulty: "Hard",
+
+      title: "Deduplicate customer contacts",
+
+      businessScenario:
+        "The CRM platform database occasionally creates duplicate records. We need to " +
+        "identify duplicates and keep only the earliest record.",
+
+      prompt:
+        "Clean up duplicate customer CRM profiles. Delete duplicate records sharing the same full_name and city combinations, preserving only the earliest record (lowest customer_id).",
+
+      starterQuery:
+        "DELETE FROM customers WHERE customer_id NOT IN (SELECT MIN(customer_id) FROM customers GROUP BY ???, ???);" +
+        "FROM customers\n  GROUP BY full_name, city\n);",
+
+      solution:
+        "DELETE FROM customers\nWHERE customer_id NOT IN (\n  SELECT MIN(customer_id)\n " +
+        "FROM customers\n  GROUP BY full_name, city\n);",
+
+      hints: [
+        "Group by full_name and city to find duplicate groups.",
+
+        "Find the MIN(customer_id) for each group.",
+
+        "Delete all rows whose customer_id is NOT in that list.",
+      ],
+
+      detailedExplanation:
+        "This query deduplicates contacts. It groups by duplicate identifier columns, " +
+        "extracts the original key (MIN), and purges the rest.",
+
+      alternativeApproach:
+        "Could join the table to a duplicate-finding subquery, but NOT IN is direct and readable.",
+
+      performanceNotes:
+        "DML operations mutate the table. The grader compares the resulting snapshots.",
+
+      concepts: ["deduplication", "DELETE", "subquery", "GROUP BY"],
+    },
+
+    {
+      id: "m41-p7",
+      moduleId: 41,
+      difficulty: "Hard",
+
+      title: "Median order amount calculation",
+
+      businessScenario:
+        "Averages are skewed by high-value outliers. The marketing team requires the " +
+        "median order total_amount to design discounts.",
+
+      prompt:
+        "Compute the unskewed median order total_amount to establish spending baselines for marketing promotions. Output a single column median_amount rounded to 2 decimal places.",
+
+      starterQuery:
+        "WITH ranked_orders AS (SELECT total_amount, ROW_NUMBER() OVER (ORDER BY ???) AS row_num, COUNT(*) OVER () AS total_count FROM orders) SELECT ROUND(AVG(total_amount), 2) AS median_amount FROM ranked_orders WHERE row_num IN (???);" +
+        "(ORDER BY total_amount) AS row_num,\n    COUNT(*) OVER () AS total_count\n  FROM " +
+        "orders\n)\nSELECT\n  ROUND(AVG(total_amount), 2) AS median_amount\nFROM " +
+        "ranked_orders\nWHERE row_num IN (total_count / 2 + 1, (total_count + 1) / 2);",
+
+      solution:
+        "WITH ranked_orders AS (\n  SELECT\n    total_amount,\n    ROW_NUMBER() OVER " +
+        "(ORDER BY total_amount) AS row_num,\n    COUNT(*) OVER () AS total_count\n  FROM " +
+        "orders\n)\nSELECT\n  ROUND(AVG(total_amount), 2) AS median_amount\nFROM " +
+        "ranked_orders\nWHERE row_num IN (total_count / 2 + 1, (total_count + 1) / 2);",
+
+      hints: [
+        "Sort order_amount ascending using ROW_NUMBER().",
+
+        "Use COUNT(*) OVER () to get the total rows.",
+
+        "Select and average the middle row indices using integer division rules.",
+      ],
+
+      detailedExplanation:
+        "Median calculations require sorting values and picking the middle index. By " +
+        "averaging the two middle indices for even counts and targeting the single middle " +
+        "index for odd counts, we compute a mathematically correct median.",
+
+      alternativeApproach:
+        "Can be solved with subquery offsets or percentile functions depending on engine support.",
+
+      performanceNotes:
+        "Sorts the orders table by total_amount. An index on orders(total_amount) would " +
+        "bypass this sort.",
+
+      concepts: ["median", "ROW_NUMBER", "window function", "COUNT OVER"],
+    },
+
+    {
+      id: "m41-p8",
+      moduleId: 41,
+      difficulty: "Hard",
+
+      title: "Payment Reconciliation Discrepancy check",
+
+      businessScenario:
+        "The financial operations team wants to run a referential integrity audit to " +
+        "identify orphaned records between orders and payments.",
+
+      prompt:
+        "Execute a financial integrity audit identifying orphaned records between orders and payments. Return source_mismatch ('Order Without Payment' or 'Payment Without Order'), order_id, and amount_discrepancy (total_amount from orders or amount from payments). Order by source_mismatch, then order_id.",
+
+      starterQuery:
+        "WITH unmatched_orders AS (SELECT 'Order Without Payment' AS source_mismatch, o.order_id, o.total_amount AS amount_discrepancy FROM orders o LEFT JOIN payments p ON o.order_id = p.order_id WHERE p.order_id IS ???), unmatched_payments AS (SELECT 'Payment Without Order' AS source_mismatch, p.order_id, p.amount AS amount_discrepancy FROM payments p LEFT JOIN orders o ON p.order_id = o.order_id WHERE o.order_id IS ???) SELECT source_mismatch, order_id, amount_discrepancy FROM unmatched_orders UNION ALL SELECT source_mismatch, order_id, amount_discrepancy FROM unmatched_payments ORDER BY source_mismatch, order_id;" +
+        "source_mismatch,\n    o.order_id,\n    o.total_amount AS amount_discrepancy\n " +
+        "FROM orders o\n  LEFT JOIN payments p ON o.order_id = p.order_id\n  WHERE " +
+        "p.order_id IS NULL\n),\nunmatched_payments AS (\n  SELECT\n    'Payment Without " +
+        "Order' AS source_mismatch,\n    p.order_id,\n    p.amount AS " +
+        "amount_discrepancy\n  FROM payments p\n  LEFT JOIN orders o ON p.order_id = " +
+        "o.order_id\n  WHERE o.order_id IS NULL\n)\nSELECT source_mismatch, order_id, " +
+        "amount_discrepancy\nFROM unmatched_orders\nUNION ALL\nSELECT source_mismatch, " +
+        "order_id, amount_discrepancy\nFROM unmatched_payments\nORDER BY source_mismatch, " +
+        "order_id;",
+
+      solution:
+        "WITH unmatched_orders AS (\n  SELECT\n    'Order Without Payment' AS " +
+        "source_mismatch,\n    o.order_id,\n    o.total_amount AS amount_discrepancy\n " +
+        "FROM orders o\n  LEFT JOIN payments p ON o.order_id = p.order_id\n  WHERE " +
+        "p.order_id IS NULL\n),\nunmatched_payments AS (\n  SELECT\n    'Payment Without " +
+        "Order' AS source_mismatch,\n    p.order_id,\n    p.amount AS " +
+        "amount_discrepancy\n  FROM payments p\n  LEFT JOIN orders o ON p.order_id = " +
+        "o.order_id\n  WHERE o.order_id IS NULL\n)\nSELECT source_mismatch, order_id, " +
+        "amount_discrepancy\nFROM unmatched_orders\nUNION ALL\nSELECT source_mismatch, " +
+        "order_id, amount_discrepancy\nFROM unmatched_payments\nORDER BY source_mismatch, " +
+        "order_id;",
+
+      hints: [
+        "Build a LEFT JOIN orders with payments to find missing payments.",
+
+        "Build a LEFT JOIN payments with orders to find missing orders.",
+
+        "Combine results using UNION ALL and ORDER BY source_mismatch, order_id.",
+      ],
+
+      detailedExplanation:
+        "Referential integrity audits verify database relationships. This query " +
+        "identifies orphans on both sides of a relationship key using outer joins and " +
+        "union combinations.",
+
+      alternativeApproach:
+        "Could perform a FULL OUTER JOIN if natively supported, filtering where either " +
+        "side's join key is null.",
+
+      performanceNotes: "Uses left joins and filters. Fast on small tables.",
+
+      concepts: ["data quality", "LEFT JOIN", "UNION ALL", "IS NULL"],
+    },
+    {
+      id: "m41-p9",
+      moduleId: 41,
+      difficulty: "Medium",
+      title: "Extract JSON device info",
+      businessScenario:
+        "The mobile product team wants to segment customers by their device type " +
+        "recorded in the metadata JSON column to analyze app adoption.",
+      prompt:
+        "Extract device types stored in customer metadata JSON strings for mobile adoption analysis. Return customer_id, full_name, and device_type. Sort by customer_id.",
+      starterQuery:
+        "SELECT customer_id, full_name, json_extract(???, '$.???') AS device_type FROM customers ORDER BY customer_id;" +
+        "device_type FROM customers ORDER BY customer_id;",
+      solution:
+        "SELECT customer_id, full_name, json_extract(metadata, '$.device') AS " +
+        "device_type FROM customers ORDER BY customer_id;",
+      hints: [
+        "Identify target tables and primary columns for Extract JSON device info.",
+        "Filter rows using appropriate WHERE or JOIN clauses as required by the business prompt.",
+        "Format target result columns and apply sorting as specified.",
+      ],
+      detailedExplanation:
+        "In MySQL and modern SQL engines (like Postgres/BigQuery), JSON data can be " +
+        "queried inline using extraction paths like $.device. This avoids needing " +
+        "separate columns for sparse attributes.",
+      alternativeApproach: "None.",
+      performanceNotes:
+        "Runs per row. Indexes on JSON keys are not supported natively in MySQL unless " +
+        "generated columns are used, so a full table scan is performed.",
+      concepts: ["JSON", "json_extract", "string functions"],
+      companyTags: ["Myntra"],
+    },
+  ],
+
+  42: [
+    {
+      id: "m42-p1",
+      moduleId: 42,
+      difficulty: "Medium",
+      title: "Persist High-Value Customer Summaries (CTAS)",
+      businessScenario:
+        "The CRM team wants a fast, pre-aggregated database table containing total spending of high-value customers (spending more than 5000) so they can query it instantly without running expensive joins.",
+      prompt:
+        "Write a query using CREATE TABLE AS SELECT to create a permanent table named 'high_value_customers'. The table should contain customer_id, full_name, and total_spend (the sum of total_amount from orders). Join customers and orders on customer_id, group by customer_id and full_name, and filter for total spend greater than 5000.",
+      starterQuery:
+        "CREATE TABLE high_value_customers AS SELECT c.customer_id, c.full_name, SUM(o.total_amount) AS total_spend FROM customers c JOIN orders o ON c.customer_id = ??? GROUP BY ??? HAVING SUM(o.total_amount) > ???;",
+      solution:
+        "CREATE TABLE high_value_customers AS\nSELECT c.customer_id, c.full_name, SUM(o.total_amount) AS total_spend\nFROM customers c\nJOIN orders o ON c.customer_id = o.customer_id\nGROUP BY c.customer_id, c.full_name\nHAVING SUM(o.total_amount) > 5000;",
+      hints: [
+        "Use CREATE TABLE table_name AS SELECT ... syntax.",
+        "Join customers and orders on customer_id, GROUP BY customer_id and full_name.",
+        "Use HAVING to filter aggregated total_spend > 5000.",
+      ],
+      detailedExplanation:
+        "The CREATE TABLE AS SELECT (CTAS) statement is used to create a new database table and populate it with the query results.",
+      alternativeApproach:
+        "You could run a separate CREATE TABLE statement followed by an INSERT INTO SELECT statement.",
+      performanceNotes: "CTAS writes data physically to disk.",
+      concepts: ["CTAS", "DDL", "data staging", "aggregation"],
+    },
+    {
+      id: "m42-p2",
+      moduleId: 42,
+      difficulty: "Easy",
+      title: "Stage Product Category Price Ranges",
+      businessScenario:
+        "Create a reference table containing category price statistics.",
+      prompt:
+        "Write a query using CREATE TABLE AS SELECT to create a permanent table named 'category_prices'. The table should contain category, min_price (the minimum list_price of products), and max_price (the maximum list_price of products) grouped by category.",
+      starterQuery:
+        "CREATE TABLE category_prices AS SELECT category, MIN(???) AS min_price, MAX(???) AS max_price FROM products GROUP BY ???;",
+      solution:
+        "CREATE TABLE category_prices AS SELECT category, MIN(list_price) AS min_price, MAX(list_price) AS max_price FROM products GROUP BY category;",
+      hints: [
+        "Use CREATE TABLE table_name AS SELECT.",
+        "GROUP BY category.",
+        "Select MIN(list_price) and MAX(list_price).",
+      ],
+      detailedExplanation: "CTAS can be used to stage aggregated lookups.",
+      alternativeApproach: "None.",
+      performanceNotes: "Runs aggregation and creates table in one pass.",
+      concepts: ["CTAS", "DDL", "GROUP BY", "aggregation"],
+    },
+    {
+      id: "m42-p3",
+      moduleId: 42,
+      difficulty: "Hard",
+      title: "Active Customer Signups by Region",
+      businessScenario: "CRM wants to stage customer distribution data.",
+      prompt:
+        "Write a query using CREATE TABLE AS SELECT to create a permanent table named 'regional_signup_summary'. The table should contain region, city, and active_customer_count (count of customers). Join customers and subscriptions on customer_id, filter for status = 'Active', group by region and city, and order by region, active_customer_count descending.",
+      starterQuery:
+        "CREATE TABLE regional_signup_summary AS SELECT c.region, c.city, COUNT(DISTINCT c.customer_id) AS active_customer_count FROM customers c INNER JOIN subscriptions s ON c.customer_id = ??? WHERE s.status = '???' GROUP BY ??? ORDER BY c.region, active_customer_count DESC;",
+      solution:
+        "CREATE TABLE regional_signup_summary AS SELECT c.region, c.city, COUNT(DISTINCT c.customer_id) AS active_customer_count FROM customers c INNER JOIN subscriptions s ON c.customer_id = s.customer_id WHERE s.status = 'Active' GROUP BY c.region, c.city ORDER BY c.region, active_customer_count DESC;",
+      hints: [
+        "Join customers and subscriptions.",
+        "Filter status = 'Active'.",
+        "Order by region and active_customer_count DESC.",
+      ],
+      detailedExplanation: "CTAS creates regional data snapshots.",
+      alternativeApproach: "None.",
+      performanceNotes:
+        "Requires sorting for ORDER BY inside the CTAS statement.",
+      concepts: ["CTAS", "DDL", "INNER JOIN", "GROUP BY"],
+    },
+  ],
+  43: [
+    {
+      id: "m43-p1",
+      moduleId: 43,
+      difficulty: "Medium",
+      title: "Active Subscriptions Staging Table",
+      businessScenario:
+        "To run a complex multi-step subscription dashboard audit, we need to temporarily stage all active subscription records.",
+      prompt:
+        "Write a script to: (1) Create a temporary table named 'temp_active_subs' containing subscription_id, customer_id, and monthly_fee from subscriptions where status is 'Active'. (2) Write a SELECT query to retrieve all rows from 'temp_active_subs' ordered by monthly_fee descending.",
+      starterQuery:
+        "CREATE TEMPORARY TABLE temp_active_subs AS SELECT subscription_id, customer_id, monthly_fee FROM subscriptions WHERE status = '???'; SELECT * FROM temp_active_subs ORDER BY ??? DESC;",
+      solution:
+        "CREATE TEMPORARY TABLE temp_active_subs AS\nSELECT subscription_id, customer_id, monthly_fee\nFROM subscriptions\nWHERE status = 'Active';\n\nSELECT * FROM temp_active_subs ORDER BY monthly_fee DESC;",
+      hints: [
+        "Use CREATE TEMPORARY TABLE temp_active_subs AS SELECT ... syntax.",
+        "Select subscription_id, customer_id, and monthly_fee WHERE status = 'Active'.",
+        "Write a separate SELECT * FROM temp_active_subs ORDER BY monthly_fee DESC; query.",
+      ],
+      detailedExplanation:
+        "Temporary tables are private to the current connection and automatically deleted when the session ends.",
+      alternativeApproach: "You could use a CTE.",
+      performanceNotes: "MySQL stores temporary tables in a separate database.",
+      concepts: ["temporary tables", "session data", "data staging", "DML"],
+    },
+    {
+      id: "m43-p2",
+      moduleId: 43,
+      difficulty: "Easy",
+      title: "Filter Low Inventory Products",
+      businessScenario: "Inventory staging table.",
+      prompt:
+        "Write a script to: (1) Create a temporary table named 'temp_high_cost_products' containing product_id, product_name, and cost_price from products where cost_price > 500. (2) Select all rows from 'temp_high_cost_products' ordered by cost_price descending.",
+      starterQuery:
+        "CREATE TEMPORARY TABLE temp_high_cost_products AS SELECT product_id, product_name, cost_price FROM products WHERE cost_price > ???; SELECT * FROM temp_high_cost_products ORDER BY ??? DESC;",
+      solution:
+        "CREATE TEMPORARY TABLE temp_high_cost_products AS SELECT product_id, product_name, cost_price FROM products WHERE cost_price > 500;\nSELECT * FROM temp_high_cost_products ORDER BY cost_price DESC;",
+      hints: [
+        "Create temporary table for cost_price > 500.",
+        "Select all rows ordered by cost_price DESC.",
+        "Structure your query using clauses similar to: CREATE TEMPORARY TABLE temp_high_cost_products AS SELECT product_id, product_name, cost_price FROM products WHERE cost_price > 500;\nSELECT * FROM temp_high_cost_products ORDER BY cost_price DESC;.",
+      ],
+      detailedExplanation: "Creates a session-specific lookup staging table.",
+      alternativeApproach: "None.",
+      performanceNotes: "Runs simple scan filter.",
+      concepts: ["temporary tables", "DML", "WHERE"],
+    },
+    {
+      id: "m43-p3",
+      moduleId: 43,
+      difficulty: "Hard",
+      title: "Active Premium Subscriptions Staging",
+      businessScenario: "Target cohort staging.",
+      prompt:
+        "Write a script to: (1) Create a temporary table named 'temp_premium_cohort' containing customer_id and monthly_fee from subscriptions where monthly_fee > 1000 and status = 'Active'. (2) Write a SELECT query to join 'temp_premium_cohort' with customers on customer_id and return customer_id, full_name, and monthly_fee ordered by monthly_fee descending.",
+      starterQuery:
+        "CREATE TEMPORARY TABLE temp_premium_cohort AS SELECT customer_id, monthly_fee FROM subscriptions WHERE monthly_fee > ??? AND status = '???'; SELECT t.customer_id, c.full_name, t.monthly_fee FROM temp_premium_cohort t INNER JOIN customers c ON t.customer_id = ??? ORDER BY t.monthly_fee DESC;",
+      solution:
+        "CREATE TEMPORARY TABLE temp_premium_cohort AS SELECT customer_id, monthly_fee FROM subscriptions WHERE monthly_fee > 1000 AND status = 'Active';\nSELECT t.customer_id, c.full_name, t.monthly_fee FROM temp_premium_cohort t INNER JOIN customers c ON t.customer_id = c.customer_id ORDER BY t.monthly_fee DESC;",
+      hints: [
+        "Create temporary table for monthly_fee > 1000 and active status.",
+        "Join temp_premium_cohort with customers.",
+        "Structure your query using clauses similar to: CREATE TEMPORARY TABLE temp_premium_cohort AS SELECT customer_id, monthly_fee FROM subscriptions WHERE monthly_fee > 1000 AND status =.",
+      ],
+      detailedExplanation:
+        "Integrates temporary table data with primary schema relations.",
+      alternativeApproach: "None.",
+      performanceNotes: "Speeds up sub-query joins.",
+      concepts: ["temporary tables", "DML", "INNER JOIN"],
     },
   ],
 };

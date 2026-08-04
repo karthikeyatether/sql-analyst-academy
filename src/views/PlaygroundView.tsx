@@ -28,6 +28,7 @@ import {
   ChevronRight,
   CheckCircle2,
   Sparkles,
+  Wand2,
   Code2,
   BarChart3,
   Upload,
@@ -65,6 +66,17 @@ import ErdModalView from "../components/ErdModalView";
 import LessonProse from "../components/LessonProse";
 import { ResultTablePanel } from "../components/playground/ResultTablePanel";
 
+export function safeLocalStorageGet<T>(key: string, defaultValue: T): T {
+  try {
+    const item = localStorage.getItem(key);
+    if (item === null) return defaultValue;
+    return JSON.parse(item) as T;
+  } catch (e) {
+    console.error(`Error parsing localStorage key "${key}":`, e);
+    return defaultValue;
+  }
+}
+
 import Editor, { loader } from "@monaco-editor/react";
 import * as monaco from "monaco-editor";
 
@@ -86,6 +98,93 @@ interface QueryHistoryItem {
 }
 
 import type { TableSchema } from "../data/datasets";
+
+function TargetTablesCard({
+  relevantTables,
+}: {
+  relevantTables: { name: string; columns: any[] }[];
+}) {
+  if (!relevantTables || relevantTables.length === 0) return null;
+  return (
+    <div
+      style={{
+        background: "rgba(56, 217, 255, 0.04)",
+        border: "1px solid rgba(56, 217, 255, 0.2)",
+        borderRadius: "8px",
+        padding: "10px 12px",
+        margin: "12px 0",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+          fontSize: "11px",
+          fontWeight: 700,
+          color: "var(--cyan)",
+          textTransform: "uppercase",
+          letterSpacing: "0.05em",
+          marginBottom: "6px",
+        }}
+      >
+        <Database size={13} /> Target Table
+        {relevantTables.length > 1 ? "s" : ""}:
+      </div>
+      {relevantTables.map((t) => (
+        <div key={t.name} style={{ marginBottom: "6px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "12px",
+              fontWeight: "bold",
+              color: "var(--text)",
+            }}
+          >
+            Table:{" "}
+            <code
+              style={{
+                background: "rgba(56, 217, 255, 0.15)",
+                color: "var(--cyan)",
+                padding: "1px 6px",
+                borderRadius: "4px",
+              }}
+            >
+              {t.name}
+            </code>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "4px",
+              marginTop: "4px",
+            }}
+          >
+            {t.columns.map((col: any) => (
+              <span
+                key={col.name}
+                style={{
+                  fontSize: "10.5px",
+                  fontFamily: "var(--font-mono, monospace)",
+                  background: "var(--bg)",
+                  color: "var(--text-muted)",
+                  padding: "2px 6px",
+                  borderRadius: "4px",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                {col.name}
+              </span>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 interface PlaygroundViewProps {
   progress: {
@@ -199,6 +298,7 @@ interface PlaygroundViewProps {
   setActivePuzzleId: (id: string) => void;
   debugPuzzles: SqlPuzzle[];
   getSavedPuzzleQuery: (p: SqlPuzzle) => string;
+  openPuzzleInPlayground: (p: SqlPuzzle) => Promise<void>;
   getSavedDraftQuery: (p: PracticeProblem) => string;
   updateEditorQuery: (
     newVal: string,
@@ -288,6 +388,7 @@ const PlaygroundView = React.memo(function PlaygroundView({
   setActivePuzzleId,
   debugPuzzles,
   getSavedPuzzleQuery,
+  openPuzzleInPlayground: openPuzzleInPlaygroundParent,
   getSavedDraftQuery,
   updateEditorQuery,
   stopAutoTyping,
@@ -308,18 +409,35 @@ const PlaygroundView = React.memo(function PlaygroundView({
   rightOpen: propRightOpen,
   setRightOpen: propSetRightOpen,
 }: PlaygroundViewProps) {
-  // Scoped states pushed down from App
+  const resolvedTheme =
+    editorTheme === "light" ? "vs" : editorTheme || "vs-dark";
+  const isSolved =
+    (playgroundMode === "puzzle" &&
+      activePuzzle &&
+      (progress.solvedPuzzles || []).includes(activePuzzle.id)) ||
+    (playgroundMode === "practice" &&
+      selectedProblem &&
+      (progress.solvedProblems || []).includes(selectedProblem.id));
+
+  const isQueryModified =
+    (playgroundMode === "puzzle" &&
+      activePuzzle &&
+      query.trim() !== activePuzzle.flawedQuery.trim()) ||
+    (playgroundMode === "practice" &&
+      selectedProblem &&
+      query.trim() !== selectedProblem.starterQuery.trim());
+
   const [editorHeight, setEditorHeight] = useState(() => {
     try {
-      const saved = localStorage.getItem("sql-aa-editor-h");
-      return saved ? JSON.parse(saved) : 350;
+      const saved = localStorage.getItem("sql-aa-editor-h-v2");
+      return saved ? JSON.parse(saved) : 250;
     } catch {
-      return 350;
+      return 250;
     }
   });
   const handleEditorHeightResize = (h: number) => {
     setEditorHeight(h);
-    localStorage.setItem("sql-aa-editor-h", JSON.stringify(h));
+    localStorage.setItem("sql-aa-editor-h-v2", JSON.stringify(h));
   };
 
   const [internalRightOpen, setInternalRightOpen] = useState(true);
@@ -341,25 +459,38 @@ const PlaygroundView = React.memo(function PlaygroundView({
   const [computedExpectedResult, setComputedExpectedResult] =
     useState<QueryResult | null>(expectedResult || null);
   useEffect(() => {
+    let isMounted = true;
     (async () => {
+      let sol = "";
       if (playgroundMode === "practice" && selectedProblem?.solution) {
-        try {
-          const res = await runQuery(selectedProblem.solution, true, false);
-          setComputedExpectedResult(res);
-        } catch {
-          setComputedExpectedResult(null);
-        }
+        sol = selectedProblem.solution;
       } else if (playgroundMode === "puzzle" && activePuzzle?.solutionQuery) {
+        sol = activePuzzle.solutionQuery;
+      }
+
+      if (sol) {
         try {
-          const res = await runQuery(activePuzzle?.solutionQuery, true, false);
-          setComputedExpectedResult(res);
+          const res = await runQuery(sol, true, false);
+          if (isMounted && res && !res.error) {
+            setComputedExpectedResult(res);
+            return;
+          }
         } catch {
+          // Keep existing valid result if solution evaluation fails temporarily
+        }
+      }
+
+      if (isMounted) {
+        if (expectedResult && !expectedResult.error) {
+          setComputedExpectedResult(expectedResult);
+        } else if (!sol) {
           setComputedExpectedResult(null);
         }
-      } else {
-        setComputedExpectedResult(expectedResult || null);
       }
     })();
+    return () => {
+      isMounted = false;
+    };
   }, [
     playgroundMode,
     selectedProblem?.id,
@@ -368,6 +499,10 @@ const PlaygroundView = React.memo(function PlaygroundView({
     activePuzzle?.solutionQuery,
     expectedResult,
   ]);
+  const activeResult =
+    activeResultTab === "expected" && computedExpectedResult
+      ? computedExpectedResult
+      : queryResult;
   const [resetStatus, setResetStatus] = useState(false);
   const resetTimeoutRef = useRef<any>(null);
   useEffect(() => {
@@ -397,15 +532,15 @@ const PlaygroundView = React.memo(function PlaygroundView({
   // A/B Benchmark & Playground Helper States
   const [playgroundSplit, setPlaygroundSplit] = useState(() => {
     try {
-      const saved = localStorage.getItem("sql-aa-split-playground");
-      return saved ? JSON.parse(saved) : 850;
+      const saved = localStorage.getItem("sql-aa-split-playground-v2");
+      return saved ? JSON.parse(saved) : 450;
     } catch {
-      return 850;
+      return 450;
     }
   });
   const handlePlaygroundSplitResize = (w: number) => {
     setPlaygroundSplit(w);
-    localStorage.setItem("sql-aa-split-playground", JSON.stringify(w));
+    localStorage.setItem("sql-aa-split-playground-v2", JSON.stringify(w));
   };
 
   // Keep a one-click way to recover from an overly wide context pane without
@@ -422,7 +557,7 @@ const PlaygroundView = React.memo(function PlaygroundView({
 
     const restoredWidth =
       expandedContextWidth ??
-      Math.min(850, Math.max(520, Math.round(window.innerWidth * 0.42)));
+      Math.min(600, Math.max(450, Math.round(window.innerWidth * 0.35)));
     handlePlaygroundSplitResize(restoredWidth);
     setExpandedContextWidth(null);
   };
@@ -491,8 +626,7 @@ const PlaygroundView = React.memo(function PlaygroundView({
   const [erdModalOpen, setErdModalOpen] = useState(false);
   const [lessonModalOpen, setLessonModalOpen] = useState(false);
   const [solutionRevealed, setSolutionRevealed] = useState(false);
-  const [showInlineRefSol, setShowInlineRefSol] = useState(false);
-  const [visibleHints, setVisibleHints] = useState(1);
+  const [visibleHints, setVisibleHints] = useState(0);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -532,10 +666,10 @@ const PlaygroundView = React.memo(function PlaygroundView({
   // Reset states on problem/puzzle switch
   useEffect(() => {
     setSolutionRevealed(false);
-    setShowInlineRefSol(false);
-    setVisibleHints(1);
+    setVisibleHints(0);
     setGraderFeedback(null);
     setQueryResult({ columns: [], rows: [], message: "" });
+    setActiveResultTab("your");
     if (playgroundMode === "puzzle") {
       setActiveRightTab("hints");
     }
@@ -552,6 +686,21 @@ const PlaygroundView = React.memo(function PlaygroundView({
 SELECT * FROM customers LIMIT 10;`;
   const RESULT_PAGE_SIZE = 15;
   const [resultPage, setResultPage] = useState(0);
+
+  // Reset activeResultTab to "your" when queryResult updates (meaning a new query was run)
+  useEffect(() => {
+    if (
+      queryResult &&
+      (queryResult.rows.length > 0 || queryResult.error || queryResult.message)
+    ) {
+      setActiveResultTab("your");
+    }
+  }, [queryResult]);
+
+  // Reset resultPage to 0 when activeResultTab changes
+  useEffect(() => {
+    setResultPage(0);
+  }, [activeResultTab]);
 
   // Small helpers
   function fmtTime(iso: string) {
@@ -671,20 +820,29 @@ SELECT * FROM customers LIMIT 10;`;
   };
 
   const handleExportCsv = () => {
-    if (!queryResult || queryResult.error || !queryResult.rows || queryResult.rows.length === 0) {
+    if (
+      !queryResult ||
+      queryResult.error ||
+      !queryResult.rows ||
+      queryResult.rows.length === 0
+    ) {
       showToast("No data to export", "error");
       return;
     }
     try {
       const header = queryResult.columns.join(",");
-      const csvRows = queryResult.rows.map(row => 
-        queryResult.columns.map(col => {
-          const val = row[col];
-          if (val === null || val === undefined) return "";
-          const str = String(val).replace(/"/g, '""');
-          return `"${str}"`;
-        }).join(",")
-      ).join("\n");
+      const csvRows = queryResult.rows
+        .map((row) =>
+          queryResult.columns
+            .map((col) => {
+              const val = row[col];
+              if (val === null || val === undefined) return "";
+              const str = String(val).replace(/"/g, '""');
+              return `"${str}"`;
+            })
+            .join(","),
+        )
+        .join("\n");
       const csvContent = header + "\n" + csvRows;
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
@@ -723,16 +881,12 @@ SELECT * FROM customers LIMIT 10;`;
   // Settings & DB backup/restore helpers
   const exportProgress = () => {
     const backup = {
-      progress: JSON.parse(localStorage.getItem("sql-aa-progress-v3") || "{}"),
-      history: JSON.parse(localStorage.getItem("sql-aa-history") || "[]"),
-      saved: JSON.parse(localStorage.getItem("sql-aa-saved") || "[]"),
-      drafts: JSON.parse(localStorage.getItem("sql-aa-problem-drafts") || "{}"),
-      puzzleDrafts: JSON.parse(
-        localStorage.getItem("sql-aa-puzzle-drafts") || "{}",
-      ),
-      freeform: JSON.parse(
-        localStorage.getItem("sql-aa-freeform-query") || "null",
-      ),
+      progress: safeLocalStorageGet("sql-aa-progress-v3", {}),
+      history: safeLocalStorageGet("sql-aa-history", []),
+      saved: safeLocalStorageGet("sql-aa-saved", []),
+      drafts: safeLocalStorageGet("sql-aa-problem-drafts", {}),
+      puzzleDrafts: safeLocalStorageGet("sql-aa-puzzle-drafts", {}),
+      freeform: safeLocalStorageGet("sql-aa-freeform-query", null),
     };
     const blob = new Blob([JSON.stringify(backup, null, 2)], {
       type: "application/json",
@@ -1000,7 +1154,7 @@ SELECT * FROM customers LIMIT 10;`;
   // Detailed SQL engine query error helper
   const renderDetailedError = (errorStr: string, activeQuery: string) => {
     const match = errorStr.match(
-      /Msg (\d+), Level (\d+), State (\d+), Line (\d+)/,
+      /ERROR (\d+) \(([A-Z0-9]{5})\) at line (\d+)/i,
     );
     if (!match) {
       return (
@@ -1022,9 +1176,8 @@ SELECT * FROM customers LIMIT 10;`;
     }
 
     const msgCode = match[1];
-    const level = match[2];
-    const state = match[3];
-    const lineNum = parseInt(match[4], 10);
+    const sqlState = match[2];
+    const lineNum = parseInt(match[3], 10);
 
     const lines = errorStr.split("\n");
     const detailLine = lines[1] || "";
@@ -1096,7 +1249,7 @@ SELECT * FROM customers LIMIT 10;`;
               textTransform: "uppercase",
             }}
           >
-            MySQL Error — Code {msgCode}, Level {level}, State {state}
+            MySQL Error — Code {msgCode} ({sqlState})
           </span>
         </div>
 
@@ -1288,17 +1441,11 @@ SELECT * FROM customers LIMIT 10;`;
   );
 
   // View state helpers
-  const openPuzzleInPlayground = (puzzleId: string) => {
-    stopAutoTyping();
-    setActivePuzzleId(puzzleId);
-    setPlaygroundMode("puzzle");
+  const openPuzzleInPlayground = async (puzzleId: string) => {
     const puzzle = debugPuzzles.find((x) => x.id === puzzleId);
     if (puzzle) {
-      const saved = getSavedPuzzleQuery(puzzle);
-      updateEditorQuery(saved, "puzzle", puzzleId);
       setActiveRightTab("hints");
-      setQueryResult({ columns: [], rows: [], message: "" });
-      setExpectedResult(null);
+      await openPuzzleInPlaygroundParent(puzzle);
     }
   };
 
@@ -1307,6 +1454,16 @@ SELECT * FROM customers LIMIT 10;`;
       const parentDay = learningRoadmap.find(
         (d) => d.day === activePuzzle?.dayId,
       );
+      const dayPuzzles = parentDay
+        ? debugPuzzles.filter((pz) => pz.dayId === parentDay.day)
+        : debugPuzzles;
+      const curIdx = dayPuzzles.findIndex((pz) => pz.id === activePuzzle?.id);
+
+      if (curIdx !== -1 && curIdx < dayPuzzles.length - 1) {
+        openPuzzleInPlayground(dayPuzzles[curIdx + 1].id);
+        return;
+      }
+
       if (
         parentDay?.mockInterview?.company &&
         (progress.mockScores?.[parentDay.mockInterview.company] ?? 0) <= 0
@@ -1314,15 +1471,34 @@ SELECT * FROM customers LIMIT 10;`;
         setActiveView("mocks");
         return;
       }
-      const nextDayNum = (parentDay?.day || 1) + 1;
-      const nextDay = learningRoadmap.find((d) => d.day === nextDayNum);
-      if (nextDay && nextDay.modules.length > 0) {
-        const firstMod = roadmapModules.find(
-          (m) => m.id === nextDay.modules[0],
-        );
-        if (firstMod && firstMod.problems.length > 0) {
-          openInPlayground(firstMod.problems[0]);
+
+      // Find the next actionable day content (milestone mock interview or day with modules)
+      let checkDayNum = (parentDay?.day || 1) + 1;
+      while (checkDayNum <= learningRoadmap.length) {
+        const nextDay = learningRoadmap.find((d) => d.day === checkDayNum);
+        if (!nextDay) break;
+
+        if (nextDay.mockInterview?.company) {
+          const score =
+            progress.mockScores?.[nextDay.mockInterview.company] ?? 0;
+          if (score <= 0) {
+            setActiveView("mocks");
+            return;
+          }
+          checkDayNum++;
+          continue;
         }
+
+        if (nextDay.modules && nextDay.modules.length > 0) {
+          const firstMod = roadmapModules.find(
+            (m) => m.id === nextDay.modules[0],
+          );
+          if (firstMod && firstMod.problems.length > 0) {
+            openInPlayground(firstMod.problems[0]);
+            return;
+          }
+        }
+        checkDayNum++;
       }
       return;
     }
@@ -1355,18 +1531,40 @@ SELECT * FROM customers LIMIT 10;`;
       return;
     }
 
-    if (parentDay?.mockInterview?.company) {
+    if (
+      parentDay?.mockInterview?.company &&
+      (progress.mockScores?.[parentDay.mockInterview.company] ?? 0) <= 0
+    ) {
       setActiveView("mocks");
       return;
     }
 
-    const nextDayNum = (parentDay?.day || 1) + 1;
-    const nextDay = learningRoadmap.find((d) => d.day === nextDayNum);
-    if (nextDay && nextDay.modules.length > 0) {
-      const firstMod = roadmapModules.find((m) => m.id === nextDay.modules[0]);
-      if (firstMod && firstMod.problems.length > 0) {
-        openInPlayground(firstMod.problems[0]);
+    // Find the next actionable day content (milestone mock interview or day with modules)
+    let checkDayNum = (parentDay?.day || 1) + 1;
+    while (checkDayNum <= learningRoadmap.length) {
+      const nextDay = learningRoadmap.find((d) => d.day === checkDayNum);
+      if (!nextDay) break;
+
+      if (nextDay.mockInterview?.company) {
+        const score = progress.mockScores?.[nextDay.mockInterview.company] ?? 0;
+        if (score <= 0) {
+          setActiveView("mocks");
+          return;
+        }
+        checkDayNum++;
+        continue;
       }
+
+      if (nextDay.modules && nextDay.modules.length > 0) {
+        const firstMod = roadmapModules.find(
+          (m) => m.id === nextDay.modules[0],
+        );
+        if (firstMod && firstMod.problems.length > 0) {
+          openInPlayground(firstMod.problems[0]);
+          return;
+        }
+      }
+      checkDayNum++;
     }
   };
 
@@ -1498,8 +1696,9 @@ SELECT * FROM customers LIMIT 10;`;
     if (selectedProblem?.id && playgroundMode === "practice") {
       const p = allProblems.find((x) => x.id === selectedProblem.id);
       if (p) {
-        const drafts = JSON.parse(
-          localStorage.getItem("sql-aa-problem-drafts") || "{}",
+        const drafts = safeLocalStorageGet<Record<string, any>>(
+          "sql-aa-problem-drafts",
+          {},
         );
         delete drafts[selectedProblem.id];
         localStorage.setItem("sql-aa-problem-drafts", JSON.stringify(drafts));
@@ -1513,8 +1712,9 @@ SELECT * FROM customers LIMIT 10;`;
     } else if (activePuzzle?.id && playgroundMode === "puzzle") {
       const p = debugPuzzles.find((x) => x.id === activePuzzle?.id);
       if (p) {
-        const drafts = JSON.parse(
-          localStorage.getItem("sql-aa-puzzle-drafts") || "{}",
+        const drafts = safeLocalStorageGet<Record<string, any>>(
+          "sql-aa-puzzle-drafts",
+          {},
         );
         delete drafts[activePuzzle?.id];
         localStorage.setItem("sql-aa-puzzle-drafts", JSON.stringify(drafts));
@@ -1632,83 +1832,115 @@ SELECT * FROM customers LIMIT 10;`;
           <strong style={{ fontSize: "14px", fontWeight: 700 }}>
             SQL Playground
           </strong>
-          {playgroundMode === "practice" && selectedProblem?.id && (
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                marginLeft: "10px",
-              }}
-            >
-              <button
-                className="secondary-button compact"
-                disabled={!prevProblem}
-                onClick={() => prevProblem && openInPlayground(prevProblem)}
-                title={
-                  prevProblem
-                    ? `Previous: ${prevProblem.title}`
-                    : "First problem"
-                }
-                style={{
-                  padding: "3px 10px",
-                  fontSize: "11.5px",
-                  borderRadius: "6px",
-                  opacity: prevProblem ? 1 : 0.4,
-                  cursor: prevProblem ? "pointer" : "not-allowed",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "4px",
-                }}
-              >
-                &larr; Prev
-              </button>
-              <button
-                className="primary-button compact"
-                onClick={handleNextItemAction}
-                title="Next item in Day learning sequence"
-                style={{
-                  padding: "3px 12px",
-                  fontSize: "11.5px",
-                  borderRadius: "6px",
-                  background: "var(--cyan)",
-                  color: "#000",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "4px",
-                }}
-              >
-                Next &rarr;
-              </button>
-            </div>
-          )}
-          {selectedProblem?.id &&
+          {(selectedProblem?.id ||
+            (playgroundMode === "puzzle" && activePuzzle?.id)) &&
             (() => {
-              const parentDay = learningRoadmap.find((d) =>
-                d.modules.includes(selectedProblem.moduleId),
-              );
-              return parentDay ? (
-                <button
-                  className="secondary-button compact"
+              let canPrev = false;
+              let prevTitle = "First item";
+              let handlePrev = () => {};
+
+              if (playgroundMode === "puzzle" && activePuzzle) {
+                const parentDay = learningRoadmap.find(
+                  (d) => d.day === activePuzzle.dayId,
+                );
+                const dayPuzzles = parentDay
+                  ? debugPuzzles.filter((pz) => pz.dayId === parentDay.day)
+                  : debugPuzzles;
+                const curIdx = dayPuzzles.findIndex(
+                  (pz) => pz.id === activePuzzle.id,
+                );
+                if (curIdx > 0) {
+                  canPrev = true;
+                  prevTitle = `Previous: ${dayPuzzles[curIdx - 1].title}`;
+                  handlePrev = () =>
+                    openPuzzleInPlayground(dayPuzzles[curIdx - 1].id);
+                }
+              } else if (prevProblem) {
+                canPrev = true;
+                prevTitle = `Previous: ${prevProblem.title}`;
+                handlePrev = () => openInPlayground(prevProblem);
+              }
+
+              return (
+                <div
                   style={{
-                    marginLeft: "8px",
-                    fontSize: "11px",
-                    padding: "2px 8px",
-                    background: "rgba(56,217,255,0.1)",
-                    border: "1px solid rgba(56,217,255,0.2)",
-                    color: "var(--cyan)",
-                  }}
-                  onClick={() => {
-                    setSelectedDayId(parentDay?.day);
-                    setActiveView("day-details");
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    marginLeft: "10px",
                   }}
                 >
-                  &larr; Day {parentDay?.day}
-                </button>
-              ) : null;
+                  <button
+                    className="secondary-button compact"
+                    disabled={!canPrev}
+                    onClick={handlePrev}
+                    title={canPrev ? prevTitle : "First item"}
+                    style={{
+                      padding: "3px 10px",
+                      fontSize: "11.5px",
+                      borderRadius: "6px",
+                      opacity: canPrev ? 1 : 0.4,
+                      cursor: canPrev ? "pointer" : "not-allowed",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    &larr; Prev
+                  </button>
+                  <button
+                    className="primary-button compact"
+                    onClick={handleNextItemAction}
+                    title="Next item in Day learning sequence"
+                    style={{
+                      padding: "3px 12px",
+                      fontSize: "11.5px",
+                      borderRadius: "6px",
+                      background: "var(--cyan)",
+                      color: "#000",
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    Next &rarr;
+                  </button>
+                </div>
+              );
             })()}
+          {(() => {
+            const currentDayNumber =
+              playgroundMode === "puzzle"
+                ? activePuzzle?.dayId
+                : selectedProblem?.id
+                  ? learningRoadmap.find((d) =>
+                      d.modules.includes(selectedProblem.moduleId),
+                    )?.day
+                  : null;
+
+            if (!currentDayNumber) return null;
+            return (
+              <button
+                className="secondary-button compact"
+                style={{
+                  marginLeft: "8px",
+                  fontSize: "11px",
+                  padding: "2px 8px",
+                  background: "rgba(56,217,255,0.1)",
+                  border: "1px solid rgba(56,217,255,0.2)",
+                  color: "var(--cyan)",
+                }}
+                onClick={() => {
+                  setSelectedDayId(currentDayNumber);
+                  setActiveView("day-details");
+                }}
+              >
+                &larr; Day {currentDayNumber}
+              </button>
+            );
+          })()}
 
           {resetStatus && (
             <span className="reset-toast">
@@ -1721,7 +1953,7 @@ SELECT * FROM customers LIMIT 10;`;
           style={{ display: "flex", alignItems: "center", gap: "6px" }}
         >
           <button
-            className="icon-button"
+            className="icon-button labeled"
             title="Format SQL Query (Alt + Shift + F)"
             onClick={() => {
               const f = formatSql(queryRef.current);
@@ -1732,14 +1964,15 @@ SELECT * FROM customers LIMIT 10;`;
               alignItems: "center",
               justifyContent: "center",
               gap: "5px",
-              padding: "4px 8px",
+              padding: "4px 10px",
+              height: "28px",
               borderRadius: "4px",
               border: "1px solid var(--border)",
               background: "var(--bg)",
             }}
             aria-label="Format SQL Query"
           >
-            <Sparkles size={14} style={{ color: "var(--cyan)" }} />
+            <Wand2 size={14} style={{ color: "var(--cyan)", flexShrink: 0 }} />
             <span
               style={{
                 fontSize: "11px",
@@ -1772,14 +2005,15 @@ SELECT * FROM customers LIMIT 10;`;
                   top: "100%",
                   right: 0,
                   marginTop: "8px",
-                  width: "280px",
-                  background: "var(--bg-panel, #15171e)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "8px",
+                  width: "290px",
+                  background: "rgba(21, 26, 38, 0.92)",
+                  backdropFilter: "blur(20px)",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  borderRadius: "12px",
                   boxShadow:
-                    "0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4)",
+                    "0 20px 40px -15px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(56, 217, 255, 0.1)",
                   zIndex: 9999,
-                  padding: "16px",
+                  padding: "18px",
                   display: "flex",
                   flexDirection: "column",
                   gap: "14px",
@@ -1788,10 +2022,10 @@ SELECT * FROM customers LIMIT 10;`;
               >
                 <div
                   style={{
-                    fontSize: "12px",
+                    fontSize: "13px",
                     fontWeight: "bold",
-                    borderBottom: "1px solid var(--border)",
-                    paddingBottom: "6px",
+                    borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+                    paddingBottom: "8px",
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
@@ -1805,9 +2039,13 @@ SELECT * FROM customers LIMIT 10;`;
                       border: "none",
                       cursor: "pointer",
                       color: "var(--muted)",
+                      padding: "2px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
-                    <X size={12} />
+                    <X size={14} />
                   </button>
                 </div>
 
@@ -1816,24 +2054,28 @@ SELECT * FROM customers LIMIT 10;`;
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    fontSize: "11.5px",
+                    fontSize: "12px",
                   }}
                 >
-                  <span style={{ color: "var(--muted)" }}>Editor Theme:</span>
+                  <span style={{ color: "rgba(255,255,255,0.7)" }}>
+                    Editor Theme:
+                  </span>
                   <select
-                    value={editorTheme}
+                    value={editorTheme === "light" ? "vs" : editorTheme}
                     onChange={(e) => setEditorTheme(e.target.value)}
                     style={{
-                      background: "var(--bg2)",
-                      border: "1px solid var(--border)",
-                      borderRadius: "4px",
-                      padding: "4px 8px",
-                      fontSize: "11px",
-                      color: "var(--text)",
+                      background: "rgba(0, 0, 0, 0.35)",
+                      border: "1px solid rgba(255, 255, 255, 0.12)",
+                      borderRadius: "6px",
+                      padding: "5px 8px",
+                      fontSize: "11.5px",
+                      color: "rgba(255, 255, 255, 0.95)",
+                      cursor: "pointer",
+                      outline: "none",
                     }}
                   >
                     <option value="vs-dark">VS Dark</option>
-                    <option value="light">VS Light</option>
+                    <option value="vs">VS Light</option>
                   </select>
                 </div>
 
@@ -1842,21 +2084,25 @@ SELECT * FROM customers LIMIT 10;`;
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    fontSize: "11.5px",
+                    fontSize: "12px",
                   }}
                 >
-                  <span style={{ color: "var(--muted)" }}>Font Family:</span>
+                  <span style={{ color: "rgba(255,255,255,0.7)" }}>
+                    Font Family:
+                  </span>
                   <select
                     value={editorFontFamily}
                     onChange={(e) => setEditorFontFamily(e.target.value)}
                     style={{
-                      background: "var(--bg2)",
-                      border: "1px solid var(--border)",
-                      borderRadius: "4px",
-                      padding: "4px 8px",
-                      fontSize: "11px",
-                      color: "var(--text)",
-                      maxWidth: "140px",
+                      background: "rgba(0, 0, 0, 0.35)",
+                      border: "1px solid rgba(255, 255, 255, 0.12)",
+                      borderRadius: "6px",
+                      padding: "5px 8px",
+                      fontSize: "11.5px",
+                      color: "rgba(255, 255, 255, 0.95)",
+                      cursor: "pointer",
+                      maxWidth: "150px",
+                      outline: "none",
                     }}
                   >
                     <option value="'JetBrains Mono', Consolas, monospace">
@@ -1879,22 +2125,24 @@ SELECT * FROM customers LIMIT 10;`;
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    fontSize: "11.5px",
+                    fontSize: "12px",
                   }}
                 >
-                  <span style={{ color: "var(--muted)" }}>
+                  <span style={{ color: "rgba(255,255,255,0.7)" }}>
                     Tab Indentation:
                   </span>
                   <select
                     value={editorTabSize}
                     onChange={(e) => setEditorTabSize(Number(e.target.value))}
                     style={{
-                      background: "var(--bg2)",
-                      border: "1px solid var(--border)",
-                      borderRadius: "4px",
-                      padding: "4px 8px",
-                      fontSize: "11px",
-                      color: "var(--text)",
+                      background: "rgba(0, 0, 0, 0.35)",
+                      border: "1px solid rgba(255, 255, 255, 0.12)",
+                      borderRadius: "6px",
+                      padding: "5px 8px",
+                      fontSize: "11.5px",
+                      color: "rgba(255, 255, 255, 0.95)",
+                      cursor: "pointer",
+                      outline: "none",
                     }}
                   >
                     <option value="2">2 spaces</option>
@@ -1907,10 +2155,12 @@ SELECT * FROM customers LIMIT 10;`;
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    fontSize: "11.5px",
+                    fontSize: "12px",
                   }}
                 >
-                  <span style={{ color: "var(--muted)" }}>Font Size:</span>
+                  <span style={{ color: "rgba(255,255,255,0.7)" }}>
+                    Font Size:
+                  </span>
                   <div
                     style={{
                       display: "flex",
@@ -1923,21 +2173,24 @@ SELECT * FROM customers LIMIT 10;`;
                         setEditorFontSize((s) => Math.max(10, s - 1))
                       }
                       style={{
-                        padding: "2px 6px",
-                        background: "var(--bg2)",
-                        border: "1px solid var(--border)",
-                        borderRadius: "3px",
+                        padding: "3px 7px",
+                        background: "rgba(255, 255, 255, 0.04)",
+                        border: "1px solid rgba(255, 255, 255, 0.12)",
+                        borderRadius: "4px",
                         cursor: "pointer",
-                        color: "var(--text)",
+                        color: "rgba(255, 255, 255, 0.9)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
                       <Minus size={10} />
                     </button>
                     <span
                       style={{
-                        fontSize: "11px",
+                        fontSize: "12px",
                         fontWeight: "bold",
-                        width: "32px",
+                        width: "36px",
                         textAlign: "center",
                       }}
                     >
@@ -1948,12 +2201,15 @@ SELECT * FROM customers LIMIT 10;`;
                         setEditorFontSize((s) => Math.min(24, s + 1))
                       }
                       style={{
-                        padding: "2px 6px",
-                        background: "var(--bg2)",
-                        border: "1px solid var(--border)",
-                        borderRadius: "3px",
+                        padding: "3px 7px",
+                        background: "rgba(255, 255, 255, 0.04)",
+                        border: "1px solid rgba(255, 255, 255, 0.12)",
+                        borderRadius: "4px",
                         cursor: "pointer",
-                        color: "var(--text)",
+                        color: "rgba(255, 255, 255, 0.9)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
                       <Plus size={10} />
@@ -1973,14 +2229,16 @@ SELECT * FROM customers LIMIT 10;`;
                       display: "flex",
                       alignItems: "center",
                       gap: "8px",
-                      fontSize: "11.5px",
+                      fontSize: "12px",
                       cursor: "pointer",
+                      color: "rgba(255, 255, 255, 0.85)",
                     }}
                   >
                     <input
                       type="checkbox"
                       checked={editorWordWrap}
                       onChange={(e) => setEditorWordWrap(e.target.checked)}
+                      style={{ cursor: "pointer" }}
                     />
                     <span>Word Wrap code lines</span>
                   </label>
@@ -1989,14 +2247,16 @@ SELECT * FROM customers LIMIT 10;`;
                       display: "flex",
                       alignItems: "center",
                       gap: "8px",
-                      fontSize: "11.5px",
+                      fontSize: "12px",
                       cursor: "pointer",
+                      color: "rgba(255, 255, 255, 0.85)",
                     }}
                   >
                     <input
                       type="checkbox"
                       checked={editorMinimap}
                       onChange={(e) => setEditorMinimap(e.target.checked)}
+                      style={{ cursor: "pointer" }}
                     />
                     <span>Show Editor Minimap</span>
                   </label>
@@ -2005,14 +2265,16 @@ SELECT * FROM customers LIMIT 10;`;
                       display: "flex",
                       alignItems: "center",
                       gap: "8px",
-                      fontSize: "11.5px",
+                      fontSize: "12px",
                       cursor: "pointer",
+                      color: "rgba(255, 255, 255, 0.85)",
                     }}
                   >
                     <input
                       type="checkbox"
                       checked={graderStrict}
                       onChange={(e) => setGraderStrict(e.target.checked)}
+                      style={{ cursor: "pointer" }}
                     />
                     <span title="Forces strict order matching of columns in query grader">
                       Strict Grader mode
@@ -2025,20 +2287,24 @@ SELECT * FROM customers LIMIT 10;`;
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    fontSize: "11.5px",
+                    fontSize: "12px",
                   }}
                 >
-                  <span style={{ color: "var(--muted)" }}>Max Row Limit:</span>
+                  <span style={{ color: "rgba(255,255,255,0.7)" }}>
+                    Max Row Limit:
+                  </span>
                   <select
                     value={rowLimit}
                     onChange={(e) => setRowLimit(e.target.value)}
                     style={{
-                      background: "var(--bg2)",
-                      border: "1px solid var(--border)",
-                      borderRadius: "4px",
-                      padding: "4px 8px",
-                      fontSize: "11px",
-                      color: "var(--text)",
+                      background: "rgba(0, 0, 0, 0.35)",
+                      border: "1px solid rgba(255, 255, 255, 0.12)",
+                      borderRadius: "6px",
+                      padding: "5px 8px",
+                      fontSize: "11.5px",
+                      color: "rgba(255, 255, 255, 0.95)",
+                      cursor: "pointer",
+                      outline: "none",
                     }}
                   >
                     <option value="10">10 rows</option>
@@ -2052,15 +2318,17 @@ SELECT * FROM customers LIMIT 10;`;
                 <button
                   onClick={toggleSqlKeywordCase}
                   style={{
-                    padding: "6px",
+                    padding: "8px",
                     width: "100%",
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid var(--border)",
-                    borderRadius: "4px",
-                    fontSize: "11px",
+                    background: "rgba(56, 217, 255, 0.08)",
+                    border: "1px solid rgba(56, 217, 255, 0.2)",
+                    borderRadius: "6px",
+                    fontSize: "11.5px",
+                    fontWeight: 600,
                     cursor: "pointer",
-                    color: "var(--text)",
+                    color: "var(--cyan)",
                     textAlign: "center",
+                    transition: "all 0.2s",
                   }}
                 >
                   Format Keywords:{" "}
@@ -2072,16 +2340,18 @@ SELECT * FROM customers LIMIT 10;`;
                     display: "flex",
                     flexDirection: "column",
                     gap: "6px",
-                    borderTop: "1px solid var(--border)",
-                    paddingTop: "10px",
+                    borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+                    paddingTop: "12px",
                   }}
                 >
                   <span
                     style={{
                       fontSize: "10px",
-                      fontWeight: "bold",
+                      fontWeight: 700,
                       color: "var(--muted)",
+                      letterSpacing: "0.05em",
                       textTransform: "uppercase",
+                      marginBottom: "4px",
                     }}
                   >
                     Local DB & Progress File Admin
@@ -2097,13 +2367,13 @@ SELECT * FROM customers LIMIT 10;`;
                     <button
                       onClick={exportDatabaseSql}
                       style={{
-                        padding: "5px",
-                        background: "var(--bg2)",
-                        border: "1px solid var(--border)",
-                        borderRadius: "4px",
-                        fontSize: "10px",
+                        padding: "6px 8px",
+                        background: "rgba(255, 255, 255, 0.04)",
+                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                        borderRadius: "6px",
+                        fontSize: "10.5px",
                         cursor: "pointer",
-                        color: "var(--text)",
+                        color: "rgba(255, 255, 255, 0.9)",
                         display: "flex",
                         alignItems: "center",
                         gap: "4px",
@@ -2115,13 +2385,13 @@ SELECT * FROM customers LIMIT 10;`;
 
                     <label
                       style={{
-                        padding: "5px",
-                        background: "var(--bg2)",
-                        border: "1px solid var(--border)",
-                        borderRadius: "4px",
-                        fontSize: "10px",
+                        padding: "6px 8px",
+                        background: "rgba(255, 255, 255, 0.04)",
+                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                        borderRadius: "6px",
+                        fontSize: "10.5px",
                         cursor: "pointer",
-                        color: "var(--text)",
+                        color: "rgba(255, 255, 255, 0.9)",
                         display: "flex",
                         alignItems: "center",
                         gap: "4px",
@@ -2148,13 +2418,13 @@ SELECT * FROM customers LIMIT 10;`;
                     <button
                       onClick={exportProgress}
                       style={{
-                        padding: "5px",
-                        background: "var(--bg2)",
-                        border: "1px solid var(--border)",
-                        borderRadius: "4px",
-                        fontSize: "10px",
+                        padding: "6px 8px",
+                        background: "rgba(255, 255, 255, 0.04)",
+                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                        borderRadius: "6px",
+                        fontSize: "10.5px",
                         cursor: "pointer",
-                        color: "var(--text)",
+                        color: "rgba(255, 255, 255, 0.9)",
                         display: "flex",
                         alignItems: "center",
                         gap: "4px",
@@ -2166,13 +2436,13 @@ SELECT * FROM customers LIMIT 10;`;
 
                     <label
                       style={{
-                        padding: "5px",
-                        background: "var(--bg2)",
-                        border: "1px solid var(--border)",
-                        borderRadius: "4px",
-                        fontSize: "10px",
+                        padding: "6px 8px",
+                        background: "rgba(255, 255, 255, 0.04)",
+                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                        borderRadius: "6px",
+                        fontSize: "10.5px",
                         cursor: "pointer",
-                        color: "var(--text)",
+                        color: "rgba(255, 255, 255, 0.9)",
                         display: "flex",
                         alignItems: "center",
                         gap: "4px",
@@ -2191,18 +2461,18 @@ SELECT * FROM customers LIMIT 10;`;
 
                   <label
                     style={{
-                      padding: "5px",
-                      background: "rgba(56, 217, 255, 0.05)",
-                      border: "1px solid rgba(56, 217, 255, 0.15)",
-                      borderRadius: "4px",
-                      fontSize: "10.5px",
+                      padding: "6px 8px",
+                      background: "rgba(56, 217, 255, 0.08)",
+                      border: "1px solid rgba(56, 217, 255, 0.2)",
+                      borderRadius: "6px",
+                      fontSize: "11px",
                       cursor: "pointer",
                       color: "var(--cyan)",
                       display: "flex",
                       alignItems: "center",
                       gap: "4px",
                       justifyContent: "center",
-                      fontWeight: "bold",
+                      fontWeight: 600,
                     }}
                   >
                     <Upload size={11} /> Load CSV Table
@@ -2217,13 +2487,13 @@ SELECT * FROM customers LIMIT 10;`;
                   <button
                     onClick={downloadStatsSummary}
                     style={{
-                      padding: "5px",
-                      background: "var(--bg2)",
-                      border: "1px solid var(--border)",
-                      borderRadius: "4px",
-                      fontSize: "10px",
+                      padding: "6px 8px",
+                      background: "rgba(255, 255, 255, 0.04)",
+                      border: "1px solid rgba(255, 255, 255, 0.1)",
+                      borderRadius: "6px",
+                      fontSize: "10.5px",
                       cursor: "pointer",
-                      color: "var(--text)",
+                      color: "rgba(255, 255, 255, 0.9)",
                       display: "flex",
                       alignItems: "center",
                       gap: "4px",
@@ -2284,6 +2554,63 @@ SELECT * FROM customers LIMIT 10;`;
                   minWidth: 0,
                 }}
               >
+                {isSolved && isQueryModified && (
+                  <div
+                    style={{
+                      padding: "8px 16px",
+                      background:
+                        "linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.03) 100%)",
+                      borderBottom: "1px solid rgba(34, 197, 94, 0.25)",
+                      fontSize: "12px",
+                      color: "#4ade80",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      flexShrink: 0,
+                      zIndex: 10,
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        fontWeight: 500,
+                      }}
+                    >
+                      <CheckCircle2
+                        size={14}
+                        style={{ color: "#4ade80", flexShrink: 0 }}
+                      />
+                      You solved this{" "}
+                      {playgroundMode === "puzzle" ? "puzzle" : "problem"}! You
+                      can reset it to practice again.
+                    </span>
+                    <button
+                      onClick={resetPlayground}
+                      style={{
+                        background: "rgba(34, 197, 94, 0.14)",
+                        border: "1px solid rgba(34, 197, 94, 0.3)",
+                        color: "#4ade80",
+                        borderRadius: "6px",
+                        padding: "4px 10px",
+                        fontSize: "11px",
+                        cursor: "pointer",
+                        fontWeight: 600,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "5px",
+                        transition: "all 0.2s",
+                      }}
+                    >
+                      <RefreshCcw size={11} />
+                      Reset to{" "}
+                      {playgroundMode === "puzzle"
+                        ? "Flawed Query"
+                        : "Starter SQL"}
+                    </button>
+                  </div>
+                )}
                 {compareModeOpen && (
                   <div
                     style={{
@@ -2378,7 +2705,7 @@ SELECT * FROM customers LIMIT 10;`;
                           ? "hc-oled"
                           : theme === "light"
                             ? "vs"
-                            : editorTheme || "vs-dark"
+                            : resolvedTheme
                       }
                       value={query}
                       beforeMount={handleBeforeMount}
@@ -2396,6 +2723,8 @@ SELECT * FROM customers LIMIT 10;`;
                         padding: { top: 12, bottom: 12 },
                         scrollBeyondLastLine: false,
                         wordWrap: editorWordWrap ? "on" : "off",
+                        multiCursorModifier: "alt",
+                        multiCursorMergeOverlapping: true,
                         bracketPairColorization: { enabled: true },
                         autoClosingBrackets: "always",
                         autoClosingQuotes: "always",
@@ -2488,9 +2817,9 @@ SELECT * FROM customers LIMIT 10;`;
                           </div>
                         }
                         theme={
-                          editorTheme === "vs-dark" && theme === "oled"
+                          resolvedTheme === "vs-dark" && theme === "oled"
                             ? "hc-oled"
-                            : editorTheme
+                            : resolvedTheme
                         }
                         value={queryB}
                         onChange={(val) => handleSetQueryB(val || "")}
@@ -2504,6 +2833,8 @@ SELECT * FROM customers LIMIT 10;`;
                           padding: { top: 8, bottom: 8 },
                           scrollBeyondLastLine: false,
                           wordWrap: "on",
+                          multiCursorModifier: "alt",
+                          multiCursorMergeOverlapping: true,
                           autoClosingBrackets: "always",
                           autoClosingQuotes: "always",
                           tabCompletion: "on",
@@ -2574,14 +2905,17 @@ SELECT * FROM customers LIMIT 10;`;
                     <Database size={12} style={{ marginRight: "6px" }} /> Your
                     Result
                   </button>
-                  <button
-                    className={`result-tab ${activeResultTab === "expected" ? "active" : ""}`}
-                    onClick={() => setActiveResultTab("expected")}
-                  >
-                    <Eye size={12} style={{ marginRight: "6px" }} /> Expected
-                    Output
-                  </button>
-                  {queryResult.durationMs !== undefined &&
+                  {computedExpectedResult && (
+                    <button
+                      className={`result-tab ${activeResultTab === "expected" ? "active" : ""}`}
+                      onClick={() => setActiveResultTab("expected")}
+                    >
+                      <CheckCircle2 size={12} style={{ marginRight: "6px" }} />{" "}
+                      Expected Output
+                    </button>
+                  )}
+                  {activeResultTab === "your" &&
+                    queryResult.durationMs !== undefined &&
                     !queryResult.error && (
                       <span
                         style={{
@@ -2609,18 +2943,44 @@ SELECT * FROM customers LIMIT 10;`;
                       </span>
                     )}
                 </div>
-                
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  {!queryResult.error && queryResult.rows && queryResult.rows.length > 0 && (
-                    <button
-                      className="secondary-button"
-                      style={{ fontSize: "11px", padding: "4px 8px" }}
-                      onClick={handleExportCsv}
-                      title="Export Results as CSV"
-                    >
-                      <Download size={12} style={{ marginRight: "4px" }} /> Export CSV
-                    </button>
-                  )}
+
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  {activeResultTab === "your"
+                    ? !queryResult.error &&
+                      queryResult.rows &&
+                      queryResult.rows.length > 0 && (
+                        <button
+                          className="secondary-button"
+                          style={{ fontSize: "11px", padding: "4px 8px" }}
+                          onClick={handleExportCsv}
+                          title="Export Results as CSV"
+                        >
+                          <Download size={12} style={{ marginRight: "4px" }} />{" "}
+                          Export CSV
+                        </button>
+                      )
+                    : computedExpectedResult &&
+                      !computedExpectedResult.error &&
+                      computedExpectedResult.rows &&
+                      computedExpectedResult.rows.length > 0 && (
+                        <button
+                          className="secondary-button"
+                          style={{ fontSize: "11px", padding: "4px 8px" }}
+                          onClick={() =>
+                            exportResultAsCsv(
+                              computedExpectedResult.columns,
+                              computedExpectedResult.rows,
+                              "expected-results.csv",
+                            )
+                          }
+                          title="Export Expected Results as CSV"
+                        >
+                          <Download size={12} style={{ marginRight: "4px" }} />{" "}
+                          Export CSV
+                        </button>
+                      )}
                 </div>
               </div>
 
@@ -2636,17 +2996,20 @@ SELECT * FROM customers LIMIT 10;`;
                 {graderFeedback && (
                   <div style={{ padding: "12px 12px 0 12px" }}>
                     <div
-                      className={`grader-feedback-alert ${graderFeedback.isCorrect ? "success" : "error"}`}
+                      className={`grader-feedback-alert ${
+                        graderFeedback.isCorrect ? "success" : "error"
+                      }`}
                     >
                       <div className="grader-feedback-title">
                         {graderFeedback.isCorrect
                           ? "✓ Correct!"
-                          : "❌ Incorrect"}
+                          : "✗ Incorrect"}
                         <span
                           style={{
                             fontSize: "12px",
                             fontWeight: "normal",
                             color: "var(--text-secondary)",
+                            marginLeft: "6px",
                           }}
                         >
                           - {graderFeedback.message}
@@ -2655,111 +3018,16 @@ SELECT * FROM customers LIMIT 10;`;
                       {graderFeedback.details && (
                         <div
                           style={{
-                            fontSize: "11.5px",
-                            opacity: 0.85,
-                            marginTop: "2px",
+                            marginTop: "4px",
+                            fontSize: "12px",
+                            color: graderFeedback.isCorrect
+                              ? "var(--text-secondary)"
+                              : "#f87171",
                           }}
                         >
                           {graderFeedback.details}
                         </div>
                       )}
-                      {graderFeedback.warning && (
-                        <div className="grader-feedback-warning">
-                          ⚠️ {graderFeedback.warning}
-                        </div>
-                      )}
-                      {!graderFeedback.isCorrect &&
-                        selectedProblem &&
-                        selectedProblem.solution &&
-                        (() => {
-                          const attempts = JSON.parse(
-                            localStorage.getItem("sql-aa-failed-attempts") ||
-                              "{}",
-                          );
-                          const failedCount = attempts[selectedProblem.id] || 0;
-                          if (failedCount >= 3) {
-                            return (
-                              <div
-                                style={{
-                                  marginTop: "8px",
-                                  paddingTop: "8px",
-                                  borderTop: "1px solid rgba(255,255,255,0.1)",
-                                }}
-                              >
-                                <button
-                                  className="icon-button labeled"
-                                  style={{
-                                    background: "rgba(56, 217, 255, 0.1)",
-                                    color: "var(--cyan)",
-                                    border: "1px solid rgba(56, 217, 255, 0.2)",
-                                    width: "100%",
-                                    justifyContent: "center",
-                                    cursor: "pointer",
-                                  }}
-                                  onClick={() =>
-                                    setShowInlineRefSol((prev) => !prev)
-                                  }
-                                >
-                                  <Code2 size={13} />{" "}
-                                  {showInlineRefSol
-                                    ? "Hide Reference Solution"
-                                    : "Compare with Reference Solution (3+ attempts)"}
-                                </button>
-                                {showInlineRefSol && (
-                                  <div
-                                    style={{
-                                      marginTop: "8px",
-                                      background: "#0a0e14",
-                                      padding: "10px",
-                                      borderRadius: "6px",
-                                      border: "1px solid #1f2630",
-                                    }}
-                                  >
-                                    <div
-                                      style={{
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        alignItems: "center",
-                                        marginBottom: "6px",
-                                      }}
-                                    >
-                                      <span
-                                        style={{
-                                          fontSize: "11px",
-                                          fontWeight: 700,
-                                          color: "var(--muted)",
-                                        }}
-                                      >
-                                        Reference Solution SQL
-                                      </span>
-                                      <button
-                                        className="icon-button labeled"
-                                        style={{
-                                          fontSize: "11px",
-                                          padding: "2px 8px",
-                                        }}
-                                        onClick={() =>
-                                          updateEditorQuery(
-                                            formatSql(selectedProblem.solution),
-                                          )
-                                        }
-                                      >
-                                        <Play size={11} /> Load into Editor
-                                      </button>
-                                    </div>
-                                    <pre
-                                      className="sql-pre small"
-                                      style={{ margin: 0 }}
-                                    >
-                                      {selectedProblem.solution}
-                                    </pre>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          }
-                          return null;
-                        })()}
                     </div>
                   </div>
                 )}
@@ -2774,275 +3042,251 @@ SELECT * FROM customers LIMIT 10;`;
                     padding: "12px",
                   }}
                 >
-                  {activeResultTab === "expected" ? (
+                  <div
+                    className="result-half"
+                    style={{
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      minWidth: 0,
+                      height: "100%",
+                      background: "rgba(255,255,255,0.01)",
+                      borderRadius: "6px",
+                      border: "1px solid var(--border)",
+                    }}
+                  >
                     <div
-                      className="result-half"
+                      className="half-header"
                       style={{
-                        flex: 1,
                         display: "flex",
-                        flexDirection: "column",
-                        minWidth: 0,
-                        height: "100%",
-                        background: "rgba(255,255,255,0.01)",
-                        borderRadius: "6px",
-                        border: "1px solid var(--border)",
+                        alignItems: "center",
+                        gap: "8px",
+                        padding: "8px 12px",
+                        borderBottom: "1px solid var(--border)",
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        letterSpacing: "0.05em",
+                        color: "var(--text-secondary)",
+                        background: "rgba(255,255,255,0.02)",
                       }}
                     >
-                      <div
-                        className="half-header"
+                      <span>
+                        {activeResultTab === "expected"
+                          ? "EXPECTED OUTPUT"
+                          : "YOUR RESULT"}
+                      </span>
+                      <span
+                        className={
+                          activeResult.error
+                            ? "status-dot error"
+                            : "status-dot ok"
+                        }
+                      />
+                      <span
                         style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                          padding: "8px 12px",
-                          borderBottom: "1px solid var(--border)",
-                          fontSize: "11px",
-                          fontWeight: 600,
+                          fontSize: "10px",
+                          fontWeight: 400,
+                          color: "var(--muted)",
+                          marginRight: "auto",
                         }}
                       >
-                        <span style={{ color: "var(--cyan)" }}>
-                          EXPECTED OUTPUT
-                        </span>
-                      </div>
-                      <div style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
-                        {expectedResult ? (
-                          <ResultTablePanel result={expectedResult} />
-                        ) : (
-                          <div
-                            style={{
-                              padding: "20px",
-                              color: "var(--muted)",
-                              fontSize: "12px",
-                            }}
-                          >
-                            Run query or click to generate expected target
-                            output.
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div
-                      className="result-half"
-                      style={{
-                        flex: 1,
-                        display: "flex",
-                        flexDirection: "column",
-                        minWidth: 0,
-                        height: "100%",
-                        background: "rgba(255,255,255,0.01)",
-                        borderRadius: "6px",
-                        border: "1px solid var(--border)",
-                      }}
-                    >
-                      <div
-                        className="half-header"
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                          padding: "8px 12px",
-                          borderBottom: "1px solid var(--border)",
-                          fontSize: "11px",
-                          fontWeight: 700,
-                          letterSpacing: "0.05em",
-                          color: "var(--text-secondary)",
-                          background: "rgba(255,255,255,0.02)",
-                        }}
-                      >
-                        <span>YOUR RESULT</span>
-                        <span
-                          className={
-                            queryResult.error
-                              ? "status-dot error"
-                              : "status-dot ok"
-                          }
-                        />
-                        <span
-                          style={{
-                            fontSize: "10px",
-                            fontWeight: 400,
-                            color: "var(--muted)",
-                            marginRight: "auto",
-                          }}
-                        >
-                          ({queryResult.message})
-                        </span>
-                        {!queryResult.error &&
-                          queryResult.rows &&
-                          queryResult.rows.length > 0 && (
-                            <div
-                              style={{
-                                display: "flex",
-                                gap: "6px",
-                                alignItems: "center",
-                              }}
-                            >
-                              <button
-                                onClick={() =>
-                                  exportResultAsCsv(
-                                    queryResult.columns,
-                                    queryResult.rows,
-                                  )
-                                }
-                                title="Export query results as CSV"
-                                style={{
-                                  background: "rgba(56, 217, 255, 0.08)",
-                                  border: "1px solid rgba(56, 217, 255, 0.2)",
-                                  borderRadius: "4px",
-                                  color: "var(--cyan)",
-                                  fontSize: "10px",
-                                  fontWeight: 600,
-                                  padding: "2px 6px",
-                                  cursor: "pointer",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: "3px",
-                                }}
-                              >
-                                <Download size={10} /> CSV
-                              </button>
-                              <button
-                                onClick={() =>
-                                  exportResultAsJson(
-                                    queryResult.columns,
-                                    queryResult.rows,
-                                  )
-                                }
-                                title="Export query results as JSON"
-                                style={{
-                                  background: "rgba(48, 230, 149, 0.08)",
-                                  border: "1px solid rgba(48, 230, 149, 0.2)",
-                                  borderRadius: "4px",
-                                  color: "var(--emerald)",
-                                  fontSize: "10px",
-                                  fontWeight: 600,
-                                  padding: "2px 6px",
-                                  cursor: "pointer",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: "3px",
-                                }}
-                              >
-                                <Download size={10} /> JSON
-                              </button>
-                            </div>
-                          )}
-                      </div>
-                      <div
-                        style={{
-                          flex: 1,
-                          display: "flex",
-                          flexDirection: "column",
-                          minHeight: 0,
-                          overflow: "hidden",
-                          padding: "8px",
-                        }}
-                      >
-                        {queryResult.error ? (
-                          renderDetailedError(queryResult.error, query)
-                        ) : queryResult.columns.length > 0 ? (
-                          <>
-                            <div className="table-wrap">
-                              <table>
-                                <thead>
-                                  <tr>
-                                    {queryResult.columns.map((c) => (
-                                      <th key={c}>{c}</th>
-                                    ))}
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {queryResult.rows
-                                    .slice(
-                                      resultPage * RESULT_PAGE_SIZE,
-                                      (resultPage + 1) * RESULT_PAGE_SIZE,
-                                    )
-                                    .map((row, i) => (
-                                      <tr key={i}>
-                                        {queryResult.columns.map((c) => (
-                                          <td key={c}>
-                                            {String(row[c] ?? "NULL")}
-                                          </td>
-                                        ))}
-                                      </tr>
-                                    ))}
-                                </tbody>
-                              </table>
-                            </div>
-                            {queryResult.rows.length > RESULT_PAGE_SIZE && (
-                              <div className="table-pagination">
-                                <span>
-                                  Showing {resultPage * RESULT_PAGE_SIZE + 1}–
-                                  {Math.min(
-                                    queryResult.rows.length,
-                                    (resultPage + 1) * RESULT_PAGE_SIZE,
-                                  )}{" "}
-                                  of {queryResult.rows.length} rows
-                                </span>
-                                <div style={{ display: "flex", gap: "6px" }}>
-                                  <button
-                                    disabled={resultPage === 0}
-                                    onClick={() =>
-                                      setResultPage((p) => Math.max(0, p - 1))
-                                    }
-                                    className="secondary-button compact"
-                                    style={{
-                                      padding: "2px 6px",
-                                      fontSize: "10px",
-                                    }}
-                                  >
-                                    Prev
-                                  </button>
-                                  <button
-                                    disabled={
-                                      resultPage >=
-                                      Math.ceil(
-                                        queryResult.rows.length /
-                                          RESULT_PAGE_SIZE,
-                                      ) -
-                                        1
-                                    }
-                                    onClick={() =>
-                                      setResultPage((p) =>
-                                        Math.min(
-                                          Math.ceil(
-                                            queryResult.rows.length /
-                                              RESULT_PAGE_SIZE,
-                                          ) - 1,
-                                          p + 1,
-                                        ),
-                                      )
-                                    }
-                                    className="secondary-button compact"
-                                    style={{
-                                      padding: "2px 6px",
-                                      fontSize: "10px",
-                                    }}
-                                  >
-                                    Next
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                          </>
-                        ) : (
+                        (
+                        {activeResult.message ||
+                          (activeResultTab === "expected"
+                            ? "Query executed successfully"
+                            : "")}
+                        )
+                      </span>
+                      {!activeResult.error &&
+                        activeResult.rows &&
+                        activeResult.rows.length > 0 && (
                           <div
                             style={{
                               display: "flex",
-                              justifyContent: "center",
+                              gap: "6px",
                               alignItems: "center",
-                              height: "100%",
-                              color: "var(--muted)",
-                              fontSize: "12px",
                             }}
                           >
-                            Run your query to see results
+                            <button
+                              onClick={() =>
+                                exportResultAsCsv(
+                                  activeResult.columns,
+                                  activeResult.rows,
+                                  activeResultTab === "expected"
+                                    ? "expected-results.csv"
+                                    : "query-results.csv",
+                                )
+                              }
+                              title={
+                                activeResultTab === "expected"
+                                  ? "Export expected results as CSV"
+                                  : "Export query results as CSV"
+                              }
+                              style={{
+                                background: "rgba(56, 217, 255, 0.08)",
+                                border: "1px solid rgba(56, 217, 255, 0.2)",
+                                borderRadius: "4px",
+                                color: "var(--cyan)",
+                                fontSize: "10px",
+                                fontWeight: 600,
+                                padding: "2px 6px",
+                                cursor: "pointer",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "3px",
+                              }}
+                            >
+                              <Download size={10} /> CSV
+                            </button>
+                            <button
+                              onClick={() =>
+                                exportResultAsJson(
+                                  activeResult.columns,
+                                  activeResult.rows,
+                                  activeResultTab === "expected"
+                                    ? "expected-results.json"
+                                    : "query-results.json",
+                                )
+                              }
+                              title={
+                                activeResultTab === "expected"
+                                  ? "Export expected results as JSON"
+                                  : "Export query results as JSON"
+                              }
+                              style={{
+                                background: "rgba(48, 230, 149, 0.08)",
+                                border: "1px solid rgba(48, 230, 149, 0.2)",
+                                borderRadius: "4px",
+                                color: "var(--emerald)",
+                                fontSize: "10px",
+                                fontWeight: 600,
+                                padding: "2px 6px",
+                                cursor: "pointer",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "3px",
+                              }}
+                            >
+                              <Download size={10} /> JSON
+                            </button>
                           </div>
                         )}
-                      </div>
                     </div>
-                  )}
+                    <div
+                      style={{
+                        flex: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        minHeight: 0,
+                        overflow: "hidden",
+                        padding: "8px",
+                      }}
+                    >
+                      {activeResult.error ? (
+                        renderDetailedError(activeResult.error, query)
+                      ) : activeResult.columns.length > 0 ? (
+                        <>
+                          <div className="table-wrap">
+                            <table>
+                              <thead>
+                                <tr>
+                                  {activeResult.columns.map((c) => (
+                                    <th key={c}>{c}</th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {activeResult.rows
+                                  .slice(
+                                    resultPage * RESULT_PAGE_SIZE,
+                                    (resultPage + 1) * RESULT_PAGE_SIZE,
+                                  )
+                                  .map((row, i) => (
+                                    <tr key={i}>
+                                      {activeResult.columns.map((c) => (
+                                        <td key={c}>
+                                          {String(row[c] ?? "NULL")}
+                                        </td>
+                                      ))}
+                                    </tr>
+                                  ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          {activeResult.rows.length > RESULT_PAGE_SIZE && (
+                            <div className="table-pagination">
+                              <span>
+                                Showing {resultPage * RESULT_PAGE_SIZE + 1}–
+                                {Math.min(
+                                  activeResult.rows.length,
+                                  (resultPage + 1) * RESULT_PAGE_SIZE,
+                                )}{" "}
+                                of {activeResult.rows.length} rows
+                              </span>
+                              <div style={{ display: "flex", gap: "6px" }}>
+                                <button
+                                  disabled={resultPage === 0}
+                                  onClick={() =>
+                                    setResultPage((p) => Math.max(0, p - 1))
+                                  }
+                                  className="secondary-button compact"
+                                  style={{
+                                    padding: "2px 6px",
+                                    fontSize: "10px",
+                                  }}
+                                >
+                                  Prev
+                                </button>
+                                <button
+                                  disabled={
+                                    resultPage >=
+                                    Math.ceil(
+                                      activeResult.rows.length /
+                                        RESULT_PAGE_SIZE,
+                                    ) -
+                                      1
+                                  }
+                                  onClick={() =>
+                                    setResultPage((p) =>
+                                      Math.min(
+                                        Math.ceil(
+                                          activeResult.rows.length /
+                                            RESULT_PAGE_SIZE,
+                                        ) - 1,
+                                        p + 1,
+                                      ),
+                                    )
+                                  }
+                                  className="secondary-button compact"
+                                  style={{
+                                    padding: "2px 6px",
+                                    fontSize: "10px",
+                                  }}
+                                >
+                                  Next
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            height: "100%",
+                            color: "var(--muted)",
+                            fontSize: "12px",
+                          }}
+                        >
+                          {activeResultTab === "expected"
+                            ? "No expected output data"
+                            : "Run your query to see results"}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -4011,163 +4255,7 @@ SELECT * FROM customers LIMIT 10;`;
                   <Lightbulb size={13} /> {activePuzzle.hint}
                 </div>
 
-                {/* TARGET TABLES & SCHEMA CARD */}
-                {relevantTables.length > 0 && (
-                  <div
-                    style={{
-                      background: "rgba(56, 217, 255, 0.04)",
-                      border: "1px solid rgba(56, 217, 255, 0.2)",
-                      borderRadius: "8px",
-                      padding: "10px 12px",
-                      margin: "12px 0",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        fontSize: "11px",
-                        fontWeight: 700,
-                        color: "var(--cyan)",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
-                        marginBottom: "6px",
-                      }}
-                    >
-                      <Database size={13} /> Target Table
-                      {relevantTables.length > 1 ? "s" : ""}:
-                    </div>
-                    {relevantTables.map((t) => (
-                      <div key={t.name} style={{ marginBottom: "6px" }}>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            fontSize: "12px",
-                            fontWeight: "bold",
-                            color: "var(--text)",
-                          }}
-                        >
-                          Table:{" "}
-                          <code
-                            style={{
-                              background: "rgba(56, 217, 255, 0.15)",
-                              color: "var(--cyan)",
-                              padding: "1px 6px",
-                              borderRadius: "4px",
-                            }}
-                          >
-                            {t.name}
-                          </code>
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: "4px",
-                            marginTop: "4px",
-                          }}
-                        >
-                          {t.columns.map((col: any) => (
-                            <span
-                              key={col.name}
-                              style={{
-                                fontSize: "10.5px",
-                                fontFamily: "var(--font-mono, monospace)",
-                                background: "var(--bg)",
-                                color: "var(--text-muted)",
-                                padding: "2px 6px",
-                                borderRadius: "4px",
-                                border: "1px solid var(--border)",
-                              }}
-                            >
-                              {col.name}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {computedExpectedResult &&
-                  !computedExpectedResult.error &&
-                  computedExpectedResult.columns.length > 0 && (
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "8px",
-                        margin: "14px 0",
-                      }}
-                    >
-                      <strong
-                        style={{
-                          fontSize: "11px",
-                          fontWeight: 700,
-                          color: "var(--emerald)",
-                          letterSpacing: "0.05em",
-                          textTransform: "uppercase",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
-                        }}
-                      >
-                        <CheckCircle2 size={13} /> Expected Output Table
-                      </strong>
-                      <div
-                        className="table-wrap"
-                        style={{
-                          maxHeight: "240px",
-                          border: "1px solid var(--border)",
-                          borderRadius: "6px",
-                          background: "var(--bg2)",
-                        }}
-                      >
-                        <table>
-                          <thead>
-                            <tr>
-                              {computedExpectedResult.columns.map(
-                                (c: string) => (
-                                  <th key={c}>{c}</th>
-                                ),
-                              )}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {computedExpectedResult.rows
-                              .slice(0, 10)
-                              .map((row: any, i: number) => (
-                                <tr key={i}>
-                                  {computedExpectedResult.columns.map(
-                                    (c: string) => (
-                                      <td key={c}>
-                                        {String(row[c] ?? "NULL")}
-                                      </td>
-                                    ),
-                                  )}
-                                </tr>
-                              ))}
-                          </tbody>
-                        </table>
-                      </div>
-                      {computedExpectedResult.rows.length > 10 && (
-                        <span
-                          style={{
-                            fontSize: "10px",
-                            color: "var(--muted)",
-                            fontStyle: "italic",
-                          }}
-                        >
-                          Showing first 10 of{" "}
-                          {computedExpectedResult.rows.length} total expected
-                          rows
-                        </span>
-                      )}
-                    </div>
-                  )}
+                <TargetTablesCard relevantTables={relevantTables} />
 
                 <button
                   className="reveal-answer-btn"
@@ -4319,164 +4407,7 @@ SELECT * FROM customers LIMIT 10;`;
                   <p>{selectedProblem.prompt}</p>
                 </div>
 
-                {/* TARGET TABLES & SCHEMA CARD */}
-                {relevantTables.length > 0 && (
-                  <div
-                    style={{
-                      background: "rgba(56, 217, 255, 0.04)",
-                      border: "1px solid rgba(56, 217, 255, 0.2)",
-                      borderRadius: "8px",
-                      padding: "10px 12px",
-                      margin: "12px 0",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        fontSize: "11px",
-                        fontWeight: 700,
-                        color: "var(--cyan)",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
-                        marginBottom: "6px",
-                      }}
-                    >
-                      <Database size={13} /> Target Table
-                      {relevantTables.length > 1 ? "s" : ""}:
-                    </div>
-                    {relevantTables.map((t) => (
-                      <div key={t.name} style={{ marginBottom: "6px" }}>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            fontSize: "12px",
-                            fontWeight: "bold",
-                            color: "var(--text)",
-                          }}
-                        >
-                          Table:{" "}
-                          <code
-                            style={{
-                              background: "rgba(56, 217, 255, 0.15)",
-                              color: "var(--cyan)",
-                              padding: "1px 6px",
-                              borderRadius: "4px",
-                            }}
-                          >
-                            {t.name}
-                          </code>
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: "4px",
-                            marginTop: "4px",
-                          }}
-                        >
-                          {t.columns.map((col: any) => (
-                            <span
-                              key={col.name}
-                              style={{
-                                fontSize: "10.5px",
-                                fontFamily: "var(--font-mono, monospace)",
-                                background: "var(--bg)",
-                                color: "var(--text-muted)",
-                                padding: "2px 6px",
-                                borderRadius: "4px",
-                                border: "1px solid var(--border)",
-                              }}
-                            >
-                              {col.name}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* EXPECTED OUTPUT TABLE (HackerRank & DataLemur Style!) */}
-                {computedExpectedResult &&
-                  !computedExpectedResult.error &&
-                  computedExpectedResult.columns.length > 0 && (
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "8px",
-                        margin: "14px 0",
-                      }}
-                    >
-                      <strong
-                        style={{
-                          fontSize: "11px",
-                          fontWeight: 700,
-                          color: "var(--emerald)",
-                          letterSpacing: "0.05em",
-                          textTransform: "uppercase",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
-                        }}
-                      >
-                        <CheckCircle2 size={13} /> Expected Output Table
-                      </strong>
-                      <div
-                        className="table-wrap"
-                        style={{
-                          maxHeight: "240px",
-                          border: "1px solid var(--border)",
-                          borderRadius: "6px",
-                          background: "var(--bg2)",
-                        }}
-                      >
-                        <table>
-                          <thead>
-                            <tr>
-                              {computedExpectedResult.columns.map(
-                                (c: string) => (
-                                  <th key={c}>{c}</th>
-                                ),
-                              )}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {computedExpectedResult.rows
-                              .slice(0, 10)
-                              .map((row: any, i: number) => (
-                                <tr key={i}>
-                                  {computedExpectedResult.columns.map(
-                                    (c: string) => (
-                                      <td key={c}>
-                                        {String(row[c] ?? "NULL")}
-                                      </td>
-                                    ),
-                                  )}
-                                </tr>
-                              ))}
-                          </tbody>
-                        </table>
-                      </div>
-                      {computedExpectedResult.rows.length > 10 && (
-                        <span
-                          style={{
-                            fontSize: "10px",
-                            color: "var(--muted)",
-                            fontStyle: "italic",
-                          }}
-                        >
-                          Showing first 10 of{" "}
-                          {computedExpectedResult.rows.length} total expected
-                          rows
-                        </span>
-                      )}
-                    </div>
-                  )}
+                <TargetTablesCard relevantTables={relevantTables} />
                 <div
                   style={{ display: "flex", gap: "8px", marginBottom: "14px" }}
                 >
@@ -4760,7 +4691,7 @@ SELECT * FROM customers LIMIT 10;`;
         <SplitPane
           leftWidth={playgroundSplit}
           onResize={handlePlaygroundSplitResize}
-          minLeft={400}
+          minLeft={250}
           maxLeft={1600}
           left={rightContent}
           right={editorContent}

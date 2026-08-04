@@ -1,5 +1,9 @@
 import React, { useState } from "react";
-import { missionCapstones } from "../../data/missions";
+import {
+  missionCapstones,
+  MissionCapstone,
+  MissionStep,
+} from "../data/missions";
 import {
   Target,
   CheckCircle2,
@@ -27,7 +31,7 @@ export const MissionCapstoneView: React.FC<MissionCapstoneViewProps> = ({
   const [generatedReport, setGeneratedReport] = useState<string | null>(null);
 
   const activeMission =
-    missionCapstones.find((m) => m.id === selectedMissionId) ||
+    missionCapstones.find((m: MissionCapstone) => m.id === selectedMissionId) ||
     missionCapstones[0];
 
   const handleCompleteStep = (stepNum: number) => {
@@ -103,7 +107,7 @@ export const MissionCapstoneView: React.FC<MissionCapstoneViewProps> = ({
       >
         {/* Missions Selection Column */}
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {missionCapstones.map((m) => {
+          {missionCapstones.map((m: MissionCapstone) => {
             const isSelected = m.id === selectedMissionId;
             return (
               <button
@@ -195,7 +199,7 @@ export const MissionCapstoneView: React.FC<MissionCapstoneViewProps> = ({
               marginBottom: "20px",
             }}
           >
-            {activeMission.steps.map((stg) => {
+            {activeMission.steps.map((stg: MissionStep) => {
               const isDone = completedStepNumbers.includes(stg.stepNumber);
               return (
                 <div

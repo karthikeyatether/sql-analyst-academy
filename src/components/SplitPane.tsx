@@ -39,16 +39,7 @@ export function SplitPane({
       onResize(newW);
     }
 
-    let safetyTimeout: ReturnType<typeof setTimeout> | null = setTimeout(
-      onUp,
-      3000,
-    );
-
     function onUp() {
-      if (safetyTimeout) {
-        clearTimeout(safetyTimeout);
-        safetyTimeout = null;
-      }
       dragging.current = false;
       document.body.style.cursor = "";
       document.body.style.userSelect = "";
@@ -64,7 +55,10 @@ export function SplitPane({
 
   return (
     <div className="split-pane" ref={containerRef}>
-      <div className="split-left" style={{ width: leftWidth }}>
+      <div
+        className="split-left"
+        style={{ width: leftWidth, flex: `0 1 ${leftWidth}px` }}
+      >
         {left}
       </div>
       <div
@@ -74,7 +68,9 @@ export function SplitPane({
       >
         <div className="split-handle-bar" />
       </div>
-      <div className="split-right">{right}</div>
+      <div className="split-right" style={{ flex: 1, minWidth: 0 }}>
+        {right}
+      </div>
     </div>
   );
 }
@@ -121,16 +117,7 @@ export function VSplitPane({
       onResize(newH);
     }
 
-    let safetyTimeout: ReturnType<typeof setTimeout> | null = setTimeout(
-      onUp,
-      3000,
-    );
-
     function onUp() {
-      if (safetyTimeout) {
-        clearTimeout(safetyTimeout);
-        safetyTimeout = null;
-      }
       dragging.current = false;
       document.body.style.cursor = "";
       document.body.style.userSelect = "";
@@ -148,7 +135,14 @@ export function VSplitPane({
     <div className="v-split-pane" ref={containerRef}>
       <div
         className="split-top"
-        style={{ height: topHeight, minHeight: topHeight }}
+        style={{
+          height: maximized ? "100%" : topHeight,
+          flex: maximized ? "1 1 100%" : `0 1 ${topHeight}px`,
+          minHeight: minTop,
+          maxHeight: maximized
+            ? "100%"
+            : `min(${maxTop}px, calc(100% - 100px))`,
+        }}
       >
         {top}
       </div>
@@ -161,7 +155,11 @@ export function VSplitPane({
           <div className="v-split-handle-bar" />
         </div>
       )}
-      <div className="split-bottom">{bottom}</div>
+      {!maximized && (
+        <div className="split-bottom" style={{ flex: 1, minHeight: 0 }}>
+          {bottom}
+        </div>
+      )}
     </div>
   );
 }

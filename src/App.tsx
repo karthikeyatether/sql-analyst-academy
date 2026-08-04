@@ -40,8 +40,21 @@ import {
   saveSM2Progress,
   SM2ProgressMap,
 } from "./utils/sm2Engine";
+import { gradeQuery, isModifyingQuery } from "./utils/graderService";
+import { deduplicateQuestions } from "./utils/curriculumLoader";
 // Build hash test update v2
 const APP_BUILD_HASH_MARKER = "v2.0";
+
+export function safeLocalStorageGet<T>(key: string, defaultValue: T): T {
+  try {
+    const item = localStorage.getItem(key);
+    if (item === null) return defaultValue;
+    return JSON.parse(item) as T;
+  } catch (e) {
+    console.error(`Error parsing localStorage key "${key}":`, e);
+    return defaultValue;
+  }
+}
 const DashboardView = lazy(() => import("./views/DashboardView"));
 const RoadmapView = lazy(() => import("./views/RoadmapView"));
 const ModulesView = lazy(() => import("./views/ModulesView"));
@@ -50,7 +63,7 @@ const PlaygroundView = lazy(() => import("./views/PlaygroundView"));
 const PuzzlesView = lazy(() => import("./views/PuzzlesView"));
 const DayDetailsView = lazy(() => import("./views/DayDetailsView"));
 const MockTestView = lazy(() => import("./views/MockTestView"));
-const MissionCapstoneView = lazy(() => import("./features/curriculum/MissionCapstoneView"));
+const MissionCapstoneView = lazy(() => import("./views/MissionCapstoneView"));
 import {
   interviewQuestionBank,
   mockInterviews,
@@ -80,12 +93,17 @@ import OnboardingModal from "./components/OnboardingModal";
 import ShortcutsModal from "./components/ShortcutsModal";
 import ColumnProfileModal from "./components/ColumnProfileModal";
 import { downloadStatsReport } from "./utils/reportGenerator";
+import { EditorWorkspaceSkeleton } from "./components/EditorWorkspaceSkeleton";
 import type { QueryResult, QueryPlanStep } from "./utils/sqlEngine";
-const SqlJoinVennDiagram = lazy(() => import("./components/SqlJoinVennDiagram"));
+const SqlJoinVennDiagram = lazy(
+  () => import("./components/SqlJoinVennDiagram"),
+);
 import SqlLinterAdvisor from "./components/SqlLinterAdvisor";
 import { lintSqlQuery } from "./utils/sqlLinter";
 import type { LintError } from "./utils/sqlLinter";
-const SqlPerformanceComparer = lazy(() => import("./components/SqlPerformanceComparer"));
+const SqlPerformanceComparer = lazy(
+  () => import("./components/SqlPerformanceComparer"),
+);
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import type {
   QAItem,
@@ -360,8 +378,8 @@ export default function App() {
     340,
   );
   const [playgroundSplit, setPlaygroundSplit] = useLocalStorage(
-    "sql-aa-split-playground",
-    850,
+    "sql-aa-split-playground-v2",
+    450,
   );
 
   const [puzzleCategoryFilter, setPuzzleCategoryFilter] =
@@ -538,9 +556,7 @@ export default function App() {
       const todayStr = new Date().toISOString().split("T")[0];
       const lastDate = localStorage.getItem("sql-aa-last-active-date");
       let currentStreak = Number(localStorage.getItem("sql-aa-streak") || "0");
-      let activeDays: string[] = JSON.parse(
-        localStorage.getItem("sql-aa-active-days") || "[]",
-      );
+      let activeDays: string[] = safeLocalStorageGet("sql-aa-active-days", []);
 
       if (!activeDays.includes(todayStr)) {
         activeDays.push(todayStr);
@@ -570,9 +586,7 @@ export default function App() {
 
         if (diffDays === 1) {
           currentStreak += 1;
-        } else if (diffDays === 2) {
           // 1-Day Grace Period Protection: Preserve streak if only 1 day was missed
-          console.log("[Streak] Grace period applied for 1 missed day.");
         } else if (diffDays > 2) {
           currentStreak = 1;
         }
@@ -592,16 +606,12 @@ export default function App() {
     const backup = {
       version: "1.0",
       exportedAt: new Date().toISOString(),
-      progress: JSON.parse(localStorage.getItem("sql-aa-progress-v3") || "{}"),
-      history: JSON.parse(localStorage.getItem("sql-aa-history") || "[]"),
-      saved: JSON.parse(localStorage.getItem("sql-aa-saved") || "[]"),
-      drafts: JSON.parse(localStorage.getItem("sql-aa-problem-drafts") || "{}"),
-      puzzleDrafts: JSON.parse(
-        localStorage.getItem("sql-aa-puzzle-drafts") || "{}",
-      ),
-      freeform: JSON.parse(
-        localStorage.getItem("sql-aa-freeform-query") || "null",
-      ),
+      progress: safeLocalStorageGet("sql-aa-progress-v3", {}),
+      history: safeLocalStorageGet("sql-aa-history", []),
+      saved: safeLocalStorageGet("sql-aa-saved", []),
+      drafts: safeLocalStorageGet("sql-aa-problem-drafts", {}),
+      puzzleDrafts: safeLocalStorageGet("sql-aa-puzzle-drafts", {}),
+      freeform: safeLocalStorageGet("sql-aa-freeform-query", null),
     };
     const blob = new Blob([JSON.stringify(backup, null, 2)], {
       type: "application/json",
@@ -1056,6 +1066,11 @@ export default function App() {
     liveSchemaRef.current = liveSchema;
   }, [liveSchema]);
 
+  const sqlUpperKeywordsRef = useRef(sqlUpperKeywords);
+  useEffect(() => {
+    sqlUpperKeywordsRef.current = sqlUpperKeywords;
+  }, [sqlUpperKeywords]);
+
   const [queryResult, setQueryResult] = useState<QueryResult>({
     columns: [],
     rows: [],
@@ -1190,31 +1205,47 @@ export default function App() {
 
   const [schemaSearch, setSchemaSearch] = useState("");
 
+  const [progress, setProgress] = useLocalStorage<ProgressState>(
+    "sql-aa-progress-v3",
+    initialProgress,
+  );
+
   /* keep ref in sync without causing re-renders */
   const debounceTimerRef = useRef<number | null>(null);
   const queryStateDebounceRef = useRef<number | null>(null);
 
   const getSavedDraftQuery = useCallback(
     (p: PracticeProblem): string => {
-      const drafts = JSON.parse(
-        localStorage.getItem("sql-aa-problem-drafts") || "{}",
+      const drafts = safeLocalStorageGet<Record<string, any>>(
+        "sql-aa-problem-drafts",
+        {},
       );
       const draftVal = drafts[p.id];
-      const defaultQuery = `-- Write your SQL query here\n`;
+      const defaultQuery =
+        p.starterQuery && p.starterQuery.trim() !== ""
+          ? p.starterQuery
+          : `-- Write your SQL query here\n`;
 
       if (!draftVal) return defaultQuery;
       let stored = typeof draftVal === "string" ? draftVal : draftVal.query;
       if (!stored) return defaultQuery;
       stored = stripLineNumbersFromQuery(stored);
 
-      // Ignore drafts that contain placeholders or are identical to ANY problem's starterQuery
+      // Ignore drafts that contain placeholders, are identical to ANY problem's starterQuery,
+      // or exactly match the current problem's solution (a side effect of a previous bug)
+      // EXCEPT when the problem has already been solved by the user.
       const isStarter = allProblems.some(
         (prob) =>
           prob.starterQuery &&
           stored.replace(/\s+/g, "").toLowerCase() ===
             prob.starterQuery.replace(/\s+/g, "").toLowerCase(),
       );
-      if (stored.includes("???") || isStarter) {
+      const isSolution =
+        p.solution &&
+        stored.replace(/\s+/g, "").toLowerCase() ===
+          p.solution.replace(/\s+/g, "").toLowerCase();
+      const isSolved = progress.solvedProblems.includes(p.id);
+      if (!isSolved && (stored.includes("???") || isStarter || isSolution)) {
         return defaultQuery;
       }
 
@@ -1234,35 +1265,48 @@ export default function App() {
 
       return stored || defaultQuery;
     },
-    [allProblems],
+    [allProblems, progress.solvedProblems],
   );
 
-  const getSavedPuzzleQuery = useCallback((p: SqlPuzzle): string => {
-    const drafts = JSON.parse(
-      localStorage.getItem("sql-aa-puzzle-drafts") || "{}",
-    );
-    const draftVal = drafts[p.id];
-    const defaultQuery = p.flawedQuery;
+  const getSavedPuzzleQuery = useCallback(
+    (p: SqlPuzzle): string => {
+      const drafts = safeLocalStorageGet<Record<string, any>>(
+        "sql-aa-puzzle-drafts",
+        {},
+      );
+      const draftVal = drafts[p.id];
+      const defaultQuery = p.flawedQuery;
 
-    if (!draftVal) return defaultQuery;
-    let stored = typeof draftVal === "string" ? draftVal : draftVal.query;
-    if (!stored) return defaultQuery;
+      if (!draftVal) return defaultQuery;
+      let stored = typeof draftVal === "string" ? draftVal : draftVal.query;
+      if (!stored) return defaultQuery;
 
-    // Strip legacy comment header if present
-    stored = stored.replace(/^(--[^\n]*\n)+(\s*\n)*/, (match: string) => {
-      if (
-        match.includes("Debug Puzzle:") ||
-        match.includes("TASK:") ||
-        match.includes("SCENARIO:") ||
-        match.includes("========")
-      ) {
-        return "";
+      // Strip legacy comment header if present
+      stored = stored.replace(/^(--[^\n]*\n)+(\s*\n)*/, (match: string) => {
+        if (
+          match.includes("Debug Puzzle:") ||
+          match.includes("TASK:") ||
+          match.includes("SCENARIO:") ||
+          match.includes("========")
+        ) {
+          return "";
+        }
+        return match;
+      });
+
+      const isSolution =
+        p.solutionQuery &&
+        stored.replace(/\s+/g, "").toLowerCase() ===
+          p.solutionQuery.replace(/\s+/g, "").toLowerCase();
+      const isSolved = (progress.solvedPuzzles || []).includes(p.id);
+      if (!isSolved && isSolution) {
+        return defaultQuery;
       }
-      return match;
-    });
 
-    return stored || defaultQuery;
-  }, []);
+      return stored || defaultQuery;
+    },
+    [progress.solvedPuzzles],
+  );
 
   const updateEditorQuery = useCallback(
     (
@@ -1282,8 +1326,9 @@ export default function App() {
         if (mode === "practice") {
           const id = targetId ?? selectedProblemId;
           if (id) {
-            const drafts = JSON.parse(
-              localStorage.getItem("sql-aa-problem-drafts") || "{}",
+            const drafts = safeLocalStorageGet<Record<string, any>>(
+              "sql-aa-problem-drafts",
+              {},
             );
             const prob = allProblems.find((x) => x.id === id);
             drafts[id] = {
@@ -1298,8 +1343,9 @@ export default function App() {
         } else if (mode === "puzzle") {
           const id = targetId ?? activePuzzleId;
           if (id) {
-            const drafts = JSON.parse(
-              localStorage.getItem("sql-aa-puzzle-drafts") || "{}",
+            const drafts = safeLocalStorageGet<Record<string, any>>(
+              "sql-aa-puzzle-drafts",
+              {},
             );
             const puzzle = debugPuzzles.find((x) => x.id === id);
             drafts[id] = {
@@ -1464,6 +1510,7 @@ export default function App() {
       if (!isProgrammaticChangeRef.current) {
         stopAutoTyping();
         setQuery(v);
+        setGraderFeedback(null);
 
         if (debounceTimerRef.current)
           window.clearTimeout(debounceTimerRef.current);
@@ -1471,8 +1518,9 @@ export default function App() {
           localStorage.setItem("sql-aa-active-query", JSON.stringify(v));
 
           if (playgroundMode === "practice" && selectedProblemId) {
-            const drafts = JSON.parse(
-              localStorage.getItem("sql-aa-problem-drafts") || "{}",
+            const drafts = safeLocalStorageGet<Record<string, any>>(
+              "sql-aa-problem-drafts",
+              {},
             );
             const prob = allProblems.find((x) => x.id === selectedProblemId);
             drafts[selectedProblemId] = {
@@ -1484,8 +1532,9 @@ export default function App() {
               JSON.stringify(drafts),
             );
           } else if (playgroundMode === "puzzle" && activePuzzleId) {
-            const drafts = JSON.parse(
-              localStorage.getItem("sql-aa-puzzle-drafts") || "{}",
+            const drafts = safeLocalStorageGet<Record<string, any>>(
+              "sql-aa-puzzle-drafts",
+              {},
             );
             const puzzle = debugPuzzles.find((x) => x.id === activePuzzleId);
             drafts[activePuzzleId] = {
@@ -1529,28 +1578,97 @@ export default function App() {
     "sql-aa-saved",
     [],
   );
-  const [progress, setProgress] = useLocalStorage<ProgressState>(
-    "sql-aa-progress-v3",
-    initialProgress,
-  );
 
   // Auto-resume to active day where user left off
   const activeDayWhereLeftOff = useMemo(() => {
-    const completed = progress.completedDays || [];
+    const completedDays = progress.completedDays || [];
+    const solvedProblems = progress.solvedProblems || [];
+    const solvedPuzzles = progress.solvedPuzzles || [];
+    const mockScores = progress.mockScores || {};
+
     for (const day of learningRoadmap) {
-      if (!completed.includes(day.day)) {
+      if (completedDays.includes(day.day)) continue;
+
+      const dayModules = day.modules
+        .map((mid) => roadmapModules.find((m) => m.id === mid))
+        .filter((m): m is RoadmapModule => m !== undefined);
+      const dayProblems = dayModules.flatMap((m) => m.problems);
+      const dayPuzzles = debugPuzzles.filter((pz) => pz.dayId === day.day);
+      const totalDayItems =
+        dayProblems.length +
+        dayPuzzles.length +
+        (day.mockInterview && day.mockInterview.company ? 1 : 0);
+
+      const solvedProblemsCount = dayProblems.filter((p) =>
+        solvedProblems.includes(p.id),
+      ).length;
+      const solvedPuzzlesCount = dayPuzzles.filter((pz) =>
+        solvedPuzzles.includes(pz.id),
+      ).length;
+      const mockScore =
+        day.mockInterview && day.mockInterview.company
+          ? (mockScores[day.mockInterview.company] ?? 0)
+          : 0;
+      const solvedMockCount = mockScore > 0 ? 1 : 0;
+      const solvedDayItems =
+        solvedProblemsCount + solvedPuzzlesCount + solvedMockCount;
+
+      if (totalDayItems === 0 || solvedDayItems < totalDayItems) {
         return day.day;
       }
     }
     return learningRoadmap[learningRoadmap.length - 1]?.day || 1;
-  }, [learningRoadmap, progress.completedDays]);
+  }, [
+    learningRoadmap,
+    progress.completedDays,
+    progress.solvedProblems,
+    progress.solvedPuzzles,
+    progress.mockScores,
+  ]);
 
   useEffect(() => {
     const stored = localStorage.getItem("sql-aa-selected-day-id");
-    if (!stored || (progress.completedDays || []).includes(Number(stored))) {
+    if (!stored) {
       setSelectedDayId(activeDayWhereLeftOff);
     }
-  }, [activeDayWhereLeftOff, progress.completedDays, setSelectedDayId]);
+  }, [activeDayWhereLeftOff, setSelectedDayId]);
+
+  // Synchronize selectedDayId with the active puzzle or problem so returning to Roadmap maintains exact location where user exited
+  useEffect(() => {
+    if (
+      activeView === "puzzles" ||
+      (activeView === "playground" && playgroundMode === "puzzle")
+    ) {
+      const puz = debugPuzzles.find((p) => p.id === activePuzzleId);
+      if (puz && puz.dayId) {
+        setSelectedDayId(puz.dayId);
+      }
+    }
+  }, [activePuzzleId, activeView, playgroundMode, setSelectedDayId]);
+
+  useEffect(() => {
+    if (
+      activeView === "practice" ||
+      (activeView === "playground" && playgroundMode === "practice")
+    ) {
+      const prob = allProblems.find((p) => p.id === selectedProblemId);
+      if (prob) {
+        const parentDay = learningRoadmap.find((d) =>
+          d.modules.includes(prob.moduleId),
+        );
+        if (parentDay) {
+          setSelectedDayId(parentDay.day);
+        }
+      }
+    }
+  }, [
+    selectedProblemId,
+    activeView,
+    playgroundMode,
+    allProblems,
+    learningRoadmap,
+    setSelectedDayId,
+  ]);
 
   // Real-time active study time tracker. Only visible, non-idle time is counted.
   const lastActivityAtRef = useRef(Date.now());
@@ -1826,13 +1944,15 @@ export default function App() {
       "Hard",
     ];
 
-    const failedMap = JSON.parse(
-      localStorage.getItem("sql-aa-failed-attempts") || "{}",
+    const failedMap = safeLocalStorageGet<Record<string, any>>(
+      "sql-aa-failed-attempts",
+      {},
     );
-    const candidates = allProblems.filter(
+    const rawCandidates = allProblems.filter(
       (p) =>
         p.moduleId <= maxModuleId && allowedDifficulties.includes(p.difficulty),
     );
+    const candidates = deduplicateQuestions(rawCandidates);
 
     const problems = candidates
       .map((p) => ({
@@ -1861,6 +1981,8 @@ export default function App() {
     });
     setMockReviewIndex(0);
     updateEditorQuery("");
+    setExpectedResult(null);
+    setGraderFeedback(null);
     setQueryResult({
       columns: [],
       rows: [],
@@ -1883,522 +2005,35 @@ export default function App() {
     userSnapshot: Record<string, any[]> | null,
     expSnapshot: Record<string, any[]> | null,
     solutionSql: string,
+    executedUserSql?: string,
   ): GraderResult {
-    if (userRes.error) {
-      return {
-        isCorrect: false,
-        message: "Query Error",
-        details: userRes.error,
-      };
-    }
-    if (expRes.error) {
-      return {
-        isCorrect: false,
-        message: "System Solution Error",
-        details: expRes.error,
-      };
-    }
+    const userSql = executedUserSql ?? queryRef.current;
+    const cleanUser = userSql
+      .replace(/(--[^\r\n]*)|(\/\*[\s\S]*?\*\/)/g, " ")
+      .replace(/\s+/g, "")
+      .toLowerCase();
+    const cleanFlawed = (activePuzzle?.flawedQuery || "")
+      .replace(/(--[^\r\n]*)|(\/\*[\s\S]*?\*\/)/g, " ")
+      .replace(/\s+/g, "")
+      .toLowerCase();
+    const isFlawedQueryUnchanged =
+      playgroundMode === "puzzle" && !!cleanFlawed && cleanUser === cleanFlawed;
 
-    if (playgroundMode === "puzzle" && activePuzzle) {
-      const cleanUser = queryRef.current
-        .replace(/(--.*)|(\/\*[\s\S]*?\*\/)/g, "")
-        .replace(/\s+/g, " ")
-        .trim()
-        .toLowerCase();
-      const cleanFlawed = activePuzzle.flawedQuery
-        .replace(/(--.*)|(\/\*[\s\S]*?\*\/)/g, "")
-        .replace(/\s+/g, " ")
-        .trim()
-        .toLowerCase();
-      if (cleanUser === cleanFlawed) {
-        return {
-          isCorrect: false,
-          message: "Unmodified Flawed Query",
-          details:
-            "You ran the original flawed query without making modifications. You must find the bug and edit the query to solve the puzzle!",
-        };
-      }
-    }
-
-    // Strict Technique Requirement Enforcement
-    try {
-      const activeProb = playgroundMode === "practice" ? selectedProblem : null;
-      const promptText = (activeProb ? activeProb.prompt : "").toLowerCase();
-      const solCleanText = solutionSql
-        .replace(/(--.*)|(\/\*[\s\S]*?\*\/)/g, "")
-        .toLowerCase();
-      const userSqlText = queryRef.current.replace(
-        /(--.*)|(\/\*[\s\S]*?\*\/)/g,
-        "",
-      );
-
-      // 1. FULL JOIN / UNION requirement
-      if (
-        (/\b(full\s+join|full\s+outer\s+join|union)\b/i.test(promptText) ||
-          /\bunion\b/i.test(solCleanText)) &&
-        !/\b(FULL\s+JOIN|FULL\s+OUTER\s+JOIN|UNION)\b/i.test(userSqlText)
-      ) {
-        return {
-          isCorrect: false,
-          message: "Missing Required SQL Technique",
-          details:
-            "Your query must explicitly use FULL JOIN or UNION to combine records as required.",
-        };
-      }
-
-      // 2. Anti-join / NULL check requirement for churn / unmatched queries
-      if (
-        (/\b(no\s+orders|placed\s+no|unmatched|left\s+anti-join|has\s+no|never\b)\b/i.test(
-          promptText,
-        ) ||
-          /\bis\s+null\b/i.test(solCleanText)) &&
-        !/\b(IS\s+NULL|NOT\s+IN|NOT\s+EXISTS)\b/i.test(userSqlText)
-      ) {
-        return {
-          isCorrect: false,
-          message: "Missing Required Anti-Join Filter",
-          details:
-            "Your query is missing a required NULL check (IS NULL), NOT IN, or NOT EXISTS clause to filter unmatched records.",
-        };
-      }
-
-      // 3. HAVING requirement
-      if (
-        /\b(having)\b/i.test(promptText) &&
-        !/\bHAVING\b/i.test(userSqlText)
-      ) {
-        return {
-          isCorrect: false,
-          message: "Missing Required SQL Technique",
-          details:
-            "Your query must use a HAVING clause to filter aggregated values as required by the prompt.",
-        };
-      }
-
-      // 4. WITH / CTE requirement
-      if (
-        /\b(cte|with\s+clause)\b/i.test(promptText) &&
-        !/\bWITH\b/i.test(userSqlText)
-      ) {
-        return {
-          isCorrect: false,
-          message: "Missing Required SQL Technique",
-          details:
-            "Your query must use a Common Table Expression (WITH clause) as specified in the prompt.",
-        };
-      }
-    } catch (e) {
-      console.warn("Strict technique verification failed:", e);
-    }
-
-    // Helper utility to detect mutating DML/DDL queries
-    const cleanSql = solutionSql
-      .replace(/(--.*)|(\/\*[\s\S]*?\*\/)/g, "")
-      .trim();
-    const isDmlOrDdl =
-      /^\b(INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|REPLACE|TRUNCATE|BEGIN)\b/i.test(
-        cleanSql,
-      );
-
-    if (isDmlOrDdl) {
-      if (!userSnapshot || !expSnapshot) {
-        return {
-          isCorrect: false,
-          message: "State Check Failed",
-          details: "Unable to inspect database tables.",
-        };
-      }
-      const match =
-        JSON.stringify(userSnapshot) === JSON.stringify(expSnapshot);
-      return {
-        isCorrect: match,
-        message: match ? "Correct Answer!" : "Database state mismatch",
-        details: match
-          ? "Database tables were updated correctly."
-          : "The tables do not match the expected state after your query.",
-      };
-    }
-
-    const expCols = expRes.columns;
-    const userCols = userRes.columns;
-
-    // Check if column counts or names are wrong
-    const expColsLower = expCols.map((c) => c.toLowerCase());
-    const userColsLower = userCols.map((c) => c.toLowerCase());
-    const missing = expCols.filter(
-      (c) => !userColsLower.includes(c.toLowerCase()),
-    );
-    const extra = userCols.filter(
-      (c) => !expColsLower.includes(c.toLowerCase()),
-    );
-
-    if (missing.length > 0 || extra.length > 0) {
-      return {
-        isCorrect: false,
-        message: "Columns do not match",
-        details:
-          `Expected columns: [${expCols.join(", ")}]. ` +
-          (missing.length ? `Missing: [${missing.join(", ")}]. ` : "") +
-          (extra.length ? `Extra: [${extra.join(", ")}].` : ""),
-      };
-    }
-
-    if (userCols.length !== expCols.length) {
-      return {
-        isCorrect: false,
-        message: "Column count mismatch",
-        details: `Expected ${expCols.length} columns, but got ${userCols.length}.`,
-      };
-    }
-
-    let warning: string | undefined = undefined;
-    const orderMismatch = userCols.some(
-      (c, i) => c.toLowerCase() !== expCols[i].toLowerCase(),
-    );
-    if (orderMismatch) {
-      if (graderStrict) {
-        return {
-          isCorrect: false,
-          message: "Column order mismatch (Strict Mode)",
-          details: `Strict Mode is enabled. Expected columns: [${expCols.join(", ")}]. Got: [${userCols.join(", ")}].`,
-        };
-      } else {
-        warning =
-          `Columns match but are in a different order. ` +
-          `Expected: [${expCols.join(", ")}]. Got: [${userCols.join(", ")}]. ` +
-          `Graded correct anyway!`;
-      }
-    }
-
-    // CTE and subquery usage warnings
-    try {
-      const userSql = queryRef.current;
-      const userCleanSql = userSql
-        .replace(/(--.*)|(\/\*[\s\S]*?\*\/)/g, "")
-        .trim();
-
-      const cteRegex = /\bWITH\s+([a-zA-Z0-9_]+)\s+AS\s*\(/gi;
-      let cteMatch;
-      const unusedCtes: string[] = [];
-      while ((cteMatch = cteRegex.exec(userCleanSql)) !== null) {
-        const cteName = cteMatch[1];
-        const afterCteIndex = cteMatch.index + cteMatch[0].length;
-        const queryAfter = userCleanSql.substring(afterCteIndex);
-        const refRegex = new RegExp(`\\b${cteName}\\b`, "i");
-        if (!refRegex.test(queryAfter)) {
-          unusedCtes.push(cteName);
-        }
-      }
-
-      const subqueryRegex = /\)\s*(?:AS\s+)?([a-zA-Z0-9_]+)\b/gi;
-      let subqueryMatch;
-      const unusedSubqueries: string[] = [];
-      while ((subqueryMatch = subqueryRegex.exec(userCleanSql)) !== null) {
-        const alias = subqueryMatch[1];
-        if (
-          [
-            "SELECT",
-            "FROM",
-            "WHERE",
-            "JOIN",
-            "LEFT",
-            "RIGHT",
-            "ON",
-            "AND",
-            "OR",
-            "GROUP",
-            "ORDER",
-            "LIMIT",
-            "UNION",
-            "HAVING",
-          ].includes(alias.toUpperCase())
-        )
-          continue;
-
-        const afterSubIndex = subqueryMatch.index + subqueryMatch[0].length;
-        const queryAfter = userCleanSql.substring(afterSubIndex);
-        const refRegex = new RegExp(`\\b${alias}\\b`, "i");
-        if (!refRegex.test(queryAfter)) {
-          unusedSubqueries.push(alias);
-        }
-      }
-
-      if (unusedCtes.length > 0 || unusedSubqueries.length > 0) {
-        const unusedList = [...unusedCtes, ...unusedSubqueries];
-        const cteWarning =
-          `Warning: Unused CTE or subquery alias [${unusedList.join(", ")}] ` +
-          `detected. Please reference or remove it.`;
-        warning = warning ? `${warning} ${cteWarning}` : cteWarning;
-      }
-    } catch (e) {
-      console.warn("Grader warnings failed:", e);
-    }
-
-    // Anti-Cheat Check: Ensure the user's query is not just returning hardcoded literals
-    try {
-      const solClean = solutionSql.replace(/(--.*)|(\/\*[\s\S]*?\*\/)/g, "");
-      const userClean = queryRef.current.replace(
-        /(--.*)|(\/\*[\s\S]*?\*\/)/g,
-        "",
-      );
-
-      // If the solution query queries a table, the user query must contain a FROM clause
-      if (/\bFROM\b/i.test(solClean) && !/\bFROM\b/i.test(userClean)) {
-        return {
-          isCorrect: false,
-          message: "Cheat Detection Alert",
-          details:
-            "Your query must query data from the database using a 'FROM' clause " +
-            "instead of returning hardcoded constant values.",
-        };
-      }
-
-      // Extract referenced table names from the solution query
-      const tablesInSchema = [
-        "customers",
-        "orders",
-        "products",
-        "employees",
-        "departments",
-        "projects",
-        "employee_projects",
-      ];
-      const referencedTables = tablesInSchema.filter((tbl) => {
-        const regex = new RegExp(`\\b${tbl}\\b`, "i");
-        return regex.test(solClean);
-      });
-
-      if (referencedTables.length > 0) {
-        const userReferencesAny = referencedTables.some((tbl) => {
-          const regex = new RegExp(`\\b${tbl}\\b`, "i");
-          return regex.test(userClean);
-        });
-        if (!userReferencesAny) {
-          return {
-            isCorrect: false,
-            message: "Cheat Detection Alert",
-            details:
-              `Your query must reference the appropriate database tables ` +
-              `(e.g., ${referencedTables.join(", ")}).`,
-          };
-        }
-      }
-
-      // Hardcoded Literal Output Bypass Detection
-      const selectMatch = userClean.match(/SELECT\s+([\s\S]+?)\s+\bFROM\b/i);
-      if (selectMatch) {
-        const selectClause = selectMatch[1].trim();
-        const strLiterals = Array.from(selectClause.matchAll(/'([^']*)'/g)).map(
-          (m) => m[1],
-        );
-        const numLiterals = Array.from(
-          selectClause.matchAll(/\b(?<!\w)(\d+(?:\.\d+)?)\b(?!\w)/g),
-        ).map((m) => m[1]);
-        const scalarSubqueries = /\(\s*SELECT\s+[^)]+\)/i.test(selectClause);
-        const staticCases = /\bCASE\b[\s\S]+?\bEND\b/i.test(selectClause);
-
-        const expValuesSet = new Set<string>();
-        if (expRes && expRes.rows) {
-          expRes.rows.forEach((row: Record<string, unknown>) => {
-            Object.values(row).forEach((val) => {
-              if (val !== null && val !== undefined) {
-                expValuesSet.add(String(val).trim().toLowerCase());
-              }
-            });
-          });
-        }
-
-        const solSelectMatch = solClean.match(
-          /SELECT\s+([\s\S]+?)\s+\bFROM\b/i,
-        );
-        const solSelect = solSelectMatch ? solSelectMatch[1].toLowerCase() : "";
-
-        let matchingLiterals = 0;
-        [...strLiterals, ...numLiterals].forEach((lit) => {
-          const litStr = String(lit).trim().toLowerCase();
-          if (expValuesSet.has(litStr) && !solSelect.includes(litStr)) {
-            matchingLiterals++;
-          }
-        });
-
-        const numExpCols = expRes?.columns?.length ?? 1;
-        const hasAggFuncs =
-          /\b(COUNT|SUM|AVG|MIN|MAX|DENSE_RANK|RANK|ROW_NUMBER|LAG|LEAD)\b/i.test(
-            selectClause,
-          );
-
-        const isBypass =
-          matchingLiterals >= 1 &&
-          (scalarSubqueries ||
-            staticCases ||
-            matchingLiterals >= numExpCols * 0.5 ||
-            !hasAggFuncs);
-
-        if (isBypass) {
-          return {
-            isCorrect: false,
-            message: "Cheat Detection Alert",
-            details:
-              "Hardcoded literal output values detected in SELECT projection matching expected output. " +
-              "Write a query that computes values dynamically from column data.",
-          };
-        }
-      }
-    } catch (err) {
-      console.warn("Anti-cheat validation failed:", err);
-    }
-
-    // Standard SELECT verification
-    if (userRes.rows.length !== expRes.rows.length) {
-      return {
-        isCorrect: false,
-        message: "Row count mismatch",
-        details: `Expected ${expRes.rows.length} rows, but your query returned ${userRes.rows.length} rows.`,
-      };
-    }
-
-    // Normalization helper
-    const normalizeVal = (v: unknown): unknown => {
-      if (v === null || v === undefined) return null;
-      if (typeof v === "string" && v.toUpperCase() === "NULL") return null;
-      return v;
-    };
-
-    // Numeric check helper
-    const isNumeric = (val: unknown): val is number | string => {
-      if (typeof val === "number") return true;
-      if (typeof val === "string" && val.trim() !== "") {
-        return !isNaN(Number(val));
-      }
-      return false;
-    };
-
-    // Precision-aware numerical equality comparison
-    const getDecimalPrecision = (val: unknown): number => {
-      const str = String(val).trim();
-      if (str.includes(".")) {
-        return str.split(".")[1].length;
-      }
-      return 0;
-    };
-
-    const isEqualValues = (a: unknown, b: unknown): boolean => {
-      const normA = normalizeVal(a);
-      const normB = normalizeVal(b);
-      if (normA === normB) return true;
-      if (normA === null || normB === null) return false;
-
-      if (isNumeric(normA) && isNumeric(normB)) {
-        const numA = Number(normA);
-        const numB = Number(normB);
-        const precision = Math.min(10, getDecimalPrecision(normA));
-        const factor = Math.pow(10, precision);
-        const roundedA = Math.round(numA * factor) / factor;
-        const roundedB = Math.round(numB * factor) / factor;
-        return Math.abs(roundedA - roundedB) < 1e-9;
-      }
-
-      const strA = String(normA).trim();
-      const strB = String(normB).trim();
-      if (strA === strB) return true;
-
-      // Case-insensitive string comparison: accepts lowercase, uppercase, and mixed-case letters
-      return strA.toLowerCase() === strB.toLowerCase();
-    };
-
-    const uVals = userRes.rows.map((r) =>
-      expCols.map((c) => {
-        const actualKey =
-          Object.keys(r).find((k) => k.toLowerCase() === c.toLowerCase()) || c;
-        return normalizeVal(r[actualKey]);
-      }),
-    );
-    const sVals = expRes.rows.map((r) =>
-      expCols.map((c) => normalizeVal(r[c])),
-    );
-
-    const matchesExactly = (arrA: unknown[][], arrB: unknown[][]) => {
-      if (arrA.length !== arrB.length) return false;
-      for (let i = 0; i < arrA.length; i++) {
-        for (let j = 0; j < expCols.length; j++) {
-          if (!isEqualValues(arrA[i][j], arrB[i][j])) return false;
-        }
-      }
-      return true;
-    };
-
-    if (matchesExactly(uVals, sVals)) {
-      if (uVals.length === 0 && sVals.length === 0) {
-        const solJoinCount = (solutionSql.toUpperCase().match(/JOIN/g) || [])
-          .length;
-        const userJoinCount = (
-          queryRef.current.toUpperCase().match(/JOIN/g) || []
-        ).length;
-        if (solJoinCount > userJoinCount) {
-          return {
-            isCorrect: false,
-            message: "Incomplete Query Structure",
-            details: `Your query returned 0 rows and is missing required table joins (found ${userJoinCount}, expected ${solJoinCount}).`,
-          };
-        }
-        if (
-          solutionSql.toUpperCase().includes("WHERE") &&
-          !queryRef.current.toUpperCase().includes("WHERE")
-        ) {
-          return {
-            isCorrect: false,
-            message: "Incomplete Query Structure",
-            details:
-              "Your query returned 0 rows and is missing the required WHERE filtering clause.",
-          };
-        }
-      }
-      return { isCorrect: true, message: "Correct Answer!", warning };
-    }
-
-    // Sort helper using numeric tolerance and values comparison
-    const sortRows = (arr: unknown[][]) => {
-      return [...arr].sort((rowA, rowB) => {
-        for (let colIdx = 0; colIdx < expCols.length; colIdx++) {
-          const valA = rowA[colIdx];
-          const valB = rowB[colIdx];
-          if (valA === valB) continue;
-          if (valA === null) return -1;
-          if (valB === null) return 1;
-
-          if (isNumeric(valA) && isNumeric(valB)) {
-            const diff = Number(valA) - Number(valB);
-            if (Math.abs(diff) >= 0.01) {
-              return diff;
-            }
-            continue;
-          }
-
-          const strA = String(valA).trim().toLowerCase();
-          const strB = String(valB).trim().toLowerCase();
-          if (strA < strB) return -1;
-          if (strA > strB) return 1;
-        }
-        return 0;
-      });
-    };
-
-    // Order-agnostic fallback if no ORDER BY in solution
-    if (!solutionSql.toUpperCase().includes("ORDER BY")) {
-      const sortedU = sortRows(uVals);
-      const sortedS = sortRows(sVals);
-      if (matchesExactly(sortedU, sortedS)) {
-        return { isCorrect: true, message: "Correct Answer!", warning };
-      }
-    }
-
-    return {
-      isCorrect: false,
-      message: "Values mismatch",
-      details:
-        "The rows or values returned by your query do not match the expected solution. " +
-        "Double check your aggregate calculations or filters.",
-    };
+    return gradeQuery({
+      userQuery: userSql,
+      solutionSql,
+      userResult: userRes,
+      expectedResult: expRes,
+      userSnapshot,
+      expectedSnapshot: expSnapshot,
+      strictMode: graderStrict,
+      playgroundMode,
+      promptText:
+        playgroundMode === "puzzle" && activePuzzle
+          ? `${activePuzzle.businessScenario} ${activePuzzle.hint}`
+          : selectedProblem?.prompt || "",
+      isFlawedQueryUnchanged,
+    });
   }
 
   async function submitMockAnswer(q: string) {
@@ -2424,6 +2059,7 @@ export default function App() {
       userSnapshot,
       expSnapshot,
       currentQ.solution,
+      q,
     ).isCorrect;
 
     const newAnswers = [...mockTest.answers, { query: q, isCorrect }];
@@ -2437,6 +2073,8 @@ export default function App() {
         currentIndex: mockTest.currentIndex + 1,
       });
       updateEditorQuery("");
+      setExpectedResult(null);
+      setGraderFeedback(null);
       setQueryResult({
         columns: [],
         rows: [],
@@ -2544,10 +2182,33 @@ export default function App() {
   const mockCoveragePct = (mocksTaken / coreMocks.length) * 100;
   const mockPct = Math.round(mockCoveragePct * (mockAvgScore / 100));
 
+  // Use raw floats to avoid double-rounding artifacts that block early progress increments
+  const modPctRaw =
+    totalModules > 0
+      ? (progress.completedModules.length / totalModules) * 100
+      : 0;
+  const probPctRaw =
+    totalProblems > 0
+      ? (progress.solvedProblems.length / totalProblems) * 100
+      : 0;
+  const puzPctRaw =
+    debugPuzzles.length > 0
+      ? ((progress.solvedPuzzles || []).length / debugPuzzles.length) * 100
+      : 0;
+  const mockPctRaw = mockCoveragePct * (mockAvgScore / 100);
+
+  const rawScore =
+    modPctRaw * 0.25 + probPctRaw * 0.4 + puzPctRaw * 0.15 + mockPctRaw * 0.2;
+  const hasStarted =
+    progress.completedModules.length > 0 ||
+    progress.solvedProblems.length > 0 ||
+    (progress.solvedPuzzles || []).length > 0 ||
+    mocksTaken > 0;
+
   // Robust weighted algorithm: Modules 25%, Core Problems 40%, Debug Puzzles 15%, Mock Coverage & Performance 20%
   const readiness = Math.min(
     100,
-    Math.round(modPct * 0.25 + probPct * 0.4 + puzPct * 0.15 + mockPct * 0.2),
+    hasStarted ? Math.max(1, Math.round(rawScore)) : 0,
   );
 
   const totalXP =
@@ -2688,7 +2349,7 @@ export default function App() {
           JSON.stringify(initialQuery),
         );
 
-        setQueryResult(await runQuery(initialQuery));
+        setQueryResult({ columns: [], rows: [], message: "" });
         setLiveSchema(await getLiveSchema());
       } catch (err) {
         console.error("Database initialization failed:", err);
@@ -2947,6 +2608,7 @@ export default function App() {
           }
         }
 
+        const useUpper = sqlUpperKeywordsRef.current;
         const keywordsList = [
           "SELECT",
           "FROM",
@@ -3006,7 +2668,17 @@ export default function App() {
           "OR",
           "NOT",
           "NULL",
-        ];
+        ].map((k) => (useUpper ? k.toUpperCase() : k.toLowerCase()));
+
+        // Check which tables are active in the current query
+        const queryWords = new Set(
+          fullTextForAliases.toLowerCase().split(/[^a-zA-Z0-9_]+/),
+        );
+        const activeTableNames = new Set(
+          currentSchema
+            .map((t) => t.name.toLowerCase())
+            .filter((name) => queryWords.has(name)),
+        );
 
         // 1. Keywords
         const keywordItems = keywordsList.map((label) => ({
@@ -3015,27 +2687,34 @@ export default function App() {
           detail: "SQL Keyword",
           insertText: label,
           range,
+          sortText: `05_${label.toLowerCase()}`,
         }));
 
         // 2. Tables
-        const tableItems = currentSchema.map((t) => ({
-          label: t.name,
-          kind: monaco.languages.CompletionItemKind.Class,
-          detail: `Database Table (${t.columns.length} columns)`,
-          insertText: t.name,
-          range,
-        }));
+        const tableItems = currentSchema.map((t) => {
+          const isTableActive = activeTableNames.has(t.name.toLowerCase());
+          return {
+            label: t.name,
+            kind: monaco.languages.CompletionItemKind.Class,
+            detail: `Database Table (${t.columns.length} columns)${isTableActive ? " (active)" : ""}`,
+            insertText: t.name,
+            range,
+            sortText: isTableActive ? `02_${t.name}` : `03_${t.name}`,
+          };
+        });
 
         // 3. Columns
-        const columnItems = currentSchema.flatMap((t) =>
-          t.columns.map((c) => ({
+        const columnItems = currentSchema.flatMap((t) => {
+          const isTableActive = activeTableNames.has(t.name.toLowerCase());
+          return t.columns.map((c) => ({
             label: c.name,
             kind: monaco.languages.CompletionItemKind.Field,
-            detail: `${c.type} — ${t.name} column`,
+            detail: `${c.type} — ${t.name} column${isTableActive ? " (active)" : ""}`,
             insertText: c.name,
             range,
-          })),
-        );
+            sortText: isTableActive ? `01_${c.name}` : `04_${c.name}`,
+          }));
+        });
 
         // 4. Aliases
         const aliasItems = Object.entries(globalAliases).map(
@@ -3045,18 +2724,68 @@ export default function App() {
             detail: `Table Alias (${targetTable})`,
             insertText: alias,
             range,
+            sortText: `00_${alias}`,
           }),
         );
 
+        // 5. User-defined Aliases (e.g. column aliases via AS)
+        const userAliases: Set<string> = new Set();
+        const asRegex = /\bAS\s+([a-zA-Z0-9_]+)\b/gi;
+        let asMatch;
+        while ((asMatch = asRegex.exec(fullTextForAliases)) !== null) {
+          const alias = asMatch[1];
+          const lowerAlias = alias.toLowerCase();
+          const isKeyword = keywordsList.some(
+            (k) => k.toLowerCase() === lowerAlias,
+          );
+          const isTable = currentSchema.some(
+            (t) => t.name.toLowerCase() === lowerAlias,
+          );
+          const commonTypes = [
+            "int",
+            "integer",
+            "real",
+            "text",
+            "numeric",
+            "varchar",
+            "double",
+            "float",
+            "date",
+            "julianday",
+            "timestamp",
+            "boolean",
+            "char",
+            "json",
+            "blob",
+          ];
+          const isType = commonTypes.includes(lowerAlias);
+          if (!isKeyword && !isTable && !isType) {
+            userAliases.add(alias);
+          }
+        }
+
+        const userAliasItems = Array.from(userAliases).map((alias) => ({
+          label: alias,
+          kind: monaco.languages.CompletionItemKind.Variable,
+          detail: `Query Alias`,
+          insertText: alias,
+          range,
+          sortText: `00_${alias}`,
+        }));
+
         // Deduplicate suggestions by label
         const suggestionsMap = new Map<string, any>();
-        [...aliasItems, ...tableItems, ...columnItems, ...keywordItems].forEach(
-          (item) => {
-            if (!suggestionsMap.has(item.label.toLowerCase())) {
-              suggestionsMap.set(item.label.toLowerCase(), item);
-            }
-          },
-        );
+        [
+          ...aliasItems,
+          ...userAliasItems,
+          ...tableItems,
+          ...columnItems,
+          ...keywordItems,
+        ].forEach((item) => {
+          if (!suggestionsMap.has(item.label.toLowerCase())) {
+            suggestionsMap.set(item.label.toLowerCase(), item);
+          }
+        });
 
         const snippets = [
           {
@@ -3068,6 +2797,7 @@ export default function App() {
               monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
             documentation: "Create a basic SELECT template query",
             range,
+            sortText: "06_select_template",
           },
           {
             label: "JOIN template",
@@ -3078,6 +2808,7 @@ export default function App() {
               monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
             documentation: "Create an INNER JOIN template",
             range,
+            sortText: "06_join_template",
           },
           {
             label: "LEFT JOIN template",
@@ -3088,6 +2819,7 @@ export default function App() {
               monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
             documentation: "Create a LEFT OUTER JOIN template",
             range,
+            sortText: "06_left_join_template",
           },
           {
             label: "WITH (CTE) template",
@@ -3099,6 +2831,7 @@ export default function App() {
             documentation:
               "Create a Common Table Expression (CTE) query template",
             range,
+            sortText: "06_cte_template",
           },
           {
             label: "CASE WHEN template",
@@ -3109,6 +2842,7 @@ export default function App() {
               monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
             documentation: "Create a conditional CASE statement",
             range,
+            sortText: "06_case_when_template",
           },
           {
             label: "WINDOW function template",
@@ -3119,6 +2853,7 @@ export default function App() {
               monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
             documentation: "Create a window function OVER clause",
             range,
+            sortText: "06_window_template",
           },
         ];
 
@@ -3136,6 +2871,24 @@ export default function App() {
   const handleMount: OnMount = useCallback((editor, monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
+
+    // Remeasure fonts when browser fonts are ready (prevents cursor click offset bug)
+    if (typeof document !== "undefined" && (document as any).fonts) {
+      (document as any).fonts.ready.then(() => {
+        try {
+          monaco.editor.remeasureFonts();
+          editor.layout();
+        } catch {}
+        [100, 500].forEach((delay) => {
+          setTimeout(() => {
+            try {
+              monaco.editor.remeasureFonts();
+              editor.layout();
+            } catch {}
+          }, delay);
+        });
+      });
+    }
 
     // Bind Alt+X to run query
     editor.addAction({
@@ -3197,6 +2950,33 @@ export default function App() {
       },
     });
 
+    // Direct Clipboard Paste action to eliminate double-click browser prompts
+    editor.addAction({
+      id: "direct-clipboard-paste",
+      label: "Direct Paste from Clipboard",
+      contextMenuGroupId: "9_cutcopypaste",
+      contextMenuOrder: 3,
+      run: async (ed) => {
+        try {
+          const text = await navigator.clipboard.readText();
+          if (text) {
+            const selection = ed.getSelection();
+            if (selection) {
+              ed.executeEdits("direct-paste", [
+                {
+                  range: selection,
+                  text: text,
+                  forceMoveMarkers: true,
+                },
+              ]);
+            }
+          }
+        } catch {
+          ed.trigger("keyboard", "paste", null);
+        }
+      },
+    });
+
     // Bind Shift+Alt+F to format SQL
     editor.addAction({
       id: "format-sql-action",
@@ -3236,13 +3016,6 @@ export default function App() {
   }, []);
 
   /* ── SQL actions ─────────────────────────────────────────── */
-  // Helper utility to detect mutating queries
-  function isModifyingQuery(sqlText: string) {
-    const clean = sqlText.replace(/(--.*)|(\/\*[\s\S]*?\*\/)/g, ""); // Strip comments
-    return /\b(INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|REPLACE|TRUNCATE)\b/i.test(
-      clean,
-    );
-  }
 
   async function runCurrentQuery() {
     if (editorMaximized) {
@@ -3282,30 +3055,64 @@ export default function App() {
     const needsSnapshot = isModifyingQuery(sql);
 
     if (isMockMode) {
+      const currentQ = mockTest
+        ? mockTest.questions[mockTest.currentIndex]
+        : null;
+      const solutionSql = currentQ?.solution || "";
+      const solutionNeedsSnapshot = !!(
+        solutionSql && isModifyingQuery(solutionSql)
+      );
+      const combinedNeedsSnapshot = needsSnapshot || solutionNeedsSnapshot;
+
+      let expected: QueryResult | null = null;
+      let expectedSnapshot: Record<string, any[]> | null = null;
+
+      if (solutionSql) {
+        await resetDatabase();
+        const res = await runQuery(solutionSql, true, combinedNeedsSnapshot);
+        expected = res;
+        expectedSnapshot = res.snapshot ?? null;
+      }
+
       await resetDatabase();
-      const result = await runQuery(sql, true, needsSnapshot);
+      const result = await runQuery(sql, true, combinedNeedsSnapshot);
+      const userSnapshot = result.snapshot ?? null;
       setQueryResult(result);
       setLiveSchema(await getLiveSchema());
+
+      if (expected) {
+        setExpectedResult(expected);
+        const feedback = verifyAnswer(
+          result,
+          expected,
+          userSnapshot,
+          expectedSnapshot,
+          solutionSql,
+          sql,
+        );
+        setGraderFeedback(feedback);
+      }
       return;
     }
 
-    if (playgroundMode === "free") {
+    let solutionSql = "";
+    if (playgroundMode === "puzzle" && activePuzzle?.solutionQuery) {
+      solutionSql = activePuzzle.solutionQuery;
+    } else if (selectedProblem?.solution) {
+      solutionSql = selectedProblem.solution;
+    }
+
+    const isFreeformMode = playgroundMode === "free" && !solutionSql;
+    if (isFreeformMode) {
       const result = await runQuery(sql, false, needsSnapshot);
       setQueryResult(result);
       setLiveSchema(await getLiveSchema());
+      setGraderFeedback(null);
       return;
     }
 
-    // 1. Evaluate Expected Result on current DB state FIRST
     let expected: QueryResult | null = null;
     let expectedSnapshot: Record<string, any[]> | null = null;
-    let solutionSql = "";
-
-    if (playgroundMode === "practice" && selectedProblem?.solution) {
-      solutionSql = selectedProblem.solution;
-    } else if (playgroundMode === "puzzle" && activePuzzle?.solutionQuery) {
-      solutionSql = activePuzzle.solutionQuery;
-    }
 
     const solutionNeedsSnapshot = !!(
       solutionSql && isModifyingQuery(solutionSql)
@@ -3358,14 +3165,16 @@ export default function App() {
         userSnapshot,
         expectedSnapshot,
         solutionSql,
+        sql,
       );
       setGraderFeedback(feedback);
       const isCorrect = feedback.isCorrect;
       if (isCorrect) {
         triggerConfetti();
         if (playgroundMode === "practice" && selectedProblem) {
-          const attempts = JSON.parse(
-            localStorage.getItem("sql-aa-failed-attempts") || "{}",
+          const attempts = safeLocalStorageGet<Record<string, any>>(
+            "sql-aa-failed-attempts",
+            {},
           );
           const failedCount = attempts[selectedProblem.id] || 0;
           const hintsCount = Math.max(0, visibleHints);
@@ -3381,8 +3190,9 @@ export default function App() {
         }
       } else {
         if (playgroundMode === "practice" && selectedProblem) {
-          const attempts = JSON.parse(
-            localStorage.getItem("sql-aa-failed-attempts") || "{}",
+          const attempts = safeLocalStorageGet<Record<string, any>>(
+            "sql-aa-failed-attempts",
+            {},
           );
           attempts[selectedProblem.id] =
             (attempts[selectedProblem.id] || 0) + 1;
@@ -3488,14 +3298,15 @@ export default function App() {
     if (selectedProblemId && playgroundMode === "practice") {
       const p = allProblems.find((x) => x.id === selectedProblemId);
       if (p) {
-        const drafts = JSON.parse(
-          localStorage.getItem("sql-aa-problem-drafts") || "{}",
+        const drafts = safeLocalStorageGet<Record<string, any>>(
+          "sql-aa-problem-drafts",
+          {},
         );
         delete drafts[selectedProblemId];
         localStorage.setItem("sql-aa-problem-drafts", JSON.stringify(drafts));
         const saved = getSavedDraftQuery(p);
         updateEditorQuery(saved);
-        setQueryResult(await runQuery(saved, true));
+        setQueryResult({ columns: [], rows: [], message: "" });
         setLiveSchema(await getLiveSchema());
         triggerResetStatus();
         return;
@@ -3503,21 +3314,22 @@ export default function App() {
     } else if (activePuzzleId && playgroundMode === "puzzle") {
       const p = debugPuzzles.find((x) => x.id === activePuzzleId);
       if (p) {
-        const drafts = JSON.parse(
-          localStorage.getItem("sql-aa-puzzle-drafts") || "{}",
+        const drafts = safeLocalStorageGet<Record<string, any>>(
+          "sql-aa-puzzle-drafts",
+          {},
         );
         delete drafts[activePuzzleId];
         localStorage.setItem("sql-aa-puzzle-drafts", JSON.stringify(drafts));
         const saved = getSavedPuzzleQuery(p);
         updateEditorQuery(saved);
-        setQueryResult(await runQuery(saved, true));
+        setQueryResult({ columns: [], rows: [], message: "" });
         setLiveSchema(await getLiveSchema());
         triggerResetStatus();
         return;
       }
     }
     updateEditorQuery(defaultQuery);
-    setQueryResult(await runQuery(defaultQuery));
+    setQueryResult({ columns: [], rows: [], message: "" });
     setLiveSchema(await getLiveSchema());
     setPreviewData({});
     triggerResetStatus();
@@ -3569,6 +3381,8 @@ export default function App() {
     stopAutoTyping();
     setSelectedProblemId(p.id);
     setActiveModuleId(p.moduleId);
+    const saved = getSavedDraftQuery(p);
+    updateEditorQuery(saved, "practice", p.id);
   }
 
   async function openInPlayground(p: PracticeProblem) {
@@ -3578,6 +3392,12 @@ export default function App() {
     updateEditorQuery(saved, "practice", p.id);
     setSelectedProblemId(p.id);
     setActiveModuleId(p.moduleId);
+    const parentDay = learningRoadmap.find((d) =>
+      d.modules.includes(p.moduleId),
+    );
+    if (parentDay) {
+      setSelectedDayId(parentDay.day);
+    }
     setActiveView("playground");
     setQueryResult({ columns: [], rows: [], message: "" });
     setGraderFeedback(null);
@@ -3871,16 +3691,7 @@ export default function App() {
     if (item.type === "Puzzle" && typeof item.id === "string") {
       const pz = debugPuzzles.find((x) => x.id === item.id);
       if (pz) {
-        setActivePuzzleId(pz.id);
-        setPlaygroundMode("puzzle");
-        const saved = getSavedPuzzleQuery(pz);
-        updateEditorQuery(saved, "puzzle", pz.id);
-        setQueryResult({
-          columns: [],
-          rows: [],
-          message: "Run your query to test it.",
-        });
-        setActiveView("playground");
+        openPuzzleInPlayground(pz);
       }
     }
     setSearchTerm("");
@@ -3895,18 +3706,52 @@ export default function App() {
     stopAutoTyping();
     setActivePuzzleId(p.id);
     setPlaygroundMode("puzzle");
-    const saved = getSavedPuzzleQuery(p);
-    updateEditorQuery(saved, "puzzle", p.id);
+
+    let saved = getSavedPuzzleQuery(p);
+
+    if (p.dayId) {
+      setSelectedDayId(p.dayId);
+    }
     setActiveView("playground");
     setQueryResult({ columns: [], rows: [], message: "" });
+    setGraderFeedback(null);
+
+    let expectedRes: QueryResult | null = null;
     if (p.solutionQuery) {
       await resetDatabase();
       const needsSnapshot = isModifyingQuery(p.solutionQuery);
-      const res = await runQuery(p.solutionQuery, true, needsSnapshot);
-      setExpectedResult(res);
+      expectedRes = await runQuery(p.solutionQuery, true, needsSnapshot);
+      setExpectedResult(expectedRes);
     } else {
       setExpectedResult(null);
     }
+
+    // Solve at core: If the puzzle is unsolved, but the loaded draft query is correct,
+    // discard the draft and reset to the original flawed query.
+    const isSolved = progress.solvedPuzzles?.includes(p.id);
+    if (!isSolved && saved && saved !== p.flawedQuery && expectedRes) {
+      await resetDatabase();
+      const userRes = await runQuery(saved, true, isModifyingQuery(saved));
+      const grade = verifyAnswer(
+        userRes,
+        expectedRes,
+        (userRes as any).snapshot ?? null,
+        (expectedRes as any).snapshot ?? null,
+        p.solutionQuery,
+        saved,
+      );
+      if (grade.isCorrect) {
+        saved = p.flawedQuery;
+        const drafts = safeLocalStorageGet<Record<string, any>>(
+          "sql-aa-puzzle-drafts",
+          {},
+        );
+        delete drafts[p.id];
+        localStorage.setItem("sql-aa-puzzle-drafts", JSON.stringify(drafts));
+      }
+    }
+
+    updateEditorQuery(saved, "puzzle", p.id);
   }
 
   function getDialectNotes(
@@ -4281,7 +4126,9 @@ export default function App() {
                     if (id === "playground") {
                       enterFreeformPlayground();
                     } else if (id === "roadmap" || id === "day-details") {
-                      setSelectedDayId(activeDayWhereLeftOff);
+                      if (!selectedDayId) {
+                        setSelectedDayId(activeDayWhereLeftOff);
+                      }
                       setActiveView(id);
                     } else {
                       setActiveView(id);
@@ -4472,25 +4319,7 @@ export default function App() {
           }}
           id="main-scroll-container"
         >
-          <Suspense
-            fallback={
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: "100%",
-                  width: "100%",
-                  flexDirection: "column",
-                  gap: "1rem",
-                  color: "var(--muted)",
-                }}
-              >
-                <div className="spinner"></div>
-                <p>Loading module...</p>
-              </div>
-            }
-          >
+          <Suspense fallback={<EditorWorkspaceSkeleton />}>
             {activeView === "dashboard" && (
               <DashboardView
                 progress={progress}
@@ -4521,6 +4350,7 @@ export default function App() {
                 progress={progress}
                 learningRoadmap={learningRoadmap}
                 roadmapModules={roadmapModules}
+                selectedDayId={selectedDayId}
                 setSelectedDayId={setSelectedDayId}
                 setActiveView={setActiveView}
                 toggleDayComplete={toggleDayComplete}
@@ -4628,6 +4458,7 @@ export default function App() {
                 setActivePuzzleId={setActivePuzzleId}
                 debugPuzzles={debugPuzzles}
                 getSavedPuzzleQuery={getSavedPuzzleQuery}
+                openPuzzleInPlayground={openPuzzleInPlayground}
                 getSavedDraftQuery={getSavedDraftQuery}
                 updateEditorQuery={updateEditorQuery}
                 stopAutoTyping={stopAutoTyping}
@@ -4684,6 +4515,10 @@ export default function App() {
                 setResultPage={setResultPage}
                 RESULT_PAGE_SIZE={15}
                 updateEditorQuery={updateEditorQuery}
+                tableSchemas={tableSchemas}
+                liveSchema={liveSchema}
+                expectedResult={expectedResult}
+                graderFeedback={graderFeedback}
                 editorTheme={editorTheme}
                 theme={theme}
                 query={query}

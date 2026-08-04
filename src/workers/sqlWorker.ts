@@ -290,8 +290,15 @@ self.onmessage = async (e: MessageEvent<WorkerMessageData>) => {
       }
 
       if (savepointActive) {
-        dbInstance.run(`ROLLBACK TO ${savepointName};`);
-        dbInstance.run(`RELEASE ${savepointName};`);
+        try {
+          dbInstance.run(`ROLLBACK TO ${savepointName};`);
+          dbInstance.run(`RELEASE ${savepointName};`);
+        } catch (_) {
+          // If user query issued explicit COMMIT/ROLLBACK, SQLite released savepoint automatically
+          try {
+            dbInstance.run("ROLLBACK;");
+          } catch (_) {}
+        }
       }
 
       self.postMessage({
@@ -310,7 +317,11 @@ self.onmessage = async (e: MessageEvent<WorkerMessageData>) => {
         try {
           dbInstance.run(`ROLLBACK TO ${savepointName};`);
           dbInstance.run(`RELEASE ${savepointName};`);
-        } catch (_) {}
+        } catch (_) {
+          try {
+            dbInstance.run("ROLLBACK;");
+          } catch (_) {}
+        }
       }
       self.postMessage({
         id,

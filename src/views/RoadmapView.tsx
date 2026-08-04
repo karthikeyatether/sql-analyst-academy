@@ -18,6 +18,7 @@ interface RoadmapViewProps {
   };
   learningRoadmap: RoadmapDay[];
   roadmapModules: RoadmapModule[];
+  selectedDayId?: number;
   setSelectedDayId: (dayId: number) => void;
   setActiveView: (view: ViewId) => void;
   toggleDayComplete: (day: number) => void;
@@ -40,6 +41,7 @@ function RoadmapView({
   progress,
   learningRoadmap,
   roadmapModules,
+  selectedDayId,
   setSelectedDayId,
   setActiveView,
   toggleDayComplete,
@@ -57,6 +59,15 @@ function RoadmapView({
   const progressPct = Math.round(
     (totalCompleted / learningRoadmap.length) * 100,
   );
+
+  React.useEffect(() => {
+    if (selectedDayId) {
+      const el = document.getElementById(`day-card-${selectedDayId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  }, [selectedDayId]);
 
   return (
     <div className="view-content roadmap-timeline-view">
@@ -119,7 +130,6 @@ function RoadmapView({
         }}
       >
         {learningRoadmap.map((day) => {
-          const isDone = (progress.completedDays || []).includes(day.day);
           const dayModules = day.modules
             .map((id) => roadmapModules.find((m) => m.id === id))
             .filter((m) => m !== undefined);
@@ -147,11 +157,16 @@ function RoadmapView({
             totalDayItems > 0
               ? Math.round((solvedDayItems / totalDayItems) * 100)
               : 100;
+          const isDone =
+            (progress.completedDays || []).includes(day.day) ||
+            (totalDayItems > 0 && solvedDayItems >= totalDayItems);
 
+          const isSelected = day.day === selectedDayId;
           return (
             <div
               key={day.day}
-              className={`roadmap-day-card ${isDone ? "done" : ""}`}
+              id={`day-card-${day.day}`}
+              className={`roadmap-day-card ${isDone ? "done" : ""} ${isSelected ? "selected-day" : ""}`}
               onClick={(e) => {
                 if (
                   (e.target as HTMLElement).closest("button") ||
@@ -163,13 +178,18 @@ function RoadmapView({
               }}
               style={{
                 background: "var(--panel)",
-                border: "1px solid var(--border)",
+                border: isSelected
+                  ? "1px solid var(--cyan)"
+                  : "1px solid var(--border)",
+                boxShadow: isSelected
+                  ? "0 0 16px rgba(56, 217, 255, 0.25)"
+                  : "none",
                 borderRadius: "8px",
                 padding: "1.5rem",
                 display: "flex",
                 gap: "1.5rem",
                 position: "relative",
-                opacity: isDone ? 0.85 : 1,
+                opacity: isDone && !isSelected ? 0.85 : 1,
               }}
             >
               <div
@@ -411,27 +431,45 @@ function RoadmapView({
                     const isHigh = roadmapModules.find(
                       (m) => m.id === p.moduleId,
                     )?.isHighWeight;
+                    const isSolved = (progress.solvedProblems || []).includes(
+                      p.id,
+                    );
                     return (
                       <button
                         key={p.id}
                         className="secondary-button compact outline"
                         onClick={() => openInPlayground(p)}
                         style={
-                          isHigh
+                          isSolved
                             ? {
-                                borderColor: "rgba(56, 217, 255, 0.3)",
-                                background: "transparent",
+                                borderColor: "rgba(48, 230, 149, 0.4)",
+                                background: "rgba(48, 230, 149, 0.08)",
+                                color: "var(--emerald)",
                               }
-                            : undefined
+                            : isHigh
+                              ? {
+                                  borderColor: "rgba(56, 217, 255, 0.3)",
+                                  background: "transparent",
+                                }
+                              : undefined
                         }
                         title={`Solve: ${p.title}`}
                       >
-                        <Code2
-                          size={14}
-                          style={isHigh ? { color: "var(--cyan)" } : undefined}
-                        />{" "}
+                        {isSolved ? (
+                          <CheckCircle2
+                            size={14}
+                            style={{ color: "var(--emerald)" }}
+                          />
+                        ) : (
+                          <Code2
+                            size={14}
+                            style={
+                              isHigh ? { color: "var(--cyan)" } : undefined
+                            }
+                          />
+                        )}{" "}
                         Solve: {p.title}{" "}
-                        {isHigh && (
+                        {isHigh && !isSolved && (
                           <span
                             style={{
                               color: "var(--cyan)",
@@ -447,23 +485,48 @@ function RoadmapView({
                   })}
                   {debugPuzzles
                     .filter((p) => p.dayId === day.day)
-                    .map((puzzle) => (
-                      <button
-                        key={puzzle.id}
-                        className="secondary-button compact outline"
-                        onClick={() => {
-                          stopAutoTyping();
-                          setActivePuzzleId(puzzle.id);
-                          setPlaygroundMode("puzzle");
-                          const saved = getSavedPuzzleQuery(puzzle);
-                          updateEditorQuery(saved, "puzzle", puzzle.id);
-                          setActiveView("playground");
-                        }}
-                        title={`Debug: ${puzzle.title}`}
-                      >
-                        🧩 Debug: {puzzle.title}
-                      </button>
-                    ))}
+                    .map((puzzle) => {
+                      const isPuzzleSolved = (
+                        progress.solvedPuzzles || []
+                      ).includes(puzzle.id);
+                      return (
+                        <button
+                          key={puzzle.id}
+                          className="secondary-button compact outline"
+                          onClick={() => {
+                            stopAutoTyping();
+                            setActivePuzzleId(puzzle.id);
+                            setPlaygroundMode("puzzle");
+                            const saved = getSavedPuzzleQuery(puzzle);
+                            updateEditorQuery(saved, "puzzle", puzzle.id);
+                            setActiveView("playground");
+                          }}
+                          style={
+                            isPuzzleSolved
+                              ? {
+                                  borderColor: "rgba(48, 230, 149, 0.4)",
+                                  background: "rgba(48, 230, 149, 0.08)",
+                                  color: "var(--emerald)",
+                                }
+                              : undefined
+                          }
+                          title={`Debug: ${puzzle.title}`}
+                        >
+                          {isPuzzleSolved ? (
+                            <CheckCircle2
+                              size={14}
+                              style={{
+                                color: "var(--emerald)",
+                                marginRight: "4px",
+                              }}
+                            />
+                          ) : (
+                            "🧩 "
+                          )}
+                          Debug: {puzzle.title}
+                        </button>
+                      );
+                    })}
                   {day.mockInterview && (
                     <button
                       className="primary-button compact"

@@ -72,7 +72,6 @@ function DayDetailsView({
   const day = learningRoadmap.find((d) => d.day === selectedDayId);
   if (!day) return <div className="p-8">Day not found</div>;
 
-  const isDone = (progress.completedDays || []).includes(day.day);
   const dayModules = day.modules
     .map((id) => roadmapModules.find((m) => m.id === id))
     .filter((m) => m !== undefined);
@@ -105,6 +104,21 @@ function DayDetailsView({
   const solvedDayPuzzles = dayPuzzles.filter((p) =>
     (progress.solvedPuzzles || []).includes(p.id),
   ).length;
+
+  const totalDayItems =
+    totalDayProblems +
+    totalDayPuzzles +
+    (day.mockInterview && day.mockInterview.company ? 1 : 0);
+  const mockScore =
+    day.mockInterview && day.mockInterview.company
+      ? (progress.mockScores?.[day.mockInterview.company] ?? 0)
+      : 0;
+  const solvedMockCount = mockScore > 0 ? 1 : 0;
+  const solvedDayItems = solvedDayProblems + solvedDayPuzzles + solvedMockCount;
+
+  const isDone =
+    (progress.completedDays || []).includes(day.day) ||
+    (totalDayItems > 0 && solvedDayItems >= totalDayItems);
 
   const classForDiff = (d: string) => {
     const lower = (d || "").toLowerCase();

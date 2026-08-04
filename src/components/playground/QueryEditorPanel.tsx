@@ -1,6 +1,6 @@
 import React from "react";
 import Editor from "@monaco-editor/react";
-import { Play, Copy, RotateCcw, Sparkles } from "lucide-react";
+import { Play, Copy, RotateCcw, Wand2 } from "lucide-react";
 import type { BeforeMount, OnMount } from "@monaco-editor/react";
 
 interface QueryEditorPanelProps {
@@ -56,10 +56,17 @@ export const QueryEditorPanel: React.FC<QueryEditorPanelProps> = ({
           <button
             onClick={onFormat}
             className="secondary-button"
-            style={{ fontSize: "11px", padding: "4px 8px" }}
+            style={{
+              fontSize: "11px",
+              padding: "4px 8px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "5px",
+            }}
             title="Format SQL Query"
           >
-            <Sparkles size={13} /> Format
+            <Wand2 size={13} style={{ flexShrink: 0, color: "var(--cyan)" }} />{" "}
+            Format
           </button>
           <button
             onClick={handleCopy}
@@ -117,6 +124,8 @@ export const QueryEditorPanel: React.FC<QueryEditorPanelProps> = ({
             lineNumbers: "on",
             scrollBeyondLastLine: false,
             padding: { top: 10, bottom: 10 },
+            multiCursorModifier: "alt",
+            multiCursorMergeOverlapping: true,
           }}
         />
       </div>

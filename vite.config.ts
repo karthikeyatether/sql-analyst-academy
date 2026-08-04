@@ -36,6 +36,9 @@ function swVersionPlugin(): Plugin {
 
 export default defineConfig({
   plugins: [react(), swVersionPlugin()],
+  worker: {
+    format: "iife",
+  },
   server: {
     port: 5173,
     host: "127.0.0.1"

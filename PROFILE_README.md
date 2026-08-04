@@ -9,7 +9,7 @@
 - 📊 **Data Analytics & SQL Specialist**: Building interactive platforms, complex analytical queries, CTEs, window functions, and EXPLAIN plan visualizers.
 - 🤖 **Deep Learning & Computer Vision**: Developing medical image classification models (Pneumonia detection from Chest X-Rays) using TensorFlow/Keras & CNNs.
 - ⛓️ **Decentralized Systems & Web**: Architecting Web3 Electronic Health Record (EHR) systems with Ethereum smart contracts and IPFS storage.
-- ⚡ **Performance Advocate**: Obsessed with client-side WebAssembly optimization, fast startup times, and clean, conventional git workflows.
+- ⚡ **Performance Advocate**: Obsessed with client-side WebAssembly optimization, Web Worker execution offloading, fast startup times, and clean CI/CD workflows.
 
 ---
 
@@ -42,17 +42,9 @@
 ### 🚀 Featured Projects
 
 #### ⚡ [SQL Analyst Academy](https://github.com/karthikeyatether/sql-analyst-academy)
-An offline-first, client-side SQL learning & interview preparation platform with 43 modules, 202 execution challenges, EXPLAIN plan visualizers, A/B query profilers, and SQLite WASM engine.
-- **Tech**: React, TypeScript, SQLite WASM (`sql.js`), Vite, Gzip pre-compression.
-- **Highlights**: 207/207 passing automated test suite, 74% compressed asset payload, zero backend dependencies.
-
-#### 🏥 [MediChain](https://github.com/karthikeyatether/medichain)
-A decentralized Electronic Health Record (EHR) dApp ensuring immutable, role-based medical data access control using smart contracts and IPFS storage.
-- **Tech**: Solidity, Ethereum, Web3.js, React, IPFS, Truffle, Metamask.
-
-#### 🫁 [Pneumonia Detection DL](https://github.com/karthikeyatether/XRAY-BASED-PNEUMONIA-DETETCTION-USING-DEEP-LEARNMING)
-Automated chest X-Ray image classification system utilizing Convolutional Neural Networks (CNNs) and transfer learning with a Flask web frontend.
-- **Tech**: Python, TensorFlow/Keras, OpenCV, Flask.
+An offline-first, client-side SQL learning & interview preparation platform with 30-Day curriculum, 201 interactive challenges (215 automated verifications), EXPLAIN plan visualizers, Web Worker SQL engine, and SQLite WASM runtime.
+- **Tech**: React, TypeScript, SQLite WASM (`sql.js`), Web Workers, Vite, Brotli/Gzip pre-compression.
+- **Highlights**: 215/215 passing automated test suite, off-main-thread query execution, zero backend server dependencies.
 
 ---
 

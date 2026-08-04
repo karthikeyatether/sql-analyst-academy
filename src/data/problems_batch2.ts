@@ -63,7 +63,8 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "Write a query to calculate the average cost_price and average list_price for " +
         "products in the 'Electronics' category with a list_price under 20000. Alias the " +
         "results as avg_cost and avg_list.",
-      starterQuery: "-- Write your SQL query here\n",
+      starterQuery:
+        "SELECT AVG(???) as avg_cost FROM products WHERE category = '???' AND list_price < ???;",
       solution:
         "SELECT AVG(cost_price) AS avg_cost, AVG(list_price) AS avg_list FROM products " +
         "WHERE category = 'Electronics' AND list_price < 20000;",
@@ -109,25 +110,25 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
       id: "m12-p2",
       moduleId: 12,
       difficulty: "Medium",
-      title: "Product catalog price range",
-      businessScenario: "Merkle wants pricing bounds for Electronics category.",
+      title: "Category Price Spread & Margin Ratio",
+      businessScenario:
+        "Flipkart's merchandising analytics team needs a comprehensive price spread assessment across product categories to optimize catalog pricing.",
       prompt:
-        "Write a query to find the minimum list_price as cheapest_electronics and " +
-        "maximum list_price as most_expensive_electronics for 'Electronics' category.",
-      starterQuery: "SELECT ???\nFROM ???\nWHERE ???;",
+        "Write a query to retrieve category, minimum list_price AS min_price, maximum list_price AS max_price, average list_price rounded to 2 decimal places AS avg_price, and price spread AS price_spread (MAX(list_price) minus MIN(list_price)) from the products table. Group by category and order by price_spread DESC.",
+      starterQuery: "SELECT ???\nFROM products\nGROUP BY ???\nORDER BY ???;",
       solution:
-        "SELECT MIN(list_price) AS cheapest_electronics, MAX(list_price) AS " +
-        "most_expensive_electronics FROM products WHERE category = 'Electronics';",
+        "SELECT category, MIN(list_price) AS min_price, MAX(list_price) AS max_price, ROUND(AVG(list_price), 2) AS avg_price, (MAX(list_price) - MIN(list_price)) AS price_spread FROM products GROUP BY category ORDER BY price_spread DESC;",
       hints: [
-        "Use MIN and MAX with WHERE category =",
-        ".",
-        "Structure your query using clauses similar to: SELECT MIN(list_price) AS cheapest_electronics, MAX(list_price) AS.",
+        "Calculate MIN, MAX, ROUND(AVG, 2), and (MAX - MIN) for each category.",
+        "Group output rows by category using GROUP BY.",
+        "Structure your query: SELECT category, MIN(list_price) AS min_price, MAX(list_price) AS max_price, ROUND(AVG(list_price), 2) AS avg_price, (MAX(list_price) - MIN(list_price)) AS price_spread FROM products GROUP BY category ORDER BY price_spread DESC;",
       ],
-      detailedExplanation: "MIN/MAX aggregation over filtered rows.",
+      detailedExplanation:
+        "Combines multiple MIN/MAX/AVG aggregates with derived group calculations.",
       alternativeApproach: "None.",
-      performanceNotes: "Uses category index.",
-      concepts: ["MIN", "MAX", "WHERE"],
-      companyTags: ["Croma"],
+      performanceNotes: "Efficient single scan with category aggregation.",
+      concepts: ["MIN", "MAX", "AVG", "GROUP BY", "ORDER BY"],
+      companyTags: ["Flipkart"],
     },
     {
       id: "m12-p3",
@@ -140,7 +141,8 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "Write a query to find the maximum total_amount as highest_order and minimum " +
         "total_amount as lowest_order from orders where order_date starts with '2024' and " +
         "total_amount > 0.",
-      starterQuery: "-- Write your SQL query here\n",
+      starterQuery:
+        "SELECT MIN(???) as min_amt, MAX(???) as max_amt FROM orders WHERE SUBSTR(???, 1, 4) = '???';",
       solution:
         "SELECT MAX(total_amount) AS highest_order, MIN(total_amount) AS lowest_order " +
         "FROM orders WHERE order_date LIKE '2024%' AND total_amount > 0;",
@@ -163,22 +165,24 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
       id: "m13-p1",
       moduleId: 13,
       difficulty: "Easy",
-      title: "Orders by status",
-      businessScenario: "Check orders split by status.",
+      title: "Customer demographics by city",
+      businessScenario:
+        "The expansion team wants to analyze customer distribution across cities to plan new regional fulfillment hubs.",
       prompt:
-        "Write a query to get status and order count (as order_count) from orders, grouped by status.",
-      starterQuery: "SELECT ??? FROM orders;",
+        "Write a query to retrieve city and customer_count (COUNT of customer_id) from the customers table, grouped by city. Order by customer_count descending, city ascending.",
+      starterQuery:
+        "SELECT city, COUNT(customer_id) AS customer_count\nFROM customers\nGROUP BY ???\nORDER BY ???;",
       solution:
-        "SELECT status, COUNT(*) AS order_count FROM orders GROUP BY status;",
+        "SELECT city, COUNT(customer_id) AS customer_count FROM customers GROUP BY city ORDER BY customer_count DESC, city ASC;",
       hints: [
-        "Group by status, count all rows.",
-        "Group your output rows using GROUP BY and apply aggregate functions like COUNT(), SUM(), or AVG().",
-        "Structure your query using clauses similar to: SELECT status, COUNT(*) AS order_count FROM orders GROUP BY status;.",
+        "Select city and COUNT(customer_id) AS customer_count from the customers table.",
+        "Group rows by city using GROUP BY city.",
+        "Structure your query: SELECT city, COUNT(customer_id) AS customer_count FROM customers GROUP BY city ORDER BY customer_count DESC, city ASC;",
       ],
       detailedExplanation:
-        "GROUP BY partitions data into groups based on status.",
+        "This query aggregates customer records by city using GROUP BY city and computes the total customer count per city, ordering the output to highlight top markets.",
       alternativeApproach: "None.",
-      performanceNotes: "Single scan aggregation.",
+      performanceNotes: "Single scan aggregation on customers table.",
       concepts: ["GROUP BY", "COUNT"],
       companyTags: ["Flipkart"],
     },
@@ -215,7 +219,7 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "total_revenue (SUM of total_amount). Group by order_month, channel, and sort by " +
         "order_month desc, total_revenue desc.",
       starterQuery:
-        "SELECT SUBSTR(order_date, 1, 7) AS order_month, channel, SUM(total_amount) AS " +
+        "SELECT ???\nFROM ???;" +
         "total_revenue\nFROM orders\nGROUP BY order_month, channel\nORDER BY order_month " +
         "DESC, total_revenue DESC;",
       solution:
@@ -238,35 +242,25 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
       id: "m13-p4",
       moduleId: 13,
       difficulty: "Hard",
-      title: "Concatenate ordered product list per order",
+      title: "Concatenate product IDs per order",
       businessScenario:
-        "The logistics team wants to see a consolidated text list of all product names " +
-        "ordered in each transaction for invoice logs.",
+        "The logistics team wants to see a consolidated text list of all product IDs ordered in each transaction.",
       prompt:
-        "Write a query on order_items joined to products. Return order_id and a " +
-        "comma-separated list of all ordered product names (aliased as 'product_list') " +
-        "using MySQL GROUP_CONCAT(product_name SEPARATOR ', '). Group by order_id. Order by order_id.",
+        "Write a query on order_items grouped by order_id. Return order_id, total_items (COUNT of product_id), and a comma-separated list of distinct product IDs (aliased as 'product_ids') using MySQL GROUP_CONCAT(DISTINCT product_id). Group by order_id. Order by order_id ascending.",
       starterQuery:
-        "SELECT order_id, GROUP_CONCAT(product_name SEPARATOR ', ') AS product_list FROM " +
-        "order_items oi JOIN products p ON oi.product_id = p.product_id GROUP BY order_id " +
-        "ORDER BY order_id;",
+        "SELECT order_id, COUNT(product_id) AS total_items, GROUP_CONCAT(DISTINCT product_id) AS product_ids\nFROM order_items\nGROUP BY ???\nORDER BY ???;",
       solution:
-        "SELECT oi.order_id, GROUP_CONCAT(p.product_name SEPARATOR ', ') AS product_list FROM " +
-        "order_items oi JOIN products p ON oi.product_id = p.product_id GROUP BY " +
-        "oi.order_id ORDER BY oi.order_id;",
+        "SELECT order_id, COUNT(product_id) AS total_items, GROUP_CONCAT(DISTINCT product_id) AS product_ids FROM order_items GROUP BY order_id ORDER BY order_id ASC;",
       hints: [
-        "Join order_items and products tables on product_id.",
-        "Use " +
-          "Use GROUP_CONCAT(product_name SEPARATOR ', ') to stitch strings.",
-        "Group by order_id.",
+        "Select order_id, COUNT(product_id) AS total_items, and GROUP_CONCAT(DISTINCT product_id) AS product_ids.",
+        "Group the result set by order_id using GROUP BY order_id.",
+        "Structure your query: SELECT order_id, COUNT(product_id) AS total_items, GROUP_CONCAT(DISTINCT product_id) AS product_ids FROM order_items GROUP BY order_id ORDER BY order_id ASC;",
       ],
       detailedExplanation:
-        "GROUP_CONCAT aggregates multiple strings within a group into a single delimited " +
-        "text value. Perfect for invoice summaries and CSV exports.",
+        "GROUP_CONCAT aggregates multiple column values within a group into a single delimited string.",
       alternativeApproach: "None.",
-      performanceNotes:
-        "Requires joining two tables and then aggregating strings. Indexed joins are fast.",
-      concepts: ["GROUP BY", "GROUP_CONCAT", "joins"],
+      performanceNotes: "Fast single-table aggregation.",
+      concepts: ["GROUP BY", "GROUP_CONCAT", "COUNT"],
       companyTags: ["Swiggy"],
     },
   ],
@@ -337,7 +331,8 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "Write a query to find product categories with more than 2 products AND a " +
         "maximum catalog list_price of at least ₹15,000. Return category, product_count, " +
         "and max_price.",
-      starterQuery: "-- Write your SQL query here\n",
+      starterQuery:
+        "SELECT category, COUNT(*) as product_count, MAX(???) as max_price FROM products GROUP BY ??? HAVING COUNT(*) > ??? AND MAX(list_price) >= ???;",
       solution:
         "SELECT category, COUNT(*) AS product_count, MAX(list_price) AS max_price FROM " +
         "products GROUP BY category HAVING COUNT(*) > 2 AND MAX(list_price) >= 15000;",
@@ -361,30 +356,27 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
       id: "m15-p1",
       moduleId: 15,
       difficulty: "Easy",
-      title: "Filter individual transactions vs aggregate counts",
+      title: "Average catalog pricing by brand",
       businessScenario:
-        "Audit orders placed via specific channels to separate raw filters from grouped summaries.",
+        "Merchandising wants to evaluate average list price for premium products priced over ₹2,000 across major brands.",
       prompt:
-        "Write a query to get channel and total_orders for 'Delivered' orders, grouped " +
-        "by channel, where the channel has more than 2 total orders. Return channel and " +
-        "total_orders.",
+        "Write a query on the products table to return brand and avg_price (AVG of list_price). Filter to products with list_price > 2000 in the WHERE clause, group by brand, and use HAVING to include only brands where avg_price is greater than 5000. Order by avg_price descending.",
       starterQuery:
-        "SELECT channel, COUNT(*) AS total_orders FROM orders WHERE status = '???' GROUP " +
-        "BY channel HAVING COUNT(*) > ???;",
+        "SELECT brand, AVG(list_price) AS avg_price\nFROM products\nWHERE list_price > 2000\nGROUP BY brand\nHAVING ???\nORDER BY avg_price DESC;",
       solution:
-        "SELECT channel, COUNT(*) AS total_orders FROM orders WHERE status = 'Delivered' " +
-        "GROUP BY channel HAVING COUNT(*) > 2;",
+        "SELECT brand, AVG(list_price) AS avg_price FROM products WHERE list_price > 2000 GROUP BY brand HAVING AVG(list_price) > 5000 ORDER BY avg_price DESC;",
       hints: [
-        "WHERE filters individual rows (status), HAVING filters groups (count).",
-        "Filter your result set using WHERE conditions to isolate the target criteria.",
-        "Structure your query using clauses similar to: SELECT channel, COUNT(*) AS total_orders FROM orders WHERE status =.",
+        "Filter individual products with WHERE list_price > 2000 before grouping.",
+        "Group by brand and filter aggregated brand average with HAVING AVG(list_price) > 5000.",
+        "Structure your query: SELECT brand, AVG(list_price) AS avg_price FROM products WHERE list_price > 2000 GROUP BY brand HAVING AVG(list_price) > 5000 ORDER BY avg_price DESC;",
       ],
       detailedExplanation:
-        "Shows clear difference: WHERE filters input, HAVING filters aggregated results.",
+        "Demonstrates the fundamental difference between WHERE and HAVING: WHERE filters individual product rows (list_price > 2000) prior to grouping, while HAVING filters the computed aggregate group averages (avg_price > 5000).",
       alternativeApproach: "None.",
-      performanceNotes: "Combining WHERE and HAVING is standard best practice.",
-      concepts: ["WHERE", "HAVING", "GROUP BY"],
-      companyTags: ["Swiggy"],
+      performanceNotes:
+        "Filter on list_price reduces candidate rows aggregated.",
+      concepts: ["WHERE", "HAVING", "GROUP BY", "AVG"],
+      companyTags: ["Croma"],
     },
     {
       id: "m15-p2",
@@ -417,31 +409,27 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
       id: "m15-p3",
       moduleId: 15,
       difficulty: "Hard",
-      title: "Total sales volume with group constraints",
+      title: "Department payroll budget for senior staff",
       businessScenario:
-        "Audit customers who place multiple large orders, filtering individual order sizes early.",
+        "HR finance wants to audit department payroll allocated to high-earning senior team members.",
       prompt:
-        "For each customer, calculate total spent on orders where individual order " +
-        "amount exceeds ₹3,000. Only return customers whose total spent on those large " +
-        "orders exceeds ₹10,000.",
+        "Write a query on the employees table to calculate total_senior_payroll (SUM of salary_lpa) for employees earning more than ₹15 LPA. Group by department_id, and use HAVING to return only departments where total_senior_payroll exceeds ₹50 LPA. Order by total_senior_payroll descending.",
       starterQuery:
-        "SELECT customer_id, SUM(total_amount) AS total_spent\nFROM orders\nWHERE " +
-        "total_amount > 3000\nGROUP BY customer_id\nHAVING SUM(total_amount) > 10000;",
+        "SELECT department_id, SUM(salary_lpa) AS total_senior_payroll\nFROM employees\nWHERE salary_lpa > 15\nGROUP BY department_id\nHAVING ???\nORDER BY total_senior_payroll DESC;",
       solution:
-        "SELECT customer_id, SUM(total_spent) AS total_spent FROM (SELECT customer_id, " +
-        "total_amount AS total_spent FROM orders WHERE total_amount > 3000) GROUP BY " +
-        "customer_id HAVING SUM(total_spent) > 10000;",
+        "SELECT department_id, SUM(salary_lpa) AS total_senior_payroll FROM employees WHERE salary_lpa > 15 GROUP BY department_id HAVING SUM(salary_lpa) > 50 ORDER BY total_senior_payroll DESC;",
       hints: [
-        "Filter raw orders WHERE total_amount > 3000, then apply HAVING SUM(total_amount) > 10000.",
-        "Filter your result set using WHERE conditions to isolate the target criteria.",
-        "Structure your query using clauses similar to: SELECT customer_id, SUM(total_spent) AS total_spent FROM (SELECT customer_id,.",
+        "Filter raw employee records first using WHERE salary_lpa > 15.",
+        "Group by department_id and filter aggregated payroll using HAVING SUM(salary_lpa) > 50.",
+        "Structure your query: SELECT department_id, SUM(salary_lpa) AS total_senior_payroll FROM employees WHERE salary_lpa > 15 GROUP BY department_id HAVING SUM(salary_lpa) > 50 ORDER BY total_senior_payroll DESC;",
       ],
       detailedExplanation:
-        "Tests advanced composition of WHERE (individual bounds) and HAVING (group sums).",
+        "Combines row-level filtering (WHERE salary_lpa > 15) to isolate senior staff, followed by group aggregation (GROUP BY department_id) and group-level thresholding (HAVING SUM(salary_lpa) > 50).",
       alternativeApproach: "None.",
-      performanceNotes: "Filters raw inputs first to reduce records grouped.",
+      performanceNotes:
+        "Filters individual employee records before department aggregation.",
       concepts: ["WHERE", "HAVING", "GROUP BY", "SUM"],
-      companyTags: ["Flipkart"],
+      companyTags: ["TCS"],
     },
   ],
 
@@ -510,7 +498,8 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "Find total spend (quantity * unit_price) on 'Electronics' products for each " +
         "customer. Return customer_id, full_name, and total_electronics_spend. Include " +
         "only delivered orders (status = 'Delivered'). Order by total_electronics_spend DESC.",
-      starterQuery: "-- Write your SQL query here\n",
+      starterQuery:
+        "SELECT c.customer_id, c.full_name, p.category, SUM(???) as category_spent FROM customers c JOIN orders o ON c.customer_id = o.customer_id JOIN order_items oi ON o.order_id = oi.order_id JOIN products p ON oi.product_id = p.product_id GROUP BY ??? HAVING SUM(oi.quantity * oi.unit_price) > ??? ORDER BY ??? DESC;",
       solution:
         "SELECT c.customer_id, c.full_name, SUM(oi.quantity * oi.unit_price) AS " +
         "total_electronics_spend FROM customers c INNER JOIN orders o ON c.customer_id = " +
@@ -589,27 +578,25 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
       id: "m17-p3",
       moduleId: 17,
       difficulty: "Hard",
-      title: "Identify customers with no orders",
+      title: "High-Value Churned Buyers Analysis",
       businessScenario:
-        "Find accounts that have placed zero orders of any status.",
+        "Swiggy's growth team needs to identify Premium segment customers who signed up in 2023 but have zero order activity in 2024 to trigger re-engagement campaigns.",
       prompt:
-        "Find all customers who have never placed an order. Return customer_id and " +
-        "full_name. Order by customer_id.",
-      starterQuery: "-- Write your SQL query here\n",
+        "Write a query to retrieve customer_id, full_name, city, and segment from customers where segment = 'Premium' and signup_date < '2024-01-01' and customer_id NOT IN (SELECT customer_id FROM orders WHERE order_date >= '2024-01-01'). Order by customer_id ASC.",
+      starterQuery:
+        "SELECT c.customer_id, c.full_name, SUM(???) as total_spent FROM customers c JOIN orders o ON c.customer_id = o.customer_id WHERE c.customer_id NOT IN (SELECT ??? FROM subscriptions) GROUP BY ??? HAVING SUM(o.total_amount) > ???;",
       solution:
-        "SELECT c.customer_id, c.full_name FROM customers c LEFT JOIN orders o ON " +
-        "c.customer_id = o.customer_id WHERE o.order_id IS NULL ORDER BY c.customer_id " +
-        "ASC;",
+        "SELECT c.customer_id, c.full_name, c.city, c.segment FROM customers c WHERE c.segment = 'Premium' AND c.signup_date < '2024-01-01' AND c.customer_id NOT IN (SELECT customer_id FROM orders WHERE order_date >= '2024-01-01') ORDER BY c.customer_id ASC;",
       hints: [
-        "Join customers to orders, filter where orders.order_id IS NULL.",
-        "Connect the primary table with related foreign key tables using INNER JOIN or LEFT JOIN.",
-        "Structure your query using clauses similar to: SELECT c.customer_id, c.full_name FROM customers c LEFT JOIN orders o ON.",
+        "Select customer details for Premium customers signed up before 2024.",
+        "Filter customer_id NOT IN (SELECT customer_id FROM orders WHERE order_date >= '2024-01-01').",
+        "Structure your query: SELECT c.customer_id, c.full_name, c.city, c.segment FROM customers c WHERE c.segment = 'Premium' AND c.signup_date < '2024-01-01' AND c.customer_id NOT IN (SELECT customer_id FROM orders WHERE order_date >= '2024-01-01') ORDER BY c.customer_id ASC;",
       ],
       detailedExplanation:
-        "Standard left-join check to isolate unmatched rows.",
-      alternativeApproach: "None.",
-      performanceNotes: "Uses customer indexes.",
-      concepts: ["LEFT JOIN", "anti-join", "IS NULL"],
+        "Isolates inactive high-value historical customers using uncorrelated NOT IN subqueries.",
+      alternativeApproach: "Use LEFT JOIN with NULL check on 2024 orders.",
+      performanceNotes: "Subquery on indexed customer_id.",
+      concepts: ["NOT IN", "subqueries", "segmentation"],
       companyTags: ["Swiggy"],
     },
     {
@@ -625,7 +612,8 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "(order_date between '2023-01-01' and '2023-12-31') but have placed NO orders in " +
         "2024 (order_date between '2024-01-01' and '2024-12-31'). Return customer_id, " +
         "full_name, and segment. Order by customer_id.",
-      starterQuery: "-- Write your SQL query here\n",
+      starterQuery:
+        "SELECT DISTINCT c.customer_id, c.full_name, c.segment FROM customers c INNER JOIN orders o23 ON c.customer_id = o23.customer_id AND o23.order_date BETWEEN '???' AND '???' LEFT JOIN orders o24 ON c.customer_id = o24.customer_id AND o24.order_date BETWEEN '???' AND '???' WHERE o24.order_id IS ??? ORDER BY c.customer_id;",
       solution:
         "SELECT DISTINCT c.customer_id, c.full_name, c.segment FROM customers c INNER " +
         "JOIN orders o23 ON c.customer_id = o23.customer_id AND o23.order_date BETWEEN " +
@@ -662,9 +650,7 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "JOIN natively), simulate it by writing a LEFT JOIN with the tables reversed: " +
         "customers LEFT JOIN orders.",
       starterQuery:
-        "SELECT o.order_id, c.full_name\nFROM customers c\nLEFT JOIN orders o ON " +
-        "c.customer_id = o.customer_id;\n-- Note: This returns all customers (right " +
-        "table) and their orders.",
+        "SELECT o.order_id, c.full_name FROM customers c LEFT JOIN orders o ON c.customer_id = ???;",
       solution:
         "SELECT o.order_id, c.full_name FROM customers c LEFT JOIN orders o ON c.customer_id = o.customer_id;",
       hints: [
@@ -690,9 +676,7 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "JOIN by starting with the products table on the right side of a LEFT JOIN (or " +
         "LEFT JOIN order_items onto products). Return product_id and product_name.",
       starterQuery:
-        "SELECT p.product_id, p.product_name\nFROM order_items oi\nRIGHT JOIN products p " +
-        "ON oi.product_id = p.product_id\nWHERE oi.order_item_id IS NULL;\n-- Modern " +
-        "MySQL 8.0+ supports RIGHT JOIN natively, or you can swap table order with LEFT JOIN!",
+        "SELECT p.product_id, p.product_name FROM products p LEFT JOIN order_items oi ON p.product_id = ??? WHERE oi.order_item_id IS ???;",
       solution:
         "SELECT p.product_id, p.product_name FROM products p LEFT JOIN order_items oi ON " +
         "p.product_id = oi.product_id WHERE oi.order_item_id IS NULL;",
@@ -717,7 +701,8 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
       prompt:
         "Find all delivered orders (status = 'Delivered') that have no corresponding payment record. " +
         "Return order_id, order_date, and total_amount. Order by order_id ASC.",
-      starterQuery: "-- Write your SQL query here\n",
+      starterQuery:
+        "SELECT o.order_id, o.total_amount, o.order_date FROM orders o LEFT JOIN payments p ON o.order_id = ??? WHERE p.payment_id IS ???;",
       solution:
         "SELECT o.order_id, o.order_date, o.total_amount FROM orders o LEFT JOIN " +
         "payments p ON o.order_id = p.order_id WHERE o.status = 'Delivered' AND " +
@@ -748,7 +733,7 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "retaining unmatched records from both tables. Return customer_id (as c_id) and subscription_id. " +
         "Order by c_id ASC.",
       starterQuery:
-        "SELECT c.customer_id AS c_id, s.subscription_id FROM customers c LEFT JOIN " +
+        "SELECT ???\nFROM ???;" +
         "subscriptions s ON c.customer_id = s.customer_id UNION SELECT s.customer_id AS " +
         "c_id, s.subscription_id FROM subscriptions s LEFT JOIN customers c ON " +
         "s.customer_id = c.customer_id WHERE ???",
@@ -804,8 +789,9 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
       prompt:
         "Reconcile all orders and payments. Return order_id (from orders), payment_id, " +
         "total_amount, and amount (from payments). Use FULL JOIN simulation. Order by " +
-        "order_id.",
-      starterQuery: "-- Write your SQL query here\n",
+        "order_id ASC.",
+      starterQuery:
+        "SELECT o.order_id, o.total_amount, COALESCE(???, 0) as paid_amount, o.total_amount - COALESCE(???, 0) as outstanding FROM orders o LEFT JOIN payments p ON o.order_id = ???;",
       solution:
         "SELECT o.order_id, p.payment_id, o.total_amount, p.amount FROM orders o LEFT " +
         "JOIN payments p ON o.order_id = p.order_id UNION SELECT p.order_id, " +
@@ -837,9 +823,7 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "Write a query to list all employee names along with their manager's name. Join " +
         "the employees table to itself. Return employee_name and manager_name.",
       starterQuery:
-        "SELECT\n  e.employee_name AS employee_name,\n  m.employee_name AS " +
-        "manager_name\nFROM employees e\nINNER JOIN employees m ON e.manager_id = " +
-        "m.employee_id;",
+        "SELECT\n  e.employee_name AS employee_name,\n  m.employee_name AS manager_name\nFROM employees e\nINNER JOIN employees m ON e.manager_id = ???;",
       solution:
         "SELECT e.employee_name AS employee_name, m.employee_name AS manager_name FROM " +
         "employees e INNER JOIN employees m ON e.manager_id = m.employee_id;",
@@ -867,7 +851,7 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "SELECT\n  e.employee_name AS employee_name,\n  e.salary_lpa AS " +
         "employee_salary,\n  m.employee_name AS manager_name,\n  m.salary_lpa AS " +
         "manager_salary\nFROM employees e\nINNER JOIN employees m ON e.manager_id = " +
-        "m.employee_id\nWHERE e.salary_lpa > m.salary_lpa;",
+        "m.employee_id\nWHERE e.salary_lpa > ???;",
       solution:
         "SELECT e.employee_name AS employee_name, e.salary_lpa AS employee_salary, " +
         "m.employee_name AS manager_name, m.salary_lpa AS manager_salary FROM employees e " +
@@ -900,7 +884,8 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "total spend. Return c1.full_name as customer1, c2.full_name as customer2, the " +
         "city, c1_total_spend (rounded SUM of c1's orders), and c2_total_spend (rounded " +
         "SUM of c2's orders). Order by city, c1_total_spend descending.",
-      starterQuery: "-- Write your SQL query here\n",
+      starterQuery:
+        "SELECT c1.full_name AS customer1, c2.full_name AS customer2, c1.city, ROUND(SUM(o1.total_amount), 2) AS c1_total_spend, ROUND(SUM(o2.total_amount), 2) AS c2_total_spend FROM customers c1 INNER JOIN customers c2 ON c1.city = ??? AND c1.segment = ??? AND c2.segment = ??? AND c1.customer_id < ??? LEFT JOIN orders o1 ON o1.customer_id = c1.customer_id LEFT JOIN orders o2 ON o2.customer_id = c2.customer_id GROUP BY ???, ???, ??? ORDER BY c1.city ASC, c1_total_spend DESC;",
       solution:
         "SELECT c1.full_name AS customer1, c2.full_name AS customer2, c1.city, " +
         "ROUND(SUM(o1.total_amount), 2) AS c1_total_spend, ROUND(SUM(o2.total_amount), 2) " +
@@ -910,11 +895,9 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "orders o2 ON o2.customer_id = c2.customer_id GROUP BY c1.customer_id, " +
         "c2.customer_id, c1.city ORDER BY c1.city ASC, c1_total_spend DESC;",
       hints: [
-        "SELF JOIN customers c1 and c2 on city = city AND segment = 'Premium' AND c1.customer_id < c2.customer_id.",
-        "LEFT JOIN orders o1 on o1.customer_id = c1.customer_id to compute c1's spend.",
-        "LEFT JOIN orders o2 on o2.customer_id = c2.customer_id to compute c2's spend.",
-        "SUM(o1.total_amount) for c1_total_spend, SUM(o2.total_amount) for c2_total_spend.",
-        "GROUP BY c1.customer_id, c2.customer_id, c1.city to aggregate per pair.",
+        "Perform a SELF JOIN on customers for Premium customers sharing a city with c1.customer_id < c2.customer_id.",
+        "LEFT JOIN orders to compute rounded SUM spend for customer 1 and customer 2.",
+        "Structure your query: SELECT c1.full_name AS customer1, c2.full_name AS customer2, c1.city, ROUND(SUM(o1.total_amount), 2) AS c1_total_spend, ROUND(SUM(o2.total_amount), 2) AS c2_total_spend FROM customers c1 INNER JOIN customers c2 ON c1.city = c2.city AND c1.segment = 'Premium' AND c2.segment = 'Premium' AND c1.customer_id < c2.customer_id LEFT JOIN orders o1 ON o1.customer_id = c1.customer_id LEFT JOIN orders o2 ON o2.customer_id = c2.customer_id GROUP BY c1.customer_id, c2.customer_id, c1.city ORDER BY c1.city ASC, c1_total_spend DESC;",
       ],
       detailedExplanation:
         "This problem combines SELF JOIN (Module 20's core concept) with multi-table " +
@@ -952,7 +935,7 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "Write a query to find all orders with a total_amount strictly greater than the " +
         "overall average total_amount. Return order_id and total_amount. Sort desc.",
       starterQuery:
-        "SELECT order_id, total_amount FROM orders WHERE total_amount > (SELECT " +
+        "SELECT order_id, total_amount FROM orders WHERE ???" +
         "AVG(total_amount) FROM orders) ORDER BY ???;",
       solution:
         "SELECT order_id, total_amount FROM orders WHERE total_amount > (SELECT " +
@@ -978,10 +961,7 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "Find customer_id and total_spent. Group by customer, return only those whose " +
         "total sum of total_amount exceeds the average customer lifetime spend.",
       starterQuery:
-        "SELECT customer_id, SUM(total_amount) AS total_spent\nFROM orders\nGROUP BY " +
-        "customer_id\nHAVING SUM(total_amount) > (\n  SELECT AVG(customer_spent)\n  FROM " +
-        "(SELECT SUM(total_amount) AS customer_spent FROM orders GROUP BY " +
-        "customer_id)\n);",
+        "SELECT customer_id, SUM(total_amount) AS total_spent\nFROM orders\nGROUP BY customer_id\nHAVING SUM(total_amount) > (\n  SELECT AVG(???)\n  FROM (SELECT SUM(total_amount) AS customer_spent FROM orders GROUP BY customer_id)\n);",
       solution:
         "SELECT customer_id, SUM(total_amount) AS total_spent FROM orders GROUP BY " +
         "customer_id HAVING SUM(total_amount) > (SELECT AVG(customer_spent) FROM (SELECT " +
@@ -1002,27 +982,26 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
       id: "m21-p3",
       moduleId: 21,
       difficulty: "Hard",
-      title: "Find orders above average value",
-      businessScenario: "Operational audit of transaction values.",
+      title: "Products priced above Electronics category average",
+      businessScenario:
+        "The catalog team wants to benchmark premium catalog items against the average list price of the Electronics department.",
       prompt:
-        "Write a query to retrieve order_id and total_amount for orders exceeding the " +
-        "average total_amount of all orders. Order by total_amount descending.",
+        "Write a query to retrieve product_id, product_name, category, and list_price from the products table for all products whose list_price is strictly greater than the average list_price of products in the 'Electronics' category. Order by list_price descending, product_id ascending.",
       starterQuery:
-        "SELECT order_id, total_amount\nFROM orders\nWHERE total_amount > (\n  SELECT " +
-        "AVG(total_amount)\n  FROM orders\n)\nORDER BY total_amount DESC;",
+        "SELECT product_id, product_name, category, list_price\nFROM products\nWHERE list_price > (SELECT AVG(list_price) FROM products WHERE category = '???')\nORDER BY list_price DESC, product_id ASC;",
       solution:
-        "SELECT order_id, total_amount FROM orders WHERE total_amount > (SELECT " +
-        "AVG(total_amount) FROM orders) ORDER BY total_amount DESC;",
+        "SELECT product_id, product_name, category, list_price FROM products WHERE list_price > (SELECT AVG(list_price) FROM products WHERE category = 'Electronics') ORDER BY list_price DESC, product_id ASC;",
       hints: [
-        "Basic subquery check inside WHERE.",
-        "Filter your result set using WHERE conditions to isolate the target criteria.",
-        "Structure your query using clauses similar to: SELECT order_id, total_amount FROM orders WHERE total_amount > (SELECT.",
+        "Construct a scalar subquery to compute average price: SELECT AVG(list_price) FROM products WHERE category = 'Electronics'.",
+        "Use that subquery in the main WHERE clause: WHERE list_price > (subquery).",
+        "Structure your query: SELECT product_id, product_name, category, list_price FROM products WHERE list_price > (SELECT AVG(list_price) FROM products WHERE category = 'Electronics') ORDER BY list_price DESC, product_id ASC;",
       ],
-      detailedExplanation: "Filters using overall average scalar value.",
+      detailedExplanation:
+        "Executes a scalar subquery to compute the benchmark average price of Electronics items, then compares every product's list price against that single benchmark value.",
       alternativeApproach: "None.",
-      performanceNotes: "Very efficient.",
-      concepts: ["subquery", "AVG"],
-      companyTags: ["Zomato"],
+      performanceNotes: "Executes category average scalar subquery once.",
+      concepts: ["subquery", "AVG", "WHERE"],
+      companyTags: ["Croma"],
     },
   ],
 
@@ -1038,9 +1017,7 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "Find orders exceeding their booking channel's average total_amount. Return " +
         "order_id, channel, and total_amount.",
       starterQuery:
-        "SELECT o1.order_id, o1.channel, o1.total_amount\nFROM orders o1\nWHERE " +
-        "o1.total_amount > (\n  SELECT AVG(o2.total_amount)\n  FROM orders o2\n  WHERE " +
-        "o2.channel = o1.channel\n);",
+        "SELECT order_id, channel, total_amount\nFROM orders o\nWHERE total_amount > (\n  SELECT AVG(total_amount) FROM orders WHERE channel = ???\n);",
       solution:
         "SELECT o1.order_id, o1.channel, o1.total_amount FROM orders o1 WHERE " +
         "o1.total_amount > (SELECT AVG(o2.total_amount) FROM orders o2 WHERE o2.channel = " +
@@ -1070,11 +1047,7 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "Find employees who earn more than their department's average salary. Return " +
         "name (employee's name), dept_name (department name), and salary.",
       starterQuery:
-        "SELECT\n  e1.employee_name AS name,\n  d1.department_name AS dept_name,\n " +
-        "e1.salary_lpa AS salary\nFROM employees e1\nJOIN departments d1 ON " +
-        "e1.department_id = d1.department_id\nWHERE e1.salary_lpa > (\n  SELECT " +
-        "AVG(e2.salary_lpa)\n  FROM employees e2\n  WHERE e2.department_id = " +
-        "e1.department_id\n);",
+        "SELECT e1.employee_name AS name, d1.department_name AS dept_name, e1.salary_lpa AS salary\nFROM employees e1\nJOIN departments d1 ON e1.department_id = d1.department_id\nWHERE e1.salary_lpa > (\n  SELECT AVG(e2.salary_lpa) FROM employees e2 WHERE e2.department_id = ???\n);",
       solution:
         "SELECT e1.employee_name AS name, d1.department_name AS dept_name, e1.salary_lpa " +
         "AS salary FROM employees e1 JOIN departments d1 ON e1.department_id = " +
@@ -1103,9 +1076,7 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "delivery time of their own city. Return food_order_id, restaurant, city, and " +
         "delivery_minutes.",
       starterQuery:
-        "SELECT f1.food_order_id, f1.restaurant, f1.city, f1.delivery_minutes\nFROM " +
-        "food_orders f1\nWHERE f1.delivery_minutes > (\n  SELECT " +
-        "AVG(f2.delivery_minutes)\n  FROM food_orders f2\n  WHERE f2.city = f1.city\n);",
+        "SELECT f1.food_order_id, f1.restaurant, f1.city, f1.delivery_minutes\nFROM food_orders f1\nWHERE f1.delivery_minutes > (\n  SELECT AVG(f2.delivery_minutes) FROM food_orders f2 WHERE f2.city = ???\n);",
       solution:
         "SELECT f1.food_order_id, f1.restaurant, f1.city, f1.delivery_minutes FROM " +
         "food_orders f1 WHERE f1.delivery_minutes > (SELECT AVG(f2.delivery_minutes) FROM " +
@@ -1138,8 +1109,7 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "in the outer query, calculate the average of those counts. Alias the result as " +
         "avg_orders_per_customer.",
       starterQuery:
-        "SELECT AVG(order_count) AS avg_orders_per_customer\nFROM (\n  SELECT " +
-        "customer_id, COUNT(*) AS order_count\n  FROM orders\n  GROUP BY customer_id\n);",
+        "SELECT AVG(order_count) AS avg_orders_per_customer\nFROM (\n  SELECT customer_id, COUNT(*) AS order_count FROM orders GROUP BY ???\n) AS customer_orders;",
       solution:
         "SELECT AVG(order_count) AS avg_orders_per_customer FROM (SELECT customer_id, " +
         "COUNT(*) AS order_count FROM orders GROUP BY customer_id);",
@@ -1166,9 +1136,7 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "city (joining orders and customers). Then, select the maximum average value as " +
         "max_city_average.",
       starterQuery:
-        "SELECT MAX(avg_amount) AS max_city_average\nFROM (\n  SELECT c.city, " +
-        "AVG(o.total_amount) AS avg_amount\n  FROM orders o\n  INNER JOIN customers c ON " +
-        "o.customer_id = c.customer_id\n  GROUP BY c.city\n);",
+        "SELECT MAX(avg_txn) AS max_city_avg\nFROM (\n  SELECT city, AVG(total_amount) AS avg_txn FROM orders o JOIN customers c ON o.customer_id = c.customer_id GROUP BY ???\n) AS city_averages;",
       solution:
         "SELECT MAX(avg_amount) AS max_city_average FROM (SELECT c.city, " +
         "AVG(o.total_amount) AS avg_amount FROM orders o INNER JOIN customers c ON " +
@@ -1198,9 +1166,7 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "max_duration (rounded to 1 decimal place). If end_date is NULL, assume a default " +
         "duration of 12.0.",
       starterQuery:
-        "SELECT plan_name, MAX(active_months) AS max_duration\nFROM (\n  SELECT " +
-        "plan_name, ROUND(COALESCE(DATEDIFF(end_date, start_date)/30.0, " +
-        "12.0), 1) AS active_months\n  FROM subscriptions\n)\nGROUP BY plan_name;",
+        "SELECT plan_name, MAX(active_months) AS max_duration\nFROM (\n  SELECT plan_name, ROUND(COALESCE(DATEDIFF(end_date, start_date)/30.0, 12.0), 1) AS active_months FROM subscriptions\n) AS plan_durations\nGROUP BY ???;",
       solution:
         "SELECT plan_name, MAX(active_months) AS max_duration FROM (SELECT plan_name, " +
         "ROUND(COALESCE(DATEDIFF(end_date, start_date)/30.0, 12.0), 1) AS " +
@@ -1232,8 +1198,7 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "retrieve all columns from customers. Select all columns from the CTE where the " +
         "city is 'Bengaluru'.",
       starterQuery:
-        "WITH customer_summary AS (\n  SELECT * FROM customers\n)\nSELECT *\nFROM " +
-        "customer_summary\nWHERE city = 'Bengaluru';",
+        "WITH customer_summary AS (\n  SELECT * FROM customers\n)\nSELECT * FROM customer_summary WHERE ??? = '???';",
       solution:
         "WITH customer_summary AS (SELECT * FROM customers) SELECT * FROM " +
         "customer_summary WHERE city = 'Bengaluru';",
@@ -1261,9 +1226,9 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
       prompt:
         "Create a CTE named monthly_sales that aggregates order total_amount into " +
         "monthly buckets. Select order_month (as YYYY-MM) and total_revenue from the CTE, " +
-        "sorted chronologically.",
+        "sorted by sales_month ASC.",
       starterQuery:
-        "WITH monthly_sales AS (\n  SELECT SUBSTR(order_date, 1, 7) AS sales_month, " +
+        "WITH monthly_revenue AS (SELECT SUBSTR(order_date, 1, 7) as month, SUM(???) as revenue FROM orders GROUP BY ???) SELECT month, revenue FROM monthly_revenue WHERE revenue > ???;" +
         "SUM(total_amount) AS revenue\n  FROM orders\n  GROUP BY sales_month\n)\nSELECT " +
         "sales_month, revenue\nFROM monthly_sales\nORDER BY sales_month ASC;",
       solution:
@@ -1293,7 +1258,7 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "each employee, return emp_id, name, manager_id, level (starting at 1), and path " +
         "(concatenated names like 'Priya Menon > ...'). Order by level, path.",
       starterQuery:
-        "WITH RECURSIVE org_hierarchy AS (\n  -- Anchor Member\n  SELECT employee_id AS " +
+        "WITH RECURSIVE org_chart AS (SELECT employee_id, employee_name, manager_id, 1 as level FROM employees WHERE manager_id IS ??? UNION ALL SELECT e.employee_id, e.employee_name, e.manager_id, o.level + 1 FROM employees e JOIN org_chart o ON e.manager_id = ???) SELECT employee_id, employee_name, manager_id, level FROM org_chart ORDER BY level, employee_id;" +
         "emp_id, employee_name AS name, manager_id, 1 AS level, CAST(employee_name AS " +
         "TEXT) AS path\n  FROM employees\n  WHERE manager_id IS NULL\n  UNION ALL\n  -- " +
         "Recursive Member\n  SELECT e.employee_id, e.employee_name, e.manager_id, " +
@@ -1335,7 +1300,8 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "category, category_revenue, and contribution_pct (calculated as category_revenue " +
         "divided by total company revenue multiplied by 100). Round contribution_pct to 2 " +
         "decimal places. Sort by contribution_pct descending.",
-      starterQuery: "-- Write your SQL query here\n",
+      starterQuery:
+        "WITH total_rev AS (SELECT SUM(???) as overall_revenue FROM order_items), category_rev AS (SELECT p.category, SUM(???) as cat_revenue FROM products p JOIN order_items oi ON p.product_id = oi.product_id GROUP BY ???) SELECT cr.category, cr.cat_revenue, ROUND(cr.cat_revenue * 100.0 / ???, 2) as pct_contribution FROM category_rev cr CROSS JOIN total_rev tr ORDER BY pct_contribution DESC;",
       solution:
         "WITH total_rev AS (SELECT SUM(quantity * unit_price) AS global_total FROM " +
         "order_items), cat_rev AS (SELECT p.category, SUM(oi.quantity * oi.unit_price) AS " +
@@ -1375,8 +1341,7 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "order_id, customer_id, order_date, total_amount, and order_seq (using " +
         "ROW_NUMBER() OVER(ORDER BY order_date ASC)).",
       starterQuery:
-        "SELECT order_id, customer_id, order_date, total_amount, ROW_NUMBER() OVER " +
-        "(ORDER BY ???) AS order_seq FROM orders;",
+        "SELECT ???\nFROM ???;" + "(ORDER BY ???) AS order_seq FROM orders;",
       solution:
         "SELECT order_id, customer_id, order_date, total_amount, ROW_NUMBER() OVER " +
         "(ORDER BY order_date ASC) AS order_seq FROM orders;",
@@ -1402,10 +1367,7 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "customer_id and ordered by order_date desc. Wrap in a CTE and select rows with " +
         "sequence = 1.",
       starterQuery:
-        "WITH ranked_orders AS (\n  SELECT order_id, customer_id, order_date, " +
-        "total_amount,\n         ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY " +
-        "order_date DESC) AS rn\n  FROM orders\n)\nSELECT order_id, customer_id, " +
-        "order_date, total_amount\nFROM ranked_orders\nWHERE rn = 1;",
+        "WITH ranked_orders AS (\n  SELECT customer_id, order_id, order_date, total_amount, ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY ???) AS rn FROM orders\n)\nSELECT customer_id, order_id, order_date, total_amount FROM ranked_orders WHERE rn = 1;",
       solution:
         "WITH ranked_orders AS (SELECT order_id, customer_id, order_date, total_amount, " +
         "ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date DESC) AS rn FROM " +
@@ -1434,11 +1396,7 @@ export const batch2Problems: Record<number, PracticeProblem[]> = {
         "Use ROW_NUMBER() partitioned by category and ordered by list_price desc. Return " +
         "category, product_name, list_price, and price_rank.",
       starterQuery:
-        "WITH ranked_products AS (\n  SELECT category, product_name, list_price,\n      " +
-        "  ROW_NUMBER() OVER (PARTITION BY category ORDER BY list_price DESC) AS " +
-        "price_rank\n  FROM products\n)\nSELECT category, product_name, list_price, " +
-        "price_rank\nFROM ranked_products\nWHERE price_rank <= 2\nORDER BY category, " +
-        "price_rank;",
+        "WITH ranked_products AS (\n  SELECT product_id, product_name, category, list_price, DENSE_RANK() OVER (PARTITION BY category ORDER BY list_price DESC) AS rk FROM products\n)\nSELECT product_id, product_name, category, list_price FROM ranked_products WHERE ???;",
       solution:
         "WITH ranked_products AS (SELECT category, product_name, list_price, " +
         "ROW_NUMBER() OVER (PARTITION BY category ORDER BY list_price DESC) AS price_rank " +

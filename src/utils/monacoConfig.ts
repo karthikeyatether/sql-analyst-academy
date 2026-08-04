@@ -62,4 +62,6 @@ export const MONACO_DEFAULT_OPTIONS = {
   renderLineHighlight: "all" as const,
   suggestOnTriggerCharacters: true,
   quickSuggestions: { other: true, comments: false, strings: true },
+  multiCursorModifier: "alt" as const,
+  multiCursorMergeOverlapping: true,
 };

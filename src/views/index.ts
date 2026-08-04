@@ -1,5 +1,6 @@
 export { default as DashboardView } from "./DashboardView";
 export { default as DayDetailsView } from "./DayDetailsView";
+export { default as MissionCapstoneView } from "./MissionCapstoneView";
 export { default as MockTestView } from "./MockTestView";
 export { default as ModulesView } from "./ModulesView";
 export { default as PlaygroundView } from "./PlaygroundView";

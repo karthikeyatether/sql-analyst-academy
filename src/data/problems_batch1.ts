@@ -66,17 +66,16 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
         "discount_amount) from the orders table. Filter to rows where status = " +
         "'Delivered' AND channel = 'App'. Sort by net_amount descending and return only " +
         "the top 5.",
-      starterQuery: "-- Write your SQL query here\n",
+      starterQuery:
+        "SELECT order_id, order_date, channel, total_amount, discount_amount, ??? - ??? AS net_amount FROM orders WHERE status = '???' AND channel = '???' ORDER BY ??? DESC LIMIT ???;",
       solution:
         "SELECT order_id, order_date, channel, total_amount, discount_amount, " +
         "total_amount - discount_amount AS net_amount FROM orders WHERE status = " +
         "'Delivered' AND channel = 'App' ORDER BY net_amount DESC LIMIT 5;",
       hints: [
-        "SELECT: list all required columns plus the computed one.",
-        "Compute net_amount directly in SELECT: total_amount - discount_amount AS net_amount.",
-        "WHERE: filter status = 'Delivered' AND channel = 'App'.",
-        "Sort by the computed column using ORDER BY net_amount DESC.",
-        "Use LIMIT 5 to cap results.",
+        "Construct a SELECT query returning order columns and a subtracted column total_amount - discount_amount AS net_amount.",
+        "Filter for status = 'Delivered' AND channel = 'App'.",
+        "Structure your query: SELECT order_id, order_date, channel, total_amount, discount_amount, total_amount - discount_amount AS net_amount FROM orders WHERE status = 'Delivered' AND channel = 'App' ORDER BY net_amount DESC LIMIT 5;",
       ],
       detailedExplanation:
         "This combines explicit column selection, derived column arithmetic, " +
@@ -114,11 +113,12 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
       starterQuery: "SELECT * FROM orders WHERE status = '???';",
       solution: "SELECT * FROM orders WHERE status = 'Delivered';",
       hints: [
-        "Identify target tables and primary columns for Find delivered orders.",
-        "Filter rows using appropriate WHERE or JOIN clauses as required by the business prompt.",
-        "Format target result columns and apply sorting as specified.",
+        "Query the orders table to inspect the delivery status of each transaction.",
+        "Add a WHERE clause to filter rows: WHERE status = 'Delivered'.",
+        "Structure your query: SELECT * FROM orders WHERE status = 'Delivered';",
       ],
-      detailedExplanation: "WHERE filters rows based on conditions.",
+      detailedExplanation:
+        "The WHERE clause filters table records based on row values, returning only rows where status exactly equals 'Delivered'.",
       alternativeApproach: "None.",
       performanceNotes: "Index on status column speeds this query.",
       concepts: ["WHERE", "filtering"],
@@ -140,11 +140,12 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
         "SELECT order_id, customer_id, total_amount, status FROM orders WHERE status = " +
         "'Delivered' AND total_amount > 5000 ORDER BY total_amount DESC;",
       hints: [
-        "Identify target tables and primary columns for High-value delivered orders.",
-        "Filter rows using appropriate WHERE or JOIN clauses as required by the business prompt.",
-        "Format target result columns and apply sorting as specified.",
+        "Select order_id, customer_id, total_amount, and status from the orders table.",
+        "Combine two conditions using AND: status = 'Delivered' AND total_amount > 5000.",
+        "Structure your query: SELECT order_id, customer_id, total_amount, status FROM orders WHERE status = 'Delivered' AND total_amount > 5000 ORDER BY total_amount DESC;",
       ],
-      detailedExplanation: "Multiple WHERE conditions are chained with AND.",
+      detailedExplanation:
+        "Multiple WHERE conditions are chained using the AND keyword, requiring every matching row to satisfy both the status constraint and the price threshold.",
       alternativeApproach: "None.",
       performanceNotes: "Compound index on (status, total_amount) would help.",
       concepts: ["WHERE", "AND", "ORDER BY"],
@@ -154,38 +155,34 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
       id: "m2-p3",
       moduleId: 2,
       difficulty: "Hard",
-      title: "Premium customers with recent large orders",
+      title: "Delivered large orders in 2024",
       businessScenario:
-        "Marketing at Myntra wants to target premium customers who placed high-value " +
-        "orders in 2024 for a loyalty campaign.",
+        "Marketing wants a list of high-value delivered transactions in 2024 for a revenue report.",
       prompt:
-        "Write a query joining customers and orders on customer_id. Return customer_id, " +
-        "full_name, segment, order_id, total_amount, and order_date. Filter to: segment = " +
-        "'Premium', total_amount > 3000, order_date BETWEEN '2024-01-01' AND " +
-        "'2024-12-31'. Order by total_amount descending.",
-      starterQuery: "-- Write your SQL query here\n",
+        "Write a query to retrieve order_id, customer_id, total_amount, and order_date from " +
+        "the orders table for orders where status = 'Delivered', total_amount > 3000, and " +
+        "order_date >= '2024-01-01'. Order by order_date descending, then total_amount descending.",
+      starterQuery: "SELECT ???\nFROM ???\nWHERE ???;",
       solution:
-        "SELECT c.customer_id, c.full_name, c.segment, o.order_id, o.total_amount, " +
-        "o.order_date FROM customers c INNER JOIN orders o ON c.customer_id = " +
-        "o.customer_id WHERE c.segment = 'Premium' AND o.total_amount > 3000 AND " +
-        "o.order_date BETWEEN '2024-01-01' AND '2024-12-31' ORDER BY o.total_amount DESC;",
+        "SELECT order_id, customer_id, total_amount, order_date FROM orders WHERE status = " +
+        "'Delivered' AND total_amount > 3000 AND order_date >= '2024-01-01' ORDER BY " +
+        "order_date DESC, total_amount DESC;",
       hints: [
-        "JOIN customers and orders on customer_id.",
-        "Filter segment = 'Premium' from the customers table.",
-        "Filter total_amount > 3000 and date range from orders.",
-        "Order results by total_amount DESC.",
+        "Select order_id, customer_id, total_amount, order_date from orders.",
+        "Combine status = 'Delivered', total_amount > 3000, and order_date >= '2024-01-01'.",
+        "Structure your query: SELECT order_id, customer_id, total_amount, order_date FROM orders WHERE status = 'Delivered' AND total_amount > 3000 AND order_date >= '2024-01-01' ORDER BY order_date DESC, total_amount DESC;",
       ],
       detailedExplanation:
-        "Combines INNER JOIN with multi-condition WHERE filtering across two tables.",
+        "Evaluates single-table WHERE filtering with multiple conditions across string, numeric, and date data types.",
       alternativeApproach: "None.",
       performanceNotes:
-        "Index on customers(segment) and orders(customer_id, total_amount) helps.",
-      concepts: ["WHERE", "AND", "BETWEEN", "INNER JOIN", "ORDER BY"],
-      companyTags: ["Myntra"],
+        "An index on (status, order_date, total_amount) ensures optimal performance.",
+      concepts: ["WHERE", "AND", "ORDER BY", "multi-condition filter"],
+      companyTags: ["Amazon"],
     },
   ],
 
-  // MODULE 3: Sorting with ORDER BY
+  // MODULE 3: Sorting Results with ORDER BY
   3: [
     {
       id: "m3-p1",
@@ -193,18 +190,20 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
       difficulty: "Easy",
       title: "Sort customers by signup date",
       businessScenario:
-        "The growth team wants to see customers in the order they joined.",
+        "The growth team wants to see customer signup details ordered chronologically.",
       prompt:
-        "Write a query to retrieve all columns from the customers table, sorted by signup_date ascending.",
-      starterQuery: "SELECT * FROM customers ORDER BY ???;",
-      solution: "SELECT * FROM customers ORDER BY signup_date ASC;",
+        "Write a query to retrieve customer_id, full_name, city, and signup_date from the customers table, sorted by signup_date ascending.",
+      starterQuery:
+        "SELECT customer_id, full_name, city, signup_date FROM customers ORDER BY ???;",
+      solution:
+        "SELECT customer_id, full_name, city, signup_date FROM customers ORDER BY signup_date ASC;",
       hints: [
-        "Use ORDER BY signup_date ASC.",
-        "Apply standard filtering and analytical clauses to isolate the exact target dataset.",
-        "Structure your query using clauses similar to: SELECT * FROM customers ORDER BY signup_date ASC;.",
+        "Select customer_id, full_name, city, and signup_date from the customers table.",
+        "Order rows chronologically by signup_date ascending using ORDER BY signup_date ASC.",
+        "Structure your query: SELECT customer_id, full_name, city, signup_date FROM customers ORDER BY signup_date ASC;",
       ],
       detailedExplanation:
-        "ORDER BY sorts results in ascending (ASC) or descending (DESC) order.",
+        "ORDER BY signup_date ASC sorts the output rows chronologically, placing the earliest acquisition dates at the top of the result set.",
       alternativeApproach: "None.",
       performanceNotes: "Index on signup_date speeds sorting.",
       concepts: ["ORDER BY", "ASC"],
@@ -241,42 +240,27 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
       id: "m3-p3",
       moduleId: 3,
       difficulty: "Hard",
-      title: "Rank products by net revenue within each city",
+      title: "Employee salary & department directory sorting",
       businessScenario:
-        "Croma wants a sorted breakdown of products by their net contribution (quantity " +
-        "* unit_price) grouped by customer city, to identify which cities drive product " +
-        "revenue.",
+        "HR operations needs a sorted employee directory categorized by department and salary tier for performance evaluations.",
       prompt:
-        "Join customers, orders, order_items, and products. Return city, product_name, " +
-        "and total_net_revenue (SUM of oi.quantity * oi.unit_price). Filter to delivered " +
-        "orders only. Sort by city ascending, then total_net_revenue descending.",
-      starterQuery: "-- Write your SQL query here\n",
+        "Write a query to retrieve employee_id, employee_name, department_id, and salary_lpa from the employees table. Sort the results primarily by department_id ascending, then by salary_lpa descending, and finally by employee_id ascending.",
+      starterQuery:
+        "SELECT employee_id, employee_name, department_id, salary_lpa\nFROM employees\nORDER BY ???;",
       solution:
-        "SELECT c.city, p.product_name, SUM(oi.quantity * oi.unit_price) AS " +
-        "total_net_revenue FROM customers c INNER JOIN orders o ON c.customer_id = " +
-        "o.customer_id INNER JOIN order_items oi ON o.order_id = oi.order_id INNER JOIN " +
-        "products p ON oi.product_id = p.product_id WHERE o.status = 'Delivered' GROUP BY " +
-        "c.city, p.product_name ORDER BY c.city ASC, total_net_revenue DESC;",
+        "SELECT employee_id, employee_name, department_id, salary_lpa FROM employees ORDER BY department_id ASC, salary_lpa DESC, employee_id ASC;",
       hints: [
-        "You need 4 joins: customers → orders → order_items → products.",
-        "SUM(oi.quantity * oi.unit_price) for net revenue.",
-        "GROUP BY c.city, p.product_name.",
-        "ORDER BY city ASC, total_net_revenue DESC.",
+        "Select the required columns: employee_id, employee_name, department_id, salary_lpa from the employees table.",
+        "Apply multi-column sorting tiers sequentially: department_id ASC, salary_lpa DESC, employee_id ASC.",
+        "Structure your query: SELECT employee_id, employee_name, department_id, salary_lpa FROM employees ORDER BY department_id ASC, salary_lpa DESC, employee_id ASC;",
       ],
       detailedExplanation:
-        "Multi-table joins combined with GROUP BY and multi-column ORDER BY is the " +
-        "standard pattern for regional product performance reports.",
+        "Multi-column ORDER BY applies sorting criteria in order. It groups employees by department_id ascending, ranks employees within each department by salary_lpa descending, and breaks any salary ties by employee_id ascending.",
       alternativeApproach: "None.",
       performanceNotes:
-        "Indexes on join keys (customer_id, order_id, product_id) are critical.",
-      concepts: [
-        "ORDER BY",
-        "INNER JOIN",
-        "GROUP BY",
-        "SUM",
-        "multi-column sort",
-      ],
-      companyTags: ["Croma"],
+        "Compound index on employees(department_id, salary_lpa) optimizes execution.",
+      concepts: ["ORDER BY", "DESC", "ASC", "multi-column sort"],
+      companyTags: ["TCS"],
     },
   ],
 
@@ -350,7 +334,8 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
         "Write a query to find the product_name and list_price of the product with the " +
         "3rd highest list_price. Order by list_price descending, and use LIMIT and OFFSET " +
         "to get exactly the 3rd product.",
-      starterQuery: "-- Write your SQL query here\n",
+      starterQuery:
+        "SELECT product_name, list_price FROM products ORDER BY list_price ??? LIMIT ??? OFFSET ???;",
       solution:
         "SELECT product_name, list_price\nFROM products\nORDER BY list_price DESC\nLIMIT 1 OFFSET 2;",
       hints: [
@@ -397,25 +382,24 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
       id: "m5-p2",
       moduleId: 5,
       difficulty: "Medium",
-      title: "Customers with no phone numbers",
+      title: "Customers with missing region",
       businessScenario:
         "The operations team at Blinkit wants to audit active customer records to " +
-        "identify accounts missing phone numbers.",
+        "identify accounts missing region information.",
       prompt:
         "Write a query to retrieve customer_id and full_name from the customers table " +
-        "where phone is NULL or empty (in MySQL: phone IS NULL OR phone = ''). Order by " +
-        "customer_id.",
+        "where region is NULL or empty (in MySQL: region IS NULL OR region = ''). Order by " +
+        "customer_id ascending.",
       starterQuery: "SELECT ???\nFROM ???\nWHERE ???;",
       solution:
-        "SELECT customer_id, full_name FROM customers WHERE phone IS NULL OR phone = '' ORDER BY customer_id;",
+        "SELECT customer_id, full_name FROM customers WHERE region IS NULL OR region = '' ORDER BY customer_id;",
       hints: [
-        "Handle both NULL and empty string cases using OR.",
-        "Order by customer_id.",
-        "Structure your query using clauses similar to: SELECT customer_id, full_name FROM customers WHERE phone IS NULL OR phone =.",
+        "Audit customer records for missing region values.",
+        "Use IS NULL OR region = '' in the WHERE clause.",
+        "Structure your query: SELECT customer_id, full_name FROM customers WHERE region IS NULL OR region = '' ORDER BY customer_id;",
       ],
       detailedExplanation:
-        "NULL represents missing data; empty string represent initialized but empty " +
-        "values. Both must be audited.",
+        "NULL represents missing data; empty string represents initialized but empty values. Both must be audited.",
       alternativeApproach: "None.",
       performanceNotes:
         "Checking both conditions ensures 100% data audit coverage.",
@@ -434,15 +418,16 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
         "Write a query to retrieve subscription_id, customer_id, plan_name, and a " +
         "computed column end_status. If end_date is NULL (meaning the customer is still " +
         "active), return the text 'Active'. Otherwise, return the end_date. Order by " +
-        "subscription_id.",
-      starterQuery: "-- Write your SQL query here\n",
+        "subscription_id ascending.",
+      starterQuery:
+        "SELECT subscription_id, COALESCE(???, '???') as end_status FROM subscriptions;",
       solution:
         "SELECT subscription_id, customer_id, plan_name, COALESCE(end_date, 'Active') AS " +
         "end_status FROM subscriptions ORDER BY subscription_id;",
       hints: [
-        "Use COALESCE to handle the NULL end_date case.",
-        "COALESCE(end_date, 'Active') " +
-          "will return 'Active' if end_date is NULL.",
+        "Replace NULL values in end_date with a fallback status label.",
+        "Use COALESCE(end_date, 'Active') AS end_status in your SELECT projection.",
+        "Structure your query: SELECT subscription_id, customer_id, plan_name, COALESCE(end_date, 'Active') AS end_status FROM subscriptions ORDER BY subscription_id;",
       ],
       detailedExplanation:
         "COALESCE evaluates arguments in order and returns the first non-NULL value.",
@@ -465,7 +450,7 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
         "Ensure all customer names are capitalized consistently in marketing email outputs.",
       prompt:
         "Write a query on the customers table to return customer_id, full_name, and an " +
-        "uppercase name (aliased as 'upper_name'). Order by customer_id.",
+        "uppercase name (aliased as 'upper_name'). Order by customer_id ascending.",
       starterQuery:
         "SELECT customer_id, full_name, UPPER(full_name) AS upper_name FROM customers ORDER BY ???;",
       solution:
@@ -494,18 +479,19 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
         "Write a MySQL query on the customers table to extract the first name from the " +
         "full_name column. Use MySQL's SUBSTRING_INDEX() function to return the text " +
         "before the first space. Return customer_id, full_name, and first_name " +
-        "(aliased as 'first_name'). Order by customer_id.",
-      starterQuery: "SELECT ???\nFROM ???\nWHERE ???;",
+        "(aliased as 'first_name'). Order by customer_id ascending.",
+      starterQuery:
+        "SELECT customer_id, full_name, SUBSTRING_INDEX(full_name, ' ', ???) AS first_name\nFROM customers\nORDER BY customer_id;",
       solution:
         "SELECT customer_id, full_name, SUBSTRING_INDEX(full_name, ' ', 1) " +
         "AS first_name FROM customers ORDER BY customer_id;",
       hints: [
-        "Identify target tables and primary columns for Extract first name of customers.",
-        "Filter rows using appropriate WHERE or JOIN clauses as required by the business prompt.",
-        "Format target result columns and apply sorting as specified.",
+        "Use SUBSTRING_INDEX(full_name, ' ', 1) to extract text prior to the first space character.",
+        "Alias the extracted column as first_name.",
+        "Structure your query: SELECT customer_id, full_name, SUBSTRING_INDEX(full_name, ' ', 1) AS first_name FROM customers ORDER BY customer_id;",
       ],
       detailedExplanation:
-        "MySQL's SUBSTRING_INDEX() returns the part of full_name before the first space when the delimiter count is 1.",
+        "SUBSTRING_INDEX(full_name, ' ', 1) extracts the substring preceding the first delimiter match (a space character), effectively returning the customer's first name.",
       alternativeApproach: "None.",
       performanceNotes: "Highly optimized string operations.",
       concepts: ["SUBSTRING_INDEX", "string functions", "MySQL"],
@@ -524,8 +510,9 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
         "Write a query to retrieve customer_id, full_name, city, and a computed column " +
         "tracking_code. tracking_code is: uppercase first character of full_name, a " +
         "hyphen '-', and the first 3 characters of city in uppercase. Order by " +
-        "customer_id.",
-      starterQuery: "-- Write your SQL query here\n",
+        "customer_id ascending.",
+      starterQuery:
+        "SELECT full_name, CONCAT(SUBSTR(???, 1, 1), '-', UPPER(???)) as c_code FROM customers;",
       solution:
         "SELECT customer_id, full_name, city, CONCAT(UPPER(SUBSTR(full_name, 1, 1)), '-', " +
         "UPPER(SUBSTR(city, 1, 3))) AS tracking_code FROM customers ORDER BY customer_id;",
@@ -555,7 +542,7 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
         "Identify specific segments of customers for loyalty programs.",
       prompt:
         "Write a query to find customers who belong to the 'Premium' or 'Student' " +
-        "segment. Return customer_id, full_name, and segment. Order by customer_id.",
+        "segment. Return customer_id, full_name, and segment. Order by customer_id ascending.",
       starterQuery:
         "SELECT customer_id, full_name, segment FROM customers WHERE segment IN ('???', " +
         "'???') ORDER BY customer_id;",
@@ -563,12 +550,12 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
         "SELECT customer_id, full_name, segment FROM customers WHERE segment IN " +
         "('Premium', 'Student') ORDER BY customer_id;",
       hints: [
-        "Identify target tables and primary columns for Filter customers by segment using IN.",
-        "Filter rows using appropriate WHERE or JOIN clauses as required by the business prompt.",
-        "Format target result columns and apply sorting as specified.",
+        "Use the IN operator to filter rows matching a set of target strings.",
+        "Filter for segment IN ('Premium', 'Student').",
+        "Structure your query: SELECT customer_id, full_name, segment FROM customers WHERE segment IN ('Premium', 'Student') ORDER BY customer_id;",
       ],
       detailedExplanation:
-        "IN evaluates if a column value matches any item in a list of values.",
+        "The IN operator tests set membership, matching rows where the segment column equals either 'Premium' or 'Student'.",
       alternativeApproach:
         "Use OR: segment = 'Premium' OR segment = 'Student'.",
       performanceNotes: "Uses segment indexes where available.",
@@ -587,17 +574,18 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
         "Write a query to retrieve customer_id, full_name, and city from the customers " +
         "table where the city is either 'Delhi', 'Mumbai', or 'Bengaluru'. Order by city " +
         "alphabetically.",
-      starterQuery: "SELECT ???\nFROM ???\nWHERE ???;",
+      starterQuery:
+        "SELECT customer_id, full_name, city\nFROM customers\nWHERE city IN ('???', '???', '???')\nORDER BY city ASC;",
       solution:
         "SELECT customer_id, full_name, city FROM customers WHERE city IN ('Delhi', " +
         "'Mumbai', 'Bengaluru') ORDER BY city ASC;",
       hints: [
-        "Identify target tables and primary columns for Active buyers in primary hubs.",
-        "Filter rows using appropriate WHERE or JOIN clauses as required by the business prompt.",
-        "Format target result columns and apply sorting as specified.",
+        "Select customer_id, full_name, and city from the customers table.",
+        "Filter for cities in Delhi, Mumbai, or Bengaluru using WHERE city IN ('Delhi', 'Mumbai', 'Bengaluru').",
+        "Structure your query: SELECT customer_id, full_name, city FROM customers WHERE city IN ('Delhi', 'Mumbai', 'Bengaluru') ORDER BY city ASC;",
       ],
       detailedExplanation:
-        "Filter membership checks can easily be written with IN.",
+        "Using IN ('Delhi', 'Mumbai', 'Bengaluru') allows concise set membership filtering across multiple city values.",
       alternativeApproach:
         "WHERE city = 'Delhi' OR city = 'Mumbai' OR city = 'Bengaluru'.",
       performanceNotes: "IN is highly optimized.",
@@ -616,18 +604,19 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
         "Write a query to retrieve payment_id, order_id, payment_mode, and amount from " +
         "payments where payment_status = 'Success' and payment_mode NOT IN ('Cash', " +
         "'Cheque'). Order by amount descending.",
-      starterQuery: "-- Write your SQL query here\n",
+      starterQuery:
+        "SELECT payment_id, order_id, payment_mode, amount\nFROM payments\nWHERE payment_status = 'Success' AND payment_mode NOT IN ('???', '???')\nORDER BY amount DESC;",
       solution:
         "SELECT payment_id, order_id, payment_mode, amount FROM payments WHERE " +
         "payment_status = 'Success' AND payment_mode NOT IN ('Cash', 'Cheque') ORDER BY " +
         "amount DESC;",
       hints: [
-        "Identify target tables and primary columns for Unresolved payments from premium channels.",
-        "Filter rows using appropriate WHERE or JOIN clauses as required by the business prompt.",
-        "Format target result columns and apply sorting as specified.",
+        "Filter payments where payment_status = 'Success'.",
+        "Exclude payment modes Cash and Cheque using payment_mode NOT IN ('Cash', 'Cheque').",
+        "Structure your query: SELECT payment_id, order_id, payment_mode, amount FROM payments WHERE payment_status = 'Success' AND payment_mode NOT IN ('Cash', 'Cheque') ORDER BY amount DESC;",
       ],
       detailedExplanation:
-        "NOT IN checks that a column value is not in the specified list.",
+        "NOT IN checks that a column value does not match any item in the specified exclusion set.",
       alternativeApproach: "None.",
       performanceNotes: "Ensure payment_mode is indexed.",
       concepts: ["NOT IN", "WHERE", "ORDER BY"],
@@ -648,7 +637,7 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
       prompt:
         "Write a query to retrieve order_id, customer_id, order_date, and total_amount " +
         "from the orders table where order_date is between '2024-01-01' and '2024-03-31' " +
-        "inclusive. Order by order_date.",
+        "inclusive. Order by order_date ascending.",
       starterQuery:
         "SELECT order_id, customer_id, order_date, total_amount FROM orders WHERE " +
         "order_date BETWEEN '???' AND '???' ORDER BY order_date;",
@@ -656,11 +645,12 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
         "SELECT order_id, customer_id, order_date, total_amount FROM orders WHERE " +
         "order_date BETWEEN '2024-01-01' AND '2024-03-31' ORDER BY order_date;",
       hints: [
-        "Identify target tables and primary columns for Filter orders within a date range using BETWEEN.",
-        "Filter rows using appropriate WHERE or JOIN clauses as required by the business prompt.",
-        "Format target result columns and apply sorting as specified.",
+        "Select order_id, customer_id, order_date, and total_amount from the orders table.",
+        "Filter dates within Q1 using BETWEEN '2024-01-01' AND '2024-03-31'.",
+        "Structure your query: SELECT order_id, customer_id, order_date, total_amount FROM orders WHERE order_date BETWEEN '2024-01-01' AND '2024-03-31' ORDER BY order_date;",
       ],
-      detailedExplanation: "BETWEEN simplifies date and range queries.",
+      detailedExplanation:
+        "The BETWEEN operator performs an inclusive range check on dates, evaluating rows where order_date falls on or between the specified bounds.",
       alternativeApproach: "Use >= and <= operators.",
       performanceNotes: "Uses the order_date index.",
       concepts: ["BETWEEN", "WHERE", "date filtering"],
@@ -676,19 +666,20 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
       prompt:
         "Write a query on the orders table to select order_id, customer_id, order_date, " +
         "and a computed column order_month (using SUBSTR(order_date, 1, 7)). Filter to " +
-        "orders placed between '2024-01-01' and '2024-06-30'. Order by order_date.",
-      starterQuery: "SELECT ???\nFROM ???\nWHERE ???;",
+        "orders placed between '2024-01-01' and '2024-06-30'. Order by order_date ascending.",
+      starterQuery:
+        "SELECT order_id, customer_id, order_date, SUBSTR(order_date, 1, 7) AS order_month\nFROM orders\nWHERE order_date BETWEEN '???' AND '???'\nORDER BY order_date;",
       solution:
         "SELECT order_id, customer_id, order_date, SUBSTR(order_date, 1, 7) AS " +
         "order_month FROM orders WHERE order_date BETWEEN '2024-01-01' AND '2024-06-30' " +
         "ORDER BY order_date;",
       hints: [
-        "Identify target tables and primary columns for Extract month from order dates.",
-        "Filter rows using appropriate WHERE or JOIN clauses as required by the business prompt.",
-        "Format target result columns and apply sorting as specified.",
+        "Use SUBSTR(order_date, 1, 7) to extract the 'YYYY-MM' month prefix.",
+        "Filter the date range using order_date BETWEEN '2024-01-01' AND '2024-06-30'.",
+        "Structure your query: SELECT order_id, customer_id, order_date, SUBSTR(order_date, 1, 7) AS order_month FROM orders WHERE order_date BETWEEN '2024-01-01' AND '2024-06-30' ORDER BY order_date;",
       ],
       detailedExplanation:
-        "Extracts month text segments while range filtering on the order date.",
+        "SUBSTR(order_date, 1, 7) extracts the 7-character year-month string segment while BETWEEN filters records chronologically.",
       alternativeApproach: "None.",
       performanceNotes: "Fast date extraction using range checks.",
       concepts: ["SUBSTR", "BETWEEN", "Date Extraction"],
@@ -708,7 +699,8 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
         "weekend (DAYOFWEEK(order_date) IN (1, 7)). Group by city. Return city, " +
         "weekend_orders (COUNT of order_id), and total_weekend_revenue (SUM of " +
         "total_amount, rounded to 2 decimal places). Order by weekend_orders descending.",
-      starterQuery: "-- Write your SQL query here\n",
+      starterQuery:
+        "SELECT c.city, COUNT(???) as weekend_orders FROM customers c JOIN orders o ON c.customer_id = o.customer_id WHERE strftime('???', o.order_date) IN (???) AND SUBSTR(o.order_date, 1, 4) = '???' GROUP BY ??? ORDER BY weekend_orders DESC;",
       solution:
         "SELECT c.city, COUNT(o.order_id) AS weekend_orders, ROUND(SUM(o.total_amount), " +
         "2) AS total_weekend_revenue FROM orders o INNER JOIN customers c ON " +
@@ -716,11 +708,9 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
         "'2024-12-31' AND DAYOFWEEK(o.order_date) IN (1, 7) GROUP BY c.city " +
         "ORDER BY weekend_orders DESC;",
       hints: [
-        "Use MySQL DAYOFWEEK(order_date) IN (1, 7) to filter weekends (1=Sunday, 7=Saturday).",
-        "BETWEEN '2024-01-01' AND '2024-12-31' handles the year filter.",
-        "INNER JOIN customers on customer_id to get city data.",
-        "GROUP BY c.city with COUNT and SUM for the aggregates.",
-        "ORDER BY weekend_orders DESC to rank cities.",
+        "Filter 2024 weekend transactions using BETWEEN '2024-01-01' AND '2024-12-31' AND DAYOFWEEK(order_date) IN (1, 7).",
+        "JOIN customers ON customer_id and GROUP BY city to aggregate COUNT(order_id) and ROUND(SUM(total_amount), 2).",
+        "Structure your query: SELECT c.city, COUNT(o.order_id) AS weekend_orders, ROUND(SUM(o.total_amount), 2) AS total_weekend_revenue FROM orders o INNER JOIN customers c ON o.customer_id = c.customer_id WHERE o.order_date BETWEEN '2024-01-01' AND '2024-12-31' AND DAYOFWEEK(o.order_date) IN (1, 7) GROUP BY c.city ORDER BY weekend_orders DESC;",
       ],
       detailedExplanation:
         "This combines date range filtering (BETWEEN), MySQL date extraction " +
@@ -808,43 +798,30 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
       id: "m9-p3",
       moduleId: 9,
       difficulty: "Hard",
-      title: "Segment order volume and buyer coverage",
+      title: "Order status volume and buyer coverage",
       businessScenario:
         "The customer analytics team at Zomato wants order volume and customer coverage " +
-        "broken down by customer segment (joining customers and orders).",
+        "broken down by order status.",
       prompt:
-        "Write a query joining customers and orders on customer_id. Group by customer " +
-        "segment. Return segment, total_orders (COUNT of order_id), unique_customers " +
-        "(COUNT DISTINCT of customer_id from orders), and avg_order_value (ROUND of " +
-        "AVG(total_amount) to 2 decimal places). Order by total_orders descending.",
-      starterQuery: "-- Write your SQL query here\n",
+        "Write a query on the orders table grouped by status. Return status, total_orders " +
+        "(COUNT of order_id), unique_buyers (COUNT DISTINCT of customer_id), and " +
+        "avg_order_value (ROUND of AVG(total_amount) to 2 decimal places). Order by total_orders descending.",
+      starterQuery:
+        "SELECT status, COUNT(???) as orders_count, COUNT(DISTINCT ???) as unique_buyers FROM orders GROUP BY ???;",
       solution:
-        "SELECT c.segment, COUNT(o.order_id) AS total_orders, COUNT(DISTINCT " +
-        "o.customer_id) AS unique_customers, ROUND(AVG(o.total_amount), 2) AS " +
-        "avg_order_value FROM customers c INNER JOIN orders o ON c.customer_id = " +
-        "o.customer_id GROUP BY c.segment ORDER BY total_orders DESC;",
+        "SELECT status, COUNT(order_id) AS total_orders, COUNT(DISTINCT customer_id) AS " +
+        "unique_buyers, ROUND(AVG(total_amount), 2) AS avg_order_value FROM orders GROUP BY " +
+        "status ORDER BY total_orders DESC;",
       hints: [
-        "JOIN customers and orders on customer_id.",
-        "GROUP BY c.segment.",
-        "COUNT(o.order_id) for volume; COUNT(DISTINCT o.customer_id) for unique buyers.",
+        "GROUP BY status.",
+        "COUNT(order_id) for volume; COUNT(DISTINCT customer_id) for unique buyers.",
         "AVG(total_amount) for average order value.",
       ],
       detailedExplanation:
-        "This combines INNER JOIN, GROUP BY, COUNT, COUNT DISTINCT, AVG, and ORDER BY — " +
-        "the standard analyst pattern for segment-level performance reporting.",
-      alternativeApproach:
-        "Pre-aggregate orders in a CTE, then join to customers for segment lookups.",
-      performanceNotes:
-        "An index on orders(customer_id) speeds up the join. GROUP BY on segment runs on " +
-        "a small set of distinct values.",
-      concepts: [
-        "COUNT",
-        "COUNT DISTINCT",
-        "AVG",
-        "INNER JOIN",
-        "GROUP BY",
-        "ORDER BY",
-      ],
+        "Combines COUNT, COUNT DISTINCT, and AVG aggregations grouped by status.",
+      alternativeApproach: "None.",
+      performanceNotes: "Single pass aggregation over orders table.",
+      concepts: ["COUNT", "COUNT DISTINCT", "AVG", "GROUP BY"],
       companyTags: ["Zomato"],
     },
   ],
@@ -914,12 +891,17 @@ export const problemsBatch1: Record<number, PracticeProblem[]> = {
         "total_amount minus discount_amount) as total_net_revenue, and the total " +
         "discounts given (SUM of discount_amount) as total_discounts. Only include " +
         "delivered orders placed in the year 2024.",
-      starterQuery: "-- Write your SQL query here\n",
+      starterQuery:
+        "SELECT SUM(total_amount - COALESCE(???, 0)) as net_revenue FROM orders WHERE SUBSTR(???, 1, 4) = '???';",
       solution:
         "SELECT SUM(total_amount - discount_amount) AS total_net_revenue, " +
         "SUM(discount_amount) AS total_discounts FROM orders WHERE status = 'Delivered' " +
         "AND order_date LIKE '2024%';",
-      hints: ["Filter for status = 'Delivered' and date starts with '2024%'."],
+      hints: [
+        "Aggregate financial metrics for delivered orders placed in 2024.",
+        "Calculate SUM(total_amount - discount_amount) AS total_net_revenue and SUM(discount_amount) AS total_discounts.",
+        "Structure your query: SELECT SUM(total_amount - discount_amount) AS total_net_revenue, SUM(discount_amount) AS total_discounts FROM orders WHERE status = 'Delivered' AND order_date LIKE '2024%';",
+      ],
       detailedExplanation:
         "Aggregates sums over filtered subset of order transactions.",
       alternativeApproach: "None.",

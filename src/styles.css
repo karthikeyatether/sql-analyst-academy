@@ -1888,11 +1888,22 @@ a {
 }
 
 /* MONACO BACKGROUND OVERRIDES - PREVENT WHITE FLASH */
-.monaco-editor,
-.monaco-editor .margin,
-.monaco-editor-background,
-.monaco-editor .inputarea.ime-input {
+.monaco-editor.vs-dark,
+.monaco-editor.vs-dark .margin,
+.monaco-editor.vs-dark .monaco-editor-background,
+.monaco-editor.vs-dark .inputarea.ime-input,
+.monaco-editor.hc-oled,
+.monaco-editor.hc-oled .margin,
+.monaco-editor.hc-oled .monaco-editor-background,
+.monaco-editor.hc-oled .inputarea.ime-input {
   background-color: var(--bg2, #0d1117) !important;
+}
+
+.monaco-editor.vs,
+.monaco-editor.vs .margin,
+.monaco-editor.vs .monaco-editor-background,
+.monaco-editor.vs .inputarea.ime-input {
+  background-color: #ffffff !important;
 }
 
 /* Keep line numbers visually separate from SQL text on wide displays. */
@@ -1905,10 +1916,14 @@ a {
   padding-left: 6px;
 }
 
-:root.oled .monaco-editor,
-:root.oled .monaco-editor .margin,
-:root.oled .monaco-editor-background,
-:root.oled .monaco-editor .inputarea.ime-input,
+:root.oled .monaco-editor.vs-dark,
+:root.oled .monaco-editor.vs-dark .margin,
+:root.oled .monaco-editor.vs-dark .monaco-editor-background,
+:root.oled .monaco-editor.vs-dark .inputarea.ime-input,
+:root.oled .monaco-editor.hc-oled,
+:root.oled .monaco-editor.hc-oled .margin,
+:root.oled .monaco-editor.hc-oled .monaco-editor-background,
+:root.oled .monaco-editor.hc-oled .inputarea.ime-input,
 :root.oled .pg-editor-col {
   background-color: #000000 !important;
 }
@@ -5035,4 +5050,88 @@ body,
     font-size: 12px !important;
     padding: 3px 8px !important;
   }
+}
+
+/* SKELETON PLACEHOLDER STYLES FOR SEAMLESS INSTANT LOADING */
+@keyframes skeleton-shimmer {
+  0% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0.45;
+  }
+}
+
+.skeleton-workspace {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: var(--bg);
+  overflow: hidden;
+  position: relative;
+}
+
+.skeleton-header {
+  height: 48px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: var(--surface-bg);
+}
+
+.skeleton-body {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  height: calc(100% - 48px);
+}
+
+.skeleton-sidebar {
+  width: 320px;
+  border-right: 1px solid var(--border);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.skeleton-editor-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg2);
+}
+
+.skeleton-editor-top {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: monospace;
+}
+
+.skeleton-editor-bottom {
+  height: 180px;
+  border-top: 1px solid var(--border);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-pulse {
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 4px;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+:root.light .skeleton-pulse {
+  background: rgba(0, 0, 0, 0.08);
 }
