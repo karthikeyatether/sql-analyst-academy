@@ -47,8 +47,13 @@ export default defineConfig({
     port: 4173,
     host: "127.0.0.1"
   },
+  esbuild: {
+    legalComments: "none",
+    treeShaking: true,
+  },
   build: {
     target: "esnext",
+    minify: "esbuild",
     cssCodeSplit: true,
     reportCompressedSize: false,
     chunkSizeWarningLimit: 4500,
@@ -56,14 +61,17 @@ export default defineConfig({
       polyfill: false,
     },
     rollupOptions: {
+      treeshake: "recommended",
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
             if (id.includes("monaco-editor") || id.includes("@monaco-editor")) return "monaco";
             if (id.includes("sql.js")) return "sqljs";
             if (id.includes("lucide")) return "lucide";
+            if (id.includes("react") || id.includes("scheduler")) return "react-vendor";
             return "vendor";
           }
+          if (id.includes("src/utils/sqlLinter") || id.includes("src/utils/sqlErrorTranslator") || id.includes("src/utils/graderService") || id.includes("src/utils/monacoConfig")) return "sql-services";
           if (id.includes("src/data/problems_batch1")) return "problems-batch1";
           if (id.includes("src/data/problems_batch2")) return "problems-batch2";
           if (id.includes("src/data/problems_batch3")) return "problems-batch3";

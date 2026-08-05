@@ -22,9 +22,9 @@ if (typeof window !== "undefined") {
     );
   };
   if ("requestIdleCallback" in window) {
-    window.requestIdleCallback(prewarm, { timeout: 3000 });
+    window.requestIdleCallback(prewarm, { timeout: 500 });
   } else {
-    setTimeout(prewarm, 1000);
+    setTimeout(prewarm, 100);
   }
 }
 

@@ -1790,11 +1790,9 @@ export default function App() {
       }
       if (monacoRef.current) {
         try {
-          monacoRef.current.editor
-            .getModels()
-            .forEach((model: import("monaco-editor").editor.ITextModel) => {
-              model.dispose();
-            });
+          monacoRef.current.editor.getModels().forEach((model: any) => {
+            model.dispose();
+          });
         } catch (err) {
           console.warn("Failed to dispose Monaco models:", err);
         }

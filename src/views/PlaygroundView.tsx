@@ -77,14 +77,8 @@ export function safeLocalStorageGet<T>(key: string, defaultValue: T): T {
   }
 }
 
-import Editor, { loader } from "@monaco-editor/react";
-import * as monaco from "monaco-editor";
-
-// The default Monaco loader fetches its editor files from a public CDN. That
-// leaves the editor permanently on "Loading..." in offline, CSP-restricted,
-// or slow-network environments. Supplying the installed package keeps the
-// playground self-contained and lets Vite serve the editor assets locally.
-loader.config({ monaco });
+import Editor from "@monaco-editor/react";
+import "../utils/monacoConfig";
 
 type RightTab = "hints" | "schema";
 

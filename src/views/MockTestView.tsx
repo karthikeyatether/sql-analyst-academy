@@ -27,6 +27,7 @@ import { ErrorBoundary } from "../components/ErrorBoundary";
 import ErdModalView from "../components/ErdModalView";
 
 import Editor from "@monaco-editor/react";
+import "../utils/monacoConfig";
 
 interface MockTestState {
   company: string;
