@@ -16,7 +16,9 @@ function swVersionPlugin(): Plugin {
       const hash = crypto.createHash("md5");
 
       if (fs.existsSync(distAssetsDir)) {
-        const files = fs.readdirSync(distAssetsDir).filter(f => !f.endsWith(".gz") && !f.endsWith(".br"));
+        const files = fs
+          .readdirSync(distAssetsDir)
+          .filter((f) => !f.endsWith(".gz") && !f.endsWith(".br"));
         files.sort().forEach((file) => {
           const content = fs.readFileSync(path.join(distAssetsDir, file));
           hash.update(file).update(content);
@@ -24,13 +26,15 @@ function swVersionPlugin(): Plugin {
       }
 
       const versionHash = hash.digest("hex").substring(0, 8);
-      const pkg = JSON.parse(fs.readFileSync(path.resolve(__dirname, "package.json"), "utf-8"));
+      const pkg = JSON.parse(
+        fs.readFileSync(path.resolve(__dirname, "package.json"), "utf-8"),
+      );
       const versionString = `v${pkg.version}-${versionHash}`;
 
       let swContent = fs.readFileSync(swPath, "utf-8");
       swContent = swContent.replace(/__SW_VERSION__/g, versionString);
       fs.writeFileSync(swPath, swContent, "utf-8");
-    }
+    },
   };
 }
 
@@ -41,11 +45,11 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    host: "127.0.0.1"
+    host: "127.0.0.1",
   },
   preview: {
     port: 4173,
-    host: "127.0.0.1"
+    host: "127.0.0.1",
   },
   esbuild: {
     legalComments: "none",
@@ -59,6 +63,17 @@ export default defineConfig({
     chunkSizeWarningLimit: 4500,
     modulePreload: {
       polyfill: false,
+      resolveDependencies: (_filename, dependencies) =>
+        dependencies.filter(
+          (dependency) =>
+            !dependency.includes("monaco") &&
+            !dependency.includes("problems-") &&
+            !dependency.includes("curriculum-") &&
+            !dependency.includes("puzzles-") &&
+            !dependency.includes("datasets-") &&
+            !dependency.includes("sqljs") &&
+            !dependency.includes("sqlEngine"),
+        ),
     },
     rollupOptions: {
       treeshake: "recommended",
@@ -68,18 +83,25 @@ export default defineConfig({
             if (id.includes("monaco-editor") || id.includes("@monaco-editor")) return "monaco";
             if (id.includes("sql.js")) return "sqljs";
             if (id.includes("lucide")) return "lucide";
-            if (id.includes("react") || id.includes("scheduler")) return "react-vendor";
+            if (id.includes("react") || id.includes("scheduler"))
+              return "react-vendor";
             return "vendor";
           }
-          if (id.includes("src/utils/sqlLinter") || id.includes("src/utils/sqlErrorTranslator") || id.includes("src/utils/graderService") || id.includes("src/utils/monacoConfig")) return "sql-services";
+          if (
+            id.includes("src/utils/sqlLinter") ||
+            id.includes("src/utils/sqlErrorTranslator") ||
+            id.includes("src/utils/graderService") ||
+            id.includes("src/utils/monacoConfig")
+          )
+            return "sql-services";
           if (id.includes("src/data/problems_batch1")) return "problems-batch1";
           if (id.includes("src/data/problems_batch2")) return "problems-batch2";
           if (id.includes("src/data/problems_batch3")) return "problems-batch3";
           if (id.includes("src/data/puzzles")) return "puzzles-data";
           if (id.includes("src/data/datasets")) return "datasets-data";
           if (id.includes("src/data/")) return "curriculum-core";
-        }
-      }
-    }
-  }
+        },
+      },
+    },
+  },
 });
