@@ -130,25 +130,27 @@ body,
 
 :root.light {
   color-scheme: light;
-  --bg-h: 215;
-  --bg-s: 16%;
+  --bg-h: 210;
+  --bg-s: 20%;
 
-  --bg: #f8fafc;
-  --bg2: #ffffff;
-  --panel: #ffffff;
-  --panel2: #f1f5f9;
+  /* Softened from blinding #fff to premium slate-gray tones */
+  --bg: #eef2f6;
+  --bg2: #f8fafc;
+  --panel: #f8fafc;
+  --panel2: #e2e8f0;
   --input-bg: #ffffff;
-  --text: #0f172a;
-  --text-secondary: #1e293b;
-  --muted: #334155;
-  --faint: #64748b;
-  --border: rgba(0, 0, 0, 0.12);
+  --text: #1e293b;
+  --text-secondary: #334155;
+  --muted: #475569;
+  --faint: #94a3b8;
+  --border: rgba(0, 0, 0, 0.08);
 
-  --glass-panel-bg: rgba(255, 255, 255, 0.65);
-  --glass-modal-bg: rgba(255, 255, 255, 0.85);
-  --glass-popover-bg: rgba(255, 255, 255, 0.90);
-  --glass-border: rgba(0, 0, 0, 0.12);
-  --overlay-bg: rgba(0, 0, 0, 0.05);
+  /* Softened glass panels */
+  --glass-panel-bg: rgba(248, 250, 252, 0.75);
+  --glass-modal-bg: rgba(248, 250, 252, 0.90);
+  --glass-popover-bg: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --overlay-bg: rgba(15, 23, 42, 0.2);
 
   /* Accent adaptation - rich high contrast for light mode */
   --cyan: #0284c7;
