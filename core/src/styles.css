@@ -53,6 +53,13 @@ body,
   --muted: #cbd5e1;
   --faint: #94a3b8;
   --border: rgba(255, 255, 255, 0.14);
+  
+  --glass-panel-bg: rgba(11, 13, 16, 0.65);
+  --glass-modal-bg: rgba(11, 13, 16, 0.85);
+  --glass-popover-bg: rgba(15, 18, 22, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --overlay-bg: rgba(0, 0, 0, 0.2);
+
   --hex-color-040d12: #040d12;
   --hex-color-dde8f5: #dde8f5;
   --hex-color-000000: #000000;
@@ -113,6 +120,12 @@ body,
   --panel2: hsl(0, 0%, 6%);
   --input-bg: hsl(0, 0%, 0%);
   --border: rgba(255, 255, 255, 0.12);
+
+  --glass-panel-bg: rgba(0, 0, 0, 0.75);
+  --glass-modal-bg: rgba(0, 0, 0, 0.90);
+  --glass-popover-bg: rgba(0, 0, 0, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --overlay-bg: rgba(0, 0, 0, 0.4);
 }
 
 :root.light {
@@ -130,6 +143,12 @@ body,
   --muted: #334155;
   --faint: #64748b;
   --border: rgba(0, 0, 0, 0.12);
+
+  --glass-panel-bg: rgba(255, 255, 255, 0.65);
+  --glass-modal-bg: rgba(255, 255, 255, 0.85);
+  --glass-popover-bg: rgba(255, 255, 255, 0.90);
+  --glass-border: rgba(0, 0, 0, 0.12);
+  --overlay-bg: rgba(0, 0, 0, 0.05);
 
   /* Accent adaptation - rich high contrast for light mode */
   --cyan: #0284c7;
@@ -199,22 +218,28 @@ input:focus:not(:focus-visible) {
   outline: none;
 }
 
-/* Clean & Minimal Opaque Panel Systems with 100x GPU Rendering Speed */
+/* Clean & Minimal Glassmorphism Panel Systems */
 .glass-panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
+  background: var(--glass-panel-bg);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid var(--glass-border);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .glass-modal {
-  background: var(--bg2);
-  border: 1px solid var(--border);
+  background: var(--glass-modal-bg);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--glass-border);
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.4);
 }
 
 .glass-popover {
-  background: var(--panel2);
-  border: 1px solid var(--border);
+  background: var(--glass-popover-bg);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid var(--glass-border);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
@@ -242,15 +267,19 @@ h3,
   font-weight: 700;
 }
 
-/* Minimal Clean Card hovers */
+/* Minimal Clean Card hovers with Spring Physics */
 .interactive-lift {
-  transition: var(--transition-smooth);
+  transition: var(--transition-spring);
+  will-change: transform;
 }
 .interactive-lift:hover {
-  border-color: rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.01);
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.02);
+  transform: scale(1.02);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 .interactive-lift:active {
+  transform: scale(0.98);
   opacity: 0.85;
 }
 
@@ -714,14 +743,17 @@ a {
   font-weight: 700;
   font-size: 13px;
   border-radius: 7px;
-  transition:
-    opacity 150ms,
-    transform 100ms;
+  transition: var(--transition-spring);
+  will-change: transform;
   white-space: nowrap;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 .primary-button:hover {
   opacity: 0.88;
-  transform: translateY(-1px);
+  transform: scale(1.03) translateY(-1px);
+}
+.primary-button:active {
+  transform: scale(0.96);
 }
 .primary-button.compact {
   padding: 6px 12px;

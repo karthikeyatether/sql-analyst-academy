@@ -59,10 +59,10 @@ export default function OnboardingModal({
 
   const steps = [
     {
-      title: "Welcome to SQL Analyst Academy",
-      subtitle: "Become an Interview-Ready Data Analyst",
+      title: "SQL Analyst Academy",
+      subtitle: "Offline Analytics Engine",
       description:
-        "Master modern database analytics using real business scenarios, interactive playgrounds, and milestone mock tests.",
+        "A local-first practice environment for data analysts and analytics engineers. Run queries directly in your browser against realistic business datasets.",
       icon: <Database size={48} style={{ color: "var(--cyan)" }} />,
       bg: "rgba(56, 217, 255, 0.05)",
     },
@@ -243,7 +243,7 @@ export default function OnboardingModal({
                 style={{ fontSize: "12.5px", fontWeight: "bold" }}
                 onClick={onClose}
               >
-                Start Journey
+                Launch Workspace
               </button>
             )}
           </div>

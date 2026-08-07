@@ -14,6 +14,9 @@ jobs:
   build-and-test:
     name: Quality Gates, Build & E2E Tests
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: core
 
     steps:
       - name: Checkout Repository
@@ -24,6 +27,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: core/package-lock.json
 
       - name: Install Dependencies
         run: npm ci

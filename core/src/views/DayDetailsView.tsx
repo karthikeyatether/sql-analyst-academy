@@ -370,7 +370,7 @@ function DayDetailsView({
                   border: "1px solid var(--border)",
                   background: checked
                     ? "rgba(48,230,149,0.02)"
-                    : "rgba(255,255,255,0.01)",
+                    : "var(--panel)",
                   transition: "all 0.2s ease",
                 }}
               >
@@ -485,7 +485,7 @@ function DayDetailsView({
                   border: "1px solid var(--border)",
                   background: solved
                     ? "rgba(48,230,149,0.02)"
-                    : "rgba(255,255,255,0.01)",
+                    : "var(--panel)",
                   transition: "all 0.2s ease",
                 }}
               >
@@ -605,7 +605,7 @@ function DayDetailsView({
                   border: "1px solid var(--border)",
                   background: solved
                     ? "rgba(48,230,149,0.02)"
-                    : "rgba(255,255,255,0.01)",
+                    : "var(--panel)",
                   transition: "all 0.2s ease",
                 }}
               >

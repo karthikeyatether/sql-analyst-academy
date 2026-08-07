@@ -205,7 +205,7 @@ const MissionCapstoneView: React.FC<MissionCapstoneViewProps> = ({
                 <div
                   key={stg.stepNumber}
                   style={{
-                    background: "rgba(255, 255, 255, 0.02)",
+                    background: "var(--panel)",
                     border: isDone
                       ? "1px solid rgba(34, 197, 94, 0.3)"
                       : "1px solid var(--border)",
@@ -302,7 +302,7 @@ const MissionCapstoneView: React.FC<MissionCapstoneViewProps> = ({
               {generatedReport && (
                 <pre
                   style={{
-                    background: "#000",
+                    background: "var(--panel)",
                     padding: "12px",
                     borderRadius: "6px",
                     color: "var(--cyan)",

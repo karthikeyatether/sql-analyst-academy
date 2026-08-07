@@ -343,7 +343,7 @@ function MockTestView({
                         fontSize: "12px",
                         color: "var(--muted)",
                         marginBottom: "16px",
-                        background: "rgba(255,255,255,0.02)",
+                        background: "var(--panel)",
                         padding: "8px 12px",
                         borderRadius: "6px",
                         border: "1px solid var(--border)",
@@ -391,7 +391,7 @@ function MockTestView({
                           style={{
                             width: "100%",
                             height: "6px",
-                            background: "rgba(255,255,255,0.1)",
+                            background: "var(--border)",
                             borderRadius: "3px",
                             overflow: "hidden",
                           }}
@@ -457,7 +457,7 @@ function MockTestView({
                   key={item.id}
                   style={{
                     padding: "12px 16px",
-                    background: "rgba(255,255,255,0.02)",
+                    background: "var(--panel)",
                     border: "1px solid var(--border)",
                     borderRadius: "6px",
                     display: "flex",
@@ -516,7 +516,7 @@ function MockTestView({
               style={{
                 padding: "24px",
                 textAlign: "center",
-                background: "rgba(255, 255, 255, 0.01)",
+                background: "var(--panel)",
                 border: "1px dashed var(--border)",
                 borderRadius: "6px",
                 marginTop: "12px",
@@ -683,7 +683,7 @@ function MockTestView({
                 className="hint-prompt-box"
                 style={{
                   padding: "14px",
-                  background: "rgba(255,255,255,0.025)",
+                  background: "var(--panel)",
                   border: "1px solid var(--border)",
                   borderRadius: "8px",
                   marginBottom: "16px",
@@ -919,7 +919,7 @@ function MockTestView({
                                   key={col.name}
                                   style={{
                                     borderBottom:
-                                      "1px solid rgba(255,255,255,0.04)",
+                                      "1px solid var(--panel)",
                                   }}
                                 >
                                   <td
@@ -1109,7 +1109,7 @@ function MockTestView({
             </span>
             <span
               style={{
-                background: "rgba(255,255,255,0.06)",
+                background: "var(--panel)",
                 color: "var(--text)",
                 padding: "4px 10px",
                 borderRadius: "20px",
@@ -1292,7 +1292,7 @@ function MockTestView({
                     alignItems: "center",
                     padding: "8px 16px",
                     borderBottom: "1px solid var(--border)",
-                    background: "rgba(0,0,0,0.2)",
+                    background: "var(--panel)",
                     flexWrap: "wrap",
                     gap: "10px",
                     flexShrink: 0,
@@ -1523,7 +1523,7 @@ function MockTestView({
                         padding: "36px",
                         color: "var(--muted)",
                         fontSize: "13.5px",
-                        background: "rgba(255,255,255,0.01)",
+                        background: "var(--panel)",
                         border: "1px dashed var(--border)",
                         borderRadius: "8px",
                         margin: "12px 0",

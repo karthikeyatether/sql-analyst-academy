@@ -292,7 +292,7 @@ export default function SqlJoinVennDiagram() {
             cy="100"
             r="85"
             fill="none"
-            stroke="rgba(255, 255, 255, 0.08)"
+            stroke="var(--glass-border)"
             strokeWidth="1.5"
             pointerEvents="none"
           />
@@ -301,7 +301,7 @@ export default function SqlJoinVennDiagram() {
             cy="100"
             r="85"
             fill="none"
-            stroke="rgba(255, 255, 255, 0.08)"
+            stroke="var(--glass-border)"
             strokeWidth="1.5"
             pointerEvents="none"
           />
@@ -311,10 +311,10 @@ export default function SqlJoinVennDiagram() {
             fill={
               isCrescentAActive
                 ? "rgba(56, 217, 255, 0.35)"
-                : "rgba(255, 255, 255, 0.02)"
+                : "var(--panel)"
             }
             stroke={
-              isCrescentAActive ? "var(--cyan)" : "rgba(255, 255, 255, 0.1)"
+              isCrescentAActive ? "var(--cyan)" : "var(--border)"
             }
             strokeWidth={isCrescentAActive ? "2.5" : "1"}
             style={{
@@ -342,10 +342,10 @@ export default function SqlJoinVennDiagram() {
             fill={
               isCrescentBActive
                 ? "rgba(48, 230, 149, 0.35)"
-                : "rgba(255, 255, 255, 0.02)"
+                : "var(--panel)"
             }
             stroke={
-              isCrescentBActive ? "var(--emerald)" : "rgba(255, 255, 255, 0.1)"
+              isCrescentBActive ? "var(--emerald)" : "var(--border)"
             }
             strokeWidth={isCrescentBActive ? "2.5" : "1"}
             style={{
@@ -379,12 +379,12 @@ export default function SqlJoinVennDiagram() {
                 : isIntersectionActive &&
                     (isCrescentAActive || isCrescentBActive)
                   ? "rgba(155, 124, 255, 0.35)"
-                  : "rgba(255, 255, 255, 0.02)"
+                  : "var(--panel)"
             }
             stroke={
               isIntersectionActive
                 ? "var(--violet)"
-                : "rgba(255, 255, 255, 0.1)"
+                : "var(--border)"
             }
             strokeWidth={isIntersectionActive ? "2.5" : "1"}
             style={{
@@ -467,7 +467,7 @@ export default function SqlJoinVennDiagram() {
         >
           <table style={{ fontSize: "11px" }}>
             <thead>
-              <tr style={{ background: "rgba(255,255,255,0.02)" }}>
+              <tr style={{ background: "var(--panel)" }}>
                 <th style={{ width: "40px", textAlign: "center" }}>Status</th>
                 {leftTable.columns.map((c) => (
                   <th key={c}>

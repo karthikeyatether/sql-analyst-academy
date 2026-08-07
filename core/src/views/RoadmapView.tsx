@@ -283,7 +283,7 @@ function RoadmapView({
                                   ? "rgba(48,230,149,0.1)"
                                   : statusClass === "progress"
                                     ? "rgba(56,217,255,0.1)"
-                                    : "rgba(255,255,255,0.03)",
+                                    : "var(--border)",
                               color:
                                 statusClass === "done"
                                   ? "var(--emerald)"

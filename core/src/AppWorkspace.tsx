@@ -251,7 +251,7 @@ export default function App() {
     }
 
     // Fallback for browsers like Firefox: generate a custom Windows Desktop Internet Shortcut (.url)
-    // with the online favicon.ico hardcoded so Windows ALWAYS renders the correct logo!
+    // hardcoded favicon.ico for Windows compatibility.
     const currentUrl = window.location.href;
     const baseUrl = window.location.origin + window.location.pathname;
     const icoUrl = new URL("favicon.ico", baseUrl).href;
@@ -509,7 +509,7 @@ export default function App() {
   const [showShortcuts, setShowShortcuts] = useState(false);
 
   useEffect(() => {
-    // Gamified streak check logic with 7-day tracking & 1-day grace protection
+    // Streak calculation logic with 7-day tracking and 1-day allowance.
     const checkStreak = () => {
       const todayStr = new Date().toISOString().split("T")[0];
       const lastDate = localStorage.getItem("sql-aa-last-active-date");
@@ -544,7 +544,7 @@ export default function App() {
 
         if (diffDays === 1) {
           currentStreak += 1;
-          // 1-Day Grace Period Protection: Preserve streak if only 1 day was missed
+          // 1-Day Allowance: Preserve streak if 1 day was missed.
         } else if (diffDays > 2) {
           currentStreak = 1;
         }
@@ -731,7 +731,7 @@ export default function App() {
       a.download = `sql-academy-db-dump.sql`;
       a.click();
       URL.revokeObjectURL(url);
-      showToast("Database exported successfully!", "success");
+      showToast("Database export complete.", "success");
     } catch (err: unknown) {
       showToast("Error exporting database: " + (err as Error).message, "error");
     }
@@ -745,7 +745,7 @@ export default function App() {
       const text = event.target?.result as string;
       if (text) {
         updateEditorQuery(text);
-        showToast("SQL script loaded into editor!", "success");
+        showToast("SQL script loaded.", "success");
       }
     };
     reader.readAsText(file);
@@ -765,7 +765,7 @@ export default function App() {
           throw new Error(importRes.error);
         }
         setLiveSchema(await getLiveSchema());
-        showToast(`Imported temporary table "${tableName}"!`, "success");
+        showToast(`Imported temporary table "${tableName}".`, "success");
       } catch (err: unknown) {
         showToast(
           "Error parsing/loading CSV: " + (err as Error).message,
@@ -789,7 +789,7 @@ export default function App() {
       md += `| ${c.name} | ${c.type} | ${keyType} |\n`;
     });
     navigator.clipboard.writeText(md);
-    showToast(`Copied schema of "${table.name}" to clipboard!`, "success");
+    showToast(`Schema copied to clipboard.`, "success");
   };
 
   const profileColumn = async (tableName: string, columnName: string) => {
@@ -2145,6 +2145,71 @@ export default function App() {
         "editorBracketHighlight.foreground5": "#c084fc",
         "editorBracketHighlight.foreground6": "#fb923c",
         "editorBracketHighlight.unexpectedBracket.foreground": "#ef4444",
+      },
+    });
+
+    monaco.editor.defineTheme("dracula", {
+      base: "vs-dark",
+      inherit: true,
+      rules: [
+        { token: "keyword", foreground: "ff79c6", fontStyle: "bold" },
+        { token: "keyword.sql", foreground: "ff79c6", fontStyle: "bold" },
+        { token: "predefined", foreground: "8be9fd", fontStyle: "italic" },
+        { token: "predefined.sql", foreground: "8be9fd", fontStyle: "italic" },
+        { token: "type", foreground: "8be9fd" },
+        { token: "type.sql", foreground: "8be9fd" },
+        { token: "string", foreground: "f1fa8c" },
+        { token: "string.sql", foreground: "f1fa8c" },
+        { token: "number", foreground: "bd93f9" },
+        { token: "number.sql", foreground: "bd93f9" },
+        { token: "comment", foreground: "6272a4" },
+        { token: "comment.sql", foreground: "6272a4" },
+        { token: "operator", foreground: "ff79c6" },
+        { token: "operator.sql", foreground: "ff79c6" },
+        { token: "delimiter", foreground: "f8f8f2" },
+        { token: "identifier", foreground: "f8f8f2" },
+        { token: "identifier.sql", foreground: "f8f8f2" },
+      ],
+      colors: {
+        "editor.background": "#282a36",
+        "editorGutter.background": "#282a36",
+        "editor.lineHighlightBackground": "#44475a",
+        "editorLineNumber.foreground": "#6272a4",
+        "editorLineNumber.activeForeground": "#f8f8f2",
+        "editorBracketMatch.background": "#44475a",
+        "editorBracketMatch.border": "#bd93f9",
+      },
+    });
+
+    monaco.editor.defineTheme("one-dark", {
+      base: "vs-dark",
+      inherit: true,
+      rules: [
+        { token: "keyword", foreground: "c678dd", fontStyle: "bold" },
+        { token: "keyword.sql", foreground: "c678dd", fontStyle: "bold" },
+        { token: "predefined", foreground: "56b6c2", fontStyle: "italic" },
+        { token: "predefined.sql", foreground: "56b6c2", fontStyle: "italic" },
+        { token: "type", foreground: "e5c07b" },
+        { token: "type.sql", foreground: "e5c07b" },
+        { token: "string", foreground: "98c379" },
+        { token: "string.sql", foreground: "98c379" },
+        { token: "number", foreground: "d19a66" },
+        { token: "number.sql", foreground: "d19a66" },
+        { token: "comment", foreground: "5c6370", fontStyle: "italic" },
+        { token: "comment.sql", foreground: "5c6370", fontStyle: "italic" },
+        { token: "operator", foreground: "56b6c2" },
+        { token: "operator.sql", foreground: "56b6c2" },
+        { token: "identifier", foreground: "abb2bf" },
+        { token: "identifier.sql", foreground: "abb2bf" },
+      ],
+      colors: {
+        "editor.background": "#282c34",
+        "editorGutter.background": "#282c34",
+        "editor.lineHighlightBackground": "#2c313a",
+        "editorLineNumber.foreground": "#4b5263",
+        "editorLineNumber.activeForeground": "#abb2bf",
+        "editorBracketMatch.background": "#515a6b",
+        "editorBracketMatch.border": "#c678dd",
       },
     });
 
@@ -3710,7 +3775,7 @@ export default function App() {
                 className="sidebar-user-xp"
                 style={{
                   padding: "10px 12px",
-                  background: "rgba(255,255,255,0.02)",
+                  background: "var(--panel)",
                   border: "1px solid var(--border)",
                   borderRadius: "6px",
                   marginBottom: "10px",
@@ -4218,8 +4283,8 @@ export default function App() {
                 ? "rgba(239, 68, 68, 0.95)"
                 : toast.type === "success"
                   ? "rgba(16, 185, 129, 0.95)"
-                  : "rgba(31, 41, 55, 0.95)",
-            color: "#fff",
+                  : "var(--glass-panel-bg)",
+            color: "var(--text)",
             padding: "12px 24px",
             borderRadius: "8px",
             boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)",
@@ -4233,7 +4298,7 @@ export default function App() {
                 ? "1px solid rgba(239, 68, 68, 0.5)"
                 : toast.type === "success"
                   ? "1px solid rgba(16, 185, 129, 0.5)"
-                  : "1px solid rgba(255, 255, 255, 0.1)",
+                  : "1px solid var(--border)",
             backdropFilter: "blur(8px)",
             animation: "slideIn 0.2s ease-out forwards",
           }}

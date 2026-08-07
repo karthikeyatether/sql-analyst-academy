@@ -7,13 +7,12 @@
 [![Vite](https://img.shields.io/badge/Vite-6-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vite.dev/)
 [![SQLite WASM](https://img.shields.io/badge/SQLite-WASM-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://sql.js.org/)
 [![Tests](https://img.shields.io/badge/tests-313%20passing-10B981?style=flat-square)](#verification)
-[![License](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](LICENSE)
 
 ## Why this project
 
-SQL Analyst Academy turns SQL practice into a realistic, feedback-driven workflow. Learners write and run queries against business datasets, inspect execution plans, debug intentionally flawed SQL, and practice timed analytics interviews—all in the browser with no backend database or account required.
+SQL Analyst Academy provides a SQL learning platform and interactive query environment. Learners write and run queries against business datasets, inspect execution plans, debug intentionally flawed SQL, and practice timed analytics interviews—all in the browser with no backend database or account required.
 
-The project demonstrates production-minded frontend engineering: Web Worker isolation, WebAssembly-based data execution, lazy route loading, defensive storage, automated correctness checks, and an offline-capable application shell.
+The architecture implements: Web Worker isolation, WebAssembly-based data execution, lazy route loading, defensive storage, automated correctness checks, and an offline-capable application shell.
 
 ## What it includes
 
@@ -50,7 +49,7 @@ React application
                                       SQLite WASM database
 ```
 
-Interactive SQL work is isolated from the main UI thread. The client manages request IDs, timeouts, cancellation, worker recovery, and result snapshots. This keeps the interface responsive while making failure behavior explicit and testable.
+Interactive SQL execution is isolated from the main UI thread. The client manages request IDs, timeouts, cancellation, worker recovery, and result snapshots for robust error handling.
 
 ## Run locally
 
@@ -58,10 +57,36 @@ Interactive SQL work is isolated from the main UI thread. The client manages req
 
 - Node.js 18 or newer
 - npm 9 or newer
+- Git
+
+### Windows (Recommended Quick Start)
+
+For Windows users, we provide automated batch scripts at the root level for instant setup and zero-config launching:
+
+1. Clone the repository:
+   ```cmd
+   git clone https://github.com/karthikeyatether/sql-analyst-academy.git
+   cd sql-analyst-academy
+   ```
+
+2. Run the automated setup (installs dependencies and builds the project):
+   ```cmd
+   _setup.bat
+   ```
+
+3. Launch the application:
+   ```cmd
+   _launch.bat
+   ```
+   This will start the local server and automatically open `http://localhost:4173` in your default browser. For future runs, you only need to run `_launch.bat`. If you make changes to the source code, run `_launch.bat --rebuild`.
+
+### Mac / Linux / Manual Setup
+
+If you prefer to run things manually or are on Mac/Linux:
 
 ```bash
 git clone https://github.com/karthikeyatether/sql-analyst-academy.git
-cd sql-analyst-academy
+cd sql-analyst-academy/core
 npm install
 npm run dev
 ```
@@ -75,13 +100,12 @@ npm run build
 npm run preview
 ```
 
-Open `http://localhost:4173`. On Windows, `run-locally.bat` starts from the existing build for near-instant startup. Use `run-locally.bat --rebuild` after source changes.
-
 ## Verification
 
 The repository includes validation at several levels:
 
 ```bash
+cd core
 npm test                 # curriculum, grading, parser, rollback, and adversarial checks
 npm run test:e2e         # Playwright browser flows
 npm run lint             # ESLint
@@ -100,17 +124,14 @@ Current verification baseline:
 ## Repository layout
 
 ```text
-src/
-  components/     reusable UI and editor components
-  data/           curriculum, datasets, puzzles, and problem content
-  hooks/          reusable React hooks
-  utils/          storage, grading, curriculum, and SQL client logic
-  views/          lazy-loaded application views
-e2e/              Playwright browser tests
-tests/            system verification helpers
-public/           PWA assets and static files
+core/
+  src/
+    components/     reusable UI and editor components
+    data/           curriculum, datasets, puzzles, and problem content
+    hooks/          reusable React hooks
+    utils/          storage, grading, curriculum, and SQL client logic
+    views/          lazy-loaded application views
+  e2e/              Playwright browser tests
+  tests/            system verification helpers
+  public/           PWA assets and static files
 ```
-
-## License
-
-This project is distributed under the [MIT License](LICENSE).

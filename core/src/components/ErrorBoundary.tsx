@@ -87,12 +87,12 @@ export class ErrorBoundary extends Component<Props, State> {
                 style={{
                   marginTop: "12px",
                   padding: "8px",
-                  background: "rgba(0, 0, 0, 0.2)",
+                  background: "var(--panel)",
                   borderRadius: "4px",
                   fontSize: "10px",
                   overflowX: "auto",
                   color: "var(--muted)",
-                  border: "1px solid rgba(255, 255, 255, 0.05)",
+                  border: "1px solid var(--panel)",
                 }}
               >
                 {this.state.error.stack || this.state.error.message}
@@ -124,7 +124,7 @@ export class ErrorBoundary extends Component<Props, State> {
                     padding: "4px 10px",
                     fontSize: "11px",
                     borderRadius: "4px",
-                    background: "rgba(255, 255, 255, 0.05)",
+                    background: "var(--panel)",
                     border: "1px solid var(--border)",
                     color: "var(--text)",
                     cursor: "pointer",

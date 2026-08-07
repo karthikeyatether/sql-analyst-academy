@@ -93,7 +93,7 @@ export default function ShortcutsModal({ onClose }: ShortcutsModalProps) {
                 <span style={{ color: "var(--muted)" }}>{item.desc}</span>
                 <kbd
                   style={{
-                    background: "rgba(255,255,255,0.06)",
+                    background: "var(--panel)",
                     border: "1px solid var(--border)",
                     borderRadius: "4px",
                     padding: "3px 6px",

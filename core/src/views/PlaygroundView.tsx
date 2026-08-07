@@ -699,7 +699,7 @@ SELECT * FROM customers LIMIT 10;`;
       md += `| ${c.name} | ${c.type} | ${keyType} |\n`;
     });
     navigator.clipboard.writeText(md);
-    showToast(`Copied schema of "${table.name}" to clipboard!`, "success");
+    showToast(`Schema copied to clipboard.`, "success");
   };
 
   const profileColumn = async (tableName: string, columnName: string) => {
@@ -823,7 +823,7 @@ SELECT * FROM customers LIMIT 10;`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      showToast("Result exported to CSV successfully", "success");
+      showToast("Result exported to CSV.", "success");
     } catch (err) {
       showToast("Export failed", "error");
     }
@@ -839,7 +839,7 @@ SELECT * FROM customers LIMIT 10;`;
         createdAt: Date.now(),
       };
       setBookmarkedQueries((prev) => [newQuery, ...prev]);
-      showToast(`Saved query as "${name.trim()}"!`, "success");
+      showToast(`Query saved.`, "success");
     });
   };
 
@@ -946,7 +946,7 @@ SELECT * FROM customers LIMIT 10;`;
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
-    showToast("Exported query results as CSV!", "success");
+    showToast("Exported query results as CSV.", "success");
   };
 
   const exportResultAsJson = (
@@ -975,7 +975,7 @@ SELECT * FROM customers LIMIT 10;`;
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
-    showToast("Exported query results as JSON!", "success");
+    showToast("Exported query results as JSON.", "success");
   };
 
   const exportDatabaseSql = async () => {
@@ -1024,7 +1024,7 @@ SELECT * FROM customers LIMIT 10;`;
       a.download = `sql-academy-db-dump.sql`;
       a.click();
       URL.revokeObjectURL(url);
-      showToast("Database exported successfully!", "success");
+      showToast("Database export complete.", "success");
     } catch (err: unknown) {
       showToast("Error exporting database: " + (err as Error).message, "error");
     }
@@ -1038,7 +1038,7 @@ SELECT * FROM customers LIMIT 10;`;
       const text = event.target?.result as string;
       if (text) {
         updateEditorQuery(text);
-        showToast("SQL script loaded into editor!", "success");
+        showToast("SQL script loaded.", "success");
       }
     };
     reader.readAsText(file);
@@ -1058,7 +1058,7 @@ SELECT * FROM customers LIMIT 10;`;
           throw new Error(importRes.error);
         }
         setLiveSchema(await getLiveSchema());
-        showToast(`Imported temporary table "${tableName}"!`, "success");
+        showToast(`Imported temporary table "${tableName}".`, "success");
       } catch (err: unknown) {
         showToast(
           "Error parsing/loading CSV: " + (err as Error).message,
@@ -1977,9 +1977,9 @@ SELECT * FROM customers LIMIT 10;`;
                   right: 0,
                   marginTop: "8px",
                   width: "290px",
-                  background: "rgba(21, 26, 38, 0.92)",
+                  background: "var(--glass-panel-bg)",
                   backdropFilter: "blur(20px)",
-                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  border: "1px solid var(--glass-border)",
                   borderRadius: "12px",
                   boxShadow:
                     "0 20px 40px -15px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(56, 217, 255, 0.1)",
@@ -1995,7 +1995,7 @@ SELECT * FROM customers LIMIT 10;`;
                   style={{
                     fontSize: "13px",
                     fontWeight: "bold",
-                    borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+                    borderBottom: "1px solid var(--glass-border)",
                     paddingBottom: "8px",
                     display: "flex",
                     justifyContent: "space-between",
@@ -2028,24 +2028,26 @@ SELECT * FROM customers LIMIT 10;`;
                     fontSize: "12px",
                   }}
                 >
-                  <span style={{ color: "rgba(255,255,255,0.7)" }}>
+                  <span style={{ color: "var(--muted)" }}>
                     Editor Theme:
                   </span>
                   <select
                     value={editorTheme === "light" ? "vs" : editorTheme}
                     onChange={(e) => setEditorTheme(e.target.value)}
                     style={{
-                      background: "rgba(0, 0, 0, 0.35)",
-                      border: "1px solid rgba(255, 255, 255, 0.12)",
+                      background: "var(--panel)",
+                      border: "1px solid var(--border)",
                       borderRadius: "6px",
                       padding: "5px 8px",
                       fontSize: "11.5px",
-                      color: "rgba(255, 255, 255, 0.95)",
+                      color: "var(--text)",
                       cursor: "pointer",
                       outline: "none",
                     }}
                   >
                     <option value="vs-dark">VS Dark</option>
+                    <option value="dracula">Dracula (Dark)</option>
+                    <option value="one-dark">One Dark</option>
                     <option value="vs">VS Light</option>
                   </select>
                 </div>
@@ -2058,19 +2060,19 @@ SELECT * FROM customers LIMIT 10;`;
                     fontSize: "12px",
                   }}
                 >
-                  <span style={{ color: "rgba(255,255,255,0.7)" }}>
+                  <span style={{ color: "var(--muted)" }}>
                     Font Family:
                   </span>
                   <select
                     value={editorFontFamily}
                     onChange={(e) => setEditorFontFamily(e.target.value)}
                     style={{
-                      background: "rgba(0, 0, 0, 0.35)",
-                      border: "1px solid rgba(255, 255, 255, 0.12)",
+                      background: "var(--panel)",
+                      border: "1px solid var(--border)",
                       borderRadius: "6px",
                       padding: "5px 8px",
                       fontSize: "11.5px",
-                      color: "rgba(255, 255, 255, 0.95)",
+                      color: "var(--text)",
                       cursor: "pointer",
                       maxWidth: "150px",
                       outline: "none",
@@ -2099,19 +2101,19 @@ SELECT * FROM customers LIMIT 10;`;
                     fontSize: "12px",
                   }}
                 >
-                  <span style={{ color: "rgba(255,255,255,0.7)" }}>
+                  <span style={{ color: "var(--muted)" }}>
                     Tab Indentation:
                   </span>
                   <select
                     value={editorTabSize}
                     onChange={(e) => setEditorTabSize(Number(e.target.value))}
                     style={{
-                      background: "rgba(0, 0, 0, 0.35)",
-                      border: "1px solid rgba(255, 255, 255, 0.12)",
+                      background: "var(--panel)",
+                      border: "1px solid var(--border)",
                       borderRadius: "6px",
                       padding: "5px 8px",
                       fontSize: "11.5px",
-                      color: "rgba(255, 255, 255, 0.95)",
+                      color: "var(--text)",
                       cursor: "pointer",
                       outline: "none",
                     }}
@@ -2129,7 +2131,7 @@ SELECT * FROM customers LIMIT 10;`;
                     fontSize: "12px",
                   }}
                 >
-                  <span style={{ color: "rgba(255,255,255,0.7)" }}>
+                  <span style={{ color: "var(--muted)" }}>
                     Font Size:
                   </span>
                   <div
@@ -2145,11 +2147,11 @@ SELECT * FROM customers LIMIT 10;`;
                       }
                       style={{
                         padding: "3px 7px",
-                        background: "rgba(255, 255, 255, 0.04)",
-                        border: "1px solid rgba(255, 255, 255, 0.12)",
+                        background: "var(--panel)",
+                        border: "1px solid var(--border)",
                         borderRadius: "4px",
                         cursor: "pointer",
-                        color: "rgba(255, 255, 255, 0.9)",
+                        color: "var(--text)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2173,11 +2175,11 @@ SELECT * FROM customers LIMIT 10;`;
                       }
                       style={{
                         padding: "3px 7px",
-                        background: "rgba(255, 255, 255, 0.04)",
-                        border: "1px solid rgba(255, 255, 255, 0.12)",
+                        background: "var(--panel)",
+                        border: "1px solid var(--border)",
                         borderRadius: "4px",
                         cursor: "pointer",
-                        color: "rgba(255, 255, 255, 0.9)",
+                        color: "var(--text)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2202,7 +2204,7 @@ SELECT * FROM customers LIMIT 10;`;
                       gap: "8px",
                       fontSize: "12px",
                       cursor: "pointer",
-                      color: "rgba(255, 255, 255, 0.85)",
+                      color: "var(--text)",
                     }}
                   >
                     <input
@@ -2220,7 +2222,7 @@ SELECT * FROM customers LIMIT 10;`;
                       gap: "8px",
                       fontSize: "12px",
                       cursor: "pointer",
-                      color: "rgba(255, 255, 255, 0.85)",
+                      color: "var(--text)",
                     }}
                   >
                     <input
@@ -2238,7 +2240,7 @@ SELECT * FROM customers LIMIT 10;`;
                       gap: "8px",
                       fontSize: "12px",
                       cursor: "pointer",
-                      color: "rgba(255, 255, 255, 0.85)",
+                      color: "var(--text)",
                     }}
                   >
                     <input
@@ -2261,19 +2263,19 @@ SELECT * FROM customers LIMIT 10;`;
                     fontSize: "12px",
                   }}
                 >
-                  <span style={{ color: "rgba(255,255,255,0.7)" }}>
+                  <span style={{ color: "var(--muted)" }}>
                     Max Row Limit:
                   </span>
                   <select
                     value={rowLimit}
                     onChange={(e) => setRowLimit(e.target.value)}
                     style={{
-                      background: "rgba(0, 0, 0, 0.35)",
-                      border: "1px solid rgba(255, 255, 255, 0.12)",
+                      background: "var(--panel)",
+                      border: "1px solid var(--border)",
                       borderRadius: "6px",
                       padding: "5px 8px",
                       fontSize: "11.5px",
-                      color: "rgba(255, 255, 255, 0.95)",
+                      color: "var(--text)",
                       cursor: "pointer",
                       outline: "none",
                     }}
@@ -2311,7 +2313,7 @@ SELECT * FROM customers LIMIT 10;`;
                     display: "flex",
                     flexDirection: "column",
                     gap: "6px",
-                    borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+                    borderTop: "1px solid var(--glass-border)",
                     paddingTop: "12px",
                   }}
                 >
@@ -2339,12 +2341,12 @@ SELECT * FROM customers LIMIT 10;`;
                       onClick={exportDatabaseSql}
                       style={{
                         padding: "6px 8px",
-                        background: "rgba(255, 255, 255, 0.04)",
-                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                        background: "var(--panel)",
+                        border: "1px solid var(--border)",
                         borderRadius: "6px",
                         fontSize: "10.5px",
                         cursor: "pointer",
-                        color: "rgba(255, 255, 255, 0.9)",
+                        color: "var(--text)",
                         display: "flex",
                         alignItems: "center",
                         gap: "4px",
@@ -2357,12 +2359,12 @@ SELECT * FROM customers LIMIT 10;`;
                     <label
                       style={{
                         padding: "6px 8px",
-                        background: "rgba(255, 255, 255, 0.04)",
-                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                        background: "var(--panel)",
+                        border: "1px solid var(--border)",
                         borderRadius: "6px",
                         fontSize: "10.5px",
                         cursor: "pointer",
-                        color: "rgba(255, 255, 255, 0.9)",
+                        color: "var(--text)",
                         display: "flex",
                         alignItems: "center",
                         gap: "4px",
@@ -2390,12 +2392,12 @@ SELECT * FROM customers LIMIT 10;`;
                       onClick={exportProgress}
                       style={{
                         padding: "6px 8px",
-                        background: "rgba(255, 255, 255, 0.04)",
-                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                        background: "var(--panel)",
+                        border: "1px solid var(--border)",
                         borderRadius: "6px",
                         fontSize: "10.5px",
                         cursor: "pointer",
-                        color: "rgba(255, 255, 255, 0.9)",
+                        color: "var(--text)",
                         display: "flex",
                         alignItems: "center",
                         gap: "4px",
@@ -2408,12 +2410,12 @@ SELECT * FROM customers LIMIT 10;`;
                     <label
                       style={{
                         padding: "6px 8px",
-                        background: "rgba(255, 255, 255, 0.04)",
-                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                        background: "var(--panel)",
+                        border: "1px solid var(--border)",
                         borderRadius: "6px",
                         fontSize: "10.5px",
                         cursor: "pointer",
-                        color: "rgba(255, 255, 255, 0.9)",
+                        color: "var(--text)",
                         display: "flex",
                         alignItems: "center",
                         gap: "4px",
@@ -2459,12 +2461,12 @@ SELECT * FROM customers LIMIT 10;`;
                     onClick={downloadStatsSummary}
                     style={{
                       padding: "6px 8px",
-                      background: "rgba(255, 255, 255, 0.04)",
-                      border: "1px solid rgba(255, 255, 255, 0.1)",
+                      background: "var(--panel)",
+                      border: "1px solid var(--border)",
                       borderRadius: "6px",
                       fontSize: "10.5px",
                       cursor: "pointer",
-                      color: "rgba(255, 255, 255, 0.9)",
+                      color: "var(--text)",
                       display: "flex",
                       alignItems: "center",
                       gap: "4px",
@@ -3021,7 +3023,7 @@ SELECT * FROM customers LIMIT 10;`;
                       flexDirection: "column",
                       minWidth: 0,
                       height: "100%",
-                      background: "rgba(255,255,255,0.01)",
+                      background: "var(--panel)",
                       borderRadius: "6px",
                       border: "1px solid var(--border)",
                     }}
@@ -3038,7 +3040,7 @@ SELECT * FROM customers LIMIT 10;`;
                         fontWeight: 700,
                         letterSpacing: "0.05em",
                         color: "var(--text-secondary)",
-                        background: "rgba(255,255,255,0.02)",
+                        background: "var(--panel)",
                       }}
                     >
                       <span>
@@ -3728,7 +3730,7 @@ SELECT * FROM customers LIMIT 10;`;
                                     <tr
                                       style={{
                                         borderBottom: "1px solid var(--border)",
-                                        background: "rgba(255,255,255,0.02)",
+                                        background: "var(--panel)",
                                       }}
                                     >
                                       {previewData[t.name]!.columns.map(
@@ -3759,7 +3761,7 @@ SELECT * FROM customers LIMIT 10;`;
                                               previewData[t.name]!.rows.length -
                                                 1
                                                 ? "none"
-                                                : "1px solid rgba(255,255,255,0.03)",
+                                                : "1px solid var(--border)",
                                           }}
                                         >
                                           {previewData[t.name]!.columns.map(
@@ -4126,7 +4128,7 @@ SELECT * FROM customers LIMIT 10;`;
                                     <tr
                                       style={{
                                         borderBottom: "1px solid var(--border)",
-                                        background: "rgba(255,255,255,0.02)",
+                                        background: "var(--panel)",
                                       }}
                                     >
                                       {previewData[t.name]!.columns.map(
@@ -4157,7 +4159,7 @@ SELECT * FROM customers LIMIT 10;`;
                                               previewData[t.name]!.rows.length -
                                                 1
                                                 ? "none"
-                                                : "1px solid rgba(255,255,255,0.03)",
+                                                : "1px solid var(--border)",
                                           }}
                                         >
                                           {previewData[t.name]!.columns.map(
@@ -4392,7 +4394,7 @@ SELECT * FROM customers LIMIT 10;`;
                       gap: "6px",
                       padding: "6px 12px",
                       fontSize: "11px",
-                      background: "rgba(255,255,255,0.03)",
+                      background: "var(--border)",
                       border: "1px solid var(--border)",
                       borderRadius: "4px",
                       cursor: "pointer",
@@ -4413,7 +4415,7 @@ SELECT * FROM customers LIMIT 10;`;
                       gap: "6px",
                       padding: "6px 12px",
                       fontSize: "11px",
-                      background: "rgba(255,255,255,0.03)",
+                      background: "var(--border)",
                       border: "1px solid var(--border)",
                       borderRadius: "4px",
                       cursor: "pointer",
