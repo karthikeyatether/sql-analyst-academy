@@ -249,29 +249,8 @@ export default function App() {
       );
       return;
     }
-
-    // Fallback for browsers like Firefox: generate a custom Windows Desktop Internet Shortcut (.url)
-    // hardcoded favicon.ico for Windows compatibility.
-    const currentUrl = window.location.href;
-    const baseUrl = window.location.origin + window.location.pathname;
-    const icoUrl = new URL("favicon.ico", baseUrl).href;
-
-    const urlContent = [
-      "[InternetShortcut]",
-      `URL=${currentUrl}`,
-      "IDList=",
-      `IconFile=${icoUrl}`,
-      "IconIndex=0",
-    ].join("\r\n");
-
-    const blob = new Blob([urlContent], { type: "text/plain" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "SQL Analyst Academy.url";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(a.href);
+    
+    alert("The application is already installed or your browser does not support automatic installation.");
   }, []);
 
   // Keydown handler for WAI-ARIA tablist in sidebar
