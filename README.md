@@ -75,7 +75,7 @@ npm run build
 npm run preview
 ```
 
-Open `http://localhost:4173`. On Windows, `run-locally.bat` performs the same build-and-preview flow.
+Open `http://localhost:4173`. On Windows, `run-locally.bat` starts from the existing build for near-instant startup. Use `run-locally.bat --rebuild` after source changes.
 
 ## Verification
 

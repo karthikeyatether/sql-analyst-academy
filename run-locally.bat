@@ -9,6 +9,12 @@ if errorlevel 1 (
   exit /b 1
 )
 
+REM Use the existing production build for instant startup.
+REM Pass --rebuild when source changes need a fresh bundle.
+if /i "%~1"=="--rebuild" goto BUILD
+if exist "dist\index.html" goto SERVE
+
+:BUILD
 echo Building production app bundle...
 call npm run build
 if errorlevel 1 (
@@ -17,5 +23,6 @@ if errorlevel 1 (
   exit /b 1
 )
 
+:SERVE
 echo Starting SQL Analyst Academy...
 call npm run preview
