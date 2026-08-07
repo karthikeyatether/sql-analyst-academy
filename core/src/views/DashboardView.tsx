@@ -1113,7 +1113,7 @@ function CollapsibleInsightsSection({
           gap: "0.5rem",
           padding: "0.6rem 1rem",
           fontSize: "0.82rem",
-          color: "var(--text-muted)",
+          color: "var(--muted)",
           border: "1px solid var(--border)",
           borderRadius: "8px",
           background: "var(--panel)",

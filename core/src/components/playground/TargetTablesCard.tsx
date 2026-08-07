@@ -71,7 +71,7 @@ export function TargetTablesCard({
                   fontSize: "10.5px",
                   fontFamily: "var(--font-mono, monospace)",
                   background: "var(--bg)",
-                  color: "var(--text-muted)",
+                  color: "var(--muted)",
                   padding: "2px 6px",
                   borderRadius: "4px",
                   border: "1px solid var(--border)",

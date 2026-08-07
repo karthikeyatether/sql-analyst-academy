@@ -1385,7 +1385,7 @@ a {
 .lesson-prose p {
   font-size: 15px;
   line-height: 1.75;
-  color: var(--hex-color-ebf4ff);
+  color: var(--text);
   margin-bottom: 14px;
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
 }
@@ -1396,7 +1396,7 @@ a {
   padding: 6px 0;
   font-size: 14.5px;
   line-height: 1.6;
-  color: var(--hex-color-c8daf0);
+  color: var(--muted);
 }
 .lesson-prose .lp-bullet::before {
   content: "▸";
@@ -1411,9 +1411,9 @@ a {
 .lesson-prose .lp-code {
   font-family: "JetBrains Mono", Consolas, monospace;
   font-size: 13px;
-  background: rgba(56, 217, 255, 0.05);
-  border: 1px solid rgba(56, 217, 255, 0.15);
-  color: var(--hex-color-a8d8ff);
+  background: var(--glass-panel-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
   padding: 10px 14px;
   border-radius: 7px;
   margin: 6px 0 10px;
