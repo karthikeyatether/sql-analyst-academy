@@ -1,6 +1,4 @@
-import { lazy, Suspense } from "react";
-
-const AppWorkspace = lazy(() => import("./AppWorkspace"));
+import AppWorkspace from "./AppWorkspace";
 
 function AppLoading() {
   return (
@@ -42,9 +40,5 @@ function AppLoading() {
 }
 
 export default function App() {
-  return (
-    <Suspense fallback={<AppLoading />}>
-      <AppWorkspace />
-    </Suspense>
-  );
+  return <AppWorkspace />;
 }
