@@ -1,4 +1,4 @@
-import { PracticeProblem } from "./curriculum";
+import type { PracticeProblem } from "./curriculumMetadata";
 
 export const problemsBatch3: Record<number, PracticeProblem[]> = {
   // MODULE 26: Window Functions - RANK & DENSE_RANK

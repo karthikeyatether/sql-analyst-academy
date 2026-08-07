@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Keyboard, X } from "lucide-react";
 
 interface ShortcutsModalProps {

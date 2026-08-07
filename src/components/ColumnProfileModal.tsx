@@ -95,7 +95,7 @@ export default function ColumnProfileModal({
           </button>
         </div>
         <div className="custom-modal-body">
-          <div className="linter-advisor-wrap">
+          <div className="profile-modal-stack">
             <div className="profile-grid-container">
               <div className="profile-stat-box">
                 <span

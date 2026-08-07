@@ -1,7 +1,7 @@
 import initSqlJs from "sql.js";
 import { seedTables, tableSchemas } from "../data/datasets";
 
-export function inferType(value: unknown): string {
+function inferType(value: unknown): string {
   if (typeof value === "number") {
     return Number.isInteger(value) ? "INTEGER" : "REAL";
   }

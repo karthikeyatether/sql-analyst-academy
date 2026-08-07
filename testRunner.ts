@@ -157,7 +157,9 @@ async function runValidation() {
   // 5. System Verification E2E Tests
   console.log("\n[5/5] Running System Verification E2E Tests...");
   try {
-    const { runSystemVerificationTests } = await import("./src/utils/e2eTests.ts");
+    const { runSystemVerificationTests } = await import(
+      "./tests/systemVerification.ts",
+    );
     const sysResults = runSystemVerificationTests();
     sysResults.forEach((t) => {
       if (t.status === "PASS") {

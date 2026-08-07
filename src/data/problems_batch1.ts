@@ -1,4 +1,4 @@
-import { PracticeProblem } from "./curriculum";
+import type { PracticeProblem } from "./curriculumMetadata";
 
 export const problemsBatch1: Record<number, PracticeProblem[]> = {
   // MODULE 1: Introduction to SQL & SELECT

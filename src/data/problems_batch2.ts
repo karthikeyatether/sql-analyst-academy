@@ -1,4 +1,4 @@
-import { PracticeProblem } from "./curriculum";
+import type { PracticeProblem } from "./curriculumMetadata";
 
 export const batch2Problems: Record<number, PracticeProblem[]> = {
   // MODULE 11: Finding Averages - AVG

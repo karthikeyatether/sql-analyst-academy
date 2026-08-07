@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { formatStudyTime } from "../utils/formatters";
 import {
   Database,
@@ -17,11 +17,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import AdaptiveSkillGraph from "../components/dashboard/AdaptiveSkillGraph";
-import type {
-  RoadmapModule,
-  PracticeProblem,
-  RoadmapDay,
-} from "../data/curriculum";
+import type { RoadmapModule, RoadmapDay } from "../data/curriculum";
 import type { SqlPuzzle } from "../data/puzzles";
 import type { ViewId, PlaygroundMode } from "../types";
 

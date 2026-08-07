@@ -66,8 +66,12 @@ export function setStorageItem<T>(key: string, value: T): void {
       return;
     }
     localStorage.setItem(key, serialized);
-  } catch (err: any) {
-    if (err?.name === "QuotaExceededError" || err?.code === 22) {
+  } catch (err: unknown) {
+    const storageError = err as { name?: string; code?: number };
+    if (
+      storageError.name === "QuotaExceededError" ||
+      storageError.code === 22
+    ) {
       console.warn(
         "[storage] QuotaExceededError encountered. Pruning query history...",
       );
@@ -92,6 +96,7 @@ export function setStorageItemDebounced<T>(
   value: T,
   delayMs: number = 300,
 ): void {
+  if (typeof window === "undefined") return;
   if (debounceTimers.has(key)) {
     clearTimeout(debounceTimers.get(key));
   }
@@ -107,7 +112,9 @@ export function removeStorageItem(key: string): void {
     if (typeof localStorage !== "undefined") {
       localStorage.removeItem(key);
     }
-  } catch (_) {}
+  } catch {
+    // Storage can be unavailable in private or restricted browsing contexts.
+  }
 }
 
 export function saveQueryDeduplicated(
@@ -151,7 +158,7 @@ export function migrateStorageIfNeeded(): void {
 }
 
 export function subscribeToCrossTabSync(
-  callback: (key: string, newValue: any) => void,
+  callback: (key: string, newValue: unknown) => void,
 ): () => void {
   if (typeof window === "undefined") return () => {};
   const handler = (e: StorageEvent) => {
@@ -159,7 +166,7 @@ export function subscribeToCrossTabSync(
       try {
         const parsed = e.newValue ? JSON.parse(e.newValue) : null;
         callback(e.key, parsed);
-      } catch (_) {
+      } catch {
         callback(e.key, e.newValue);
       }
     }

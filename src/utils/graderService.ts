@@ -35,7 +35,7 @@ export function isModifyingQuery(sqlText: string): boolean {
 /**
  * Normalizes SQL by stripping single-line/multi-line comments and collapsing whitespace.
  */
-export function cleanSqlText(sqlText: string): string {
+function cleanSqlText(sqlText: string): string {
   if (!sqlText) return "";
   return sqlText
     .replace(/(--[^\r\n]*)|(\/\*[\s\S]*?\*\/)/g, " ")

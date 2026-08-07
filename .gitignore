@@ -38,8 +38,8 @@ sql-analyst-academy.zip
 # Temporary & Scratch Files
 scratch_*
 scratch/
+profile-work/
 .audit-docx-render/
 .tsconfig.tsbuildinfo
 audit_*.txt
 *.log
-

@@ -1,6 +1,6 @@
 {
   "name": "sql-analyst-academy",
-  "description": "Interactive SQL learning platform with 43 modules, real business datasets, execution plan visualizers, and performance benchmarking.",
+  "description": "Offline-first SQL learning platform with interactive analytics challenges, Web Worker execution, and interview practice.",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -16,13 +16,13 @@
     "preview": "vite preview --host 127.0.0.1",
     "test": "npx tsx testRunner.ts",
     "test:e2e": "playwright test",
+    "audit:dead-code": "knip --reporter compact --no-exit-code",
     "lint": "eslint \"src/**/*.{ts,tsx}\" --quiet",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,html}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,html}\""
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
-    "better-sqlite3": "^13.0.2",
     "lucide-react": "^0.468.0",
     "monaco-editor": "^0.52.2",
     "react": "^18.3.1",
@@ -39,6 +39,7 @@
     "@typescript-eslint/parser": "^7.18.0",
     "@vitejs/plugin-react": "^4.3.4",
     "eslint": "^8.57.0",
+    "knip": "^6.32.0",
     "prettier": "^3.9.6",
     "tsx": "^4.23.1",
     "typescript": "^5.9.3",

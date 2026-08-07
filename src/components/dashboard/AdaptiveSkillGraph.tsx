@@ -25,7 +25,7 @@ interface AdaptiveSkillGraphProps {
   onSelectDrill?: (problemId: string) => void;
 }
 
-export const AdaptiveSkillGraph: React.FC<AdaptiveSkillGraphProps> = ({
+const AdaptiveSkillGraph: React.FC<AdaptiveSkillGraphProps> = ({
   completedProblems = [],
   completedPuzzles = [],
   onSelectDrill,

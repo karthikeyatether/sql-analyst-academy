@@ -1,5 +1,5 @@
-import { roadmapModules } from "../data/curriculum";
-import { debugPuzzles } from "../data/puzzles";
+import { roadmapModules } from "../src/data/curriculum";
+import { debugPuzzles } from "../src/data/puzzles";
 
 export interface SystemTestResult {
   name: string;

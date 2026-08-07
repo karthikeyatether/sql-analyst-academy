@@ -18,7 +18,7 @@ interface MissionCapstoneViewProps {
   onBackToRoadmap?: () => void;
 }
 
-export const MissionCapstoneView: React.FC<MissionCapstoneViewProps> = ({
+const MissionCapstoneView: React.FC<MissionCapstoneViewProps> = ({
   onOpenStepInPlayground,
   onBackToRoadmap,
 }) => {

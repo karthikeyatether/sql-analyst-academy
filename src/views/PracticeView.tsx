@@ -15,7 +15,6 @@ import type {
   Difficulty,
 } from "../data/curriculum";
 import { SplitPane } from "../components/SplitPane";
-import { useLocalStorage } from "../hooks/useLocalStorage";
 import type { ViewId, PlaygroundMode } from "../types";
 
 interface PracticeViewProps {

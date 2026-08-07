@@ -1,5 +1,3 @@
-import React from "react";
-
 const SQL_KEYWORDS =
   /^\s*(SELECT|FROM|WHERE|GROUP BY|ORDER BY|HAVING|JOIN|LEFT|INNER|WITH|INSERT|UPDATE|DELETE|CREATE|DROP|EXPLAIN|--)/i;
 const BULLET_PREFIXES = /^\s*[-•✓✗→▸*]\s+/;

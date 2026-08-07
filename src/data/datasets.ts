@@ -1123,8 +1123,6 @@ export const seedTables: SeedTable[] = [
   },
 ];
 
-export const tableNames = tableSchemas.map((table) => table.name);
-
 export const datasetDomains = Array.from(
   new Set(tableSchemas.map((table) => table.domain)),
 );

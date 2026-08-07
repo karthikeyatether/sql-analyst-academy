@@ -38,8 +38,21 @@ let nodeDbInstance: initSqlJs.Database | null = null;
 let initPromise: Promise<void> | null = null;
 const pendingWorkerRequests = new Map<
   string,
-  { resolve: (val: WorkerResponse) => void; reject: (err: Error) => void }
+  {
+    resolve: (val: WorkerResponse) => void;
+    reject: (err: Error) => void;
+    timer: ReturnType<typeof setTimeout>;
+  }
 >();
+let workerLifecycle: Promise<void> = Promise.resolve();
+
+function rejectPendingWorkerRequests(error: Error): void {
+  for (const [id, request] of pendingWorkerRequests) {
+    clearTimeout(request.timer);
+    pendingWorkerRequests.delete(id);
+    request.reject(error);
+  }
+}
 
 function isWorkerSupported(): boolean {
   return typeof window !== "undefined" && typeof window.Worker !== "undefined";
@@ -48,86 +61,113 @@ function isWorkerSupported(): boolean {
 export async function initDatabase(): Promise<void> {
   if (initPromise) return initPromise;
 
-  initPromise = (async () => {
+  initPromise = workerLifecycle.then(async () => {
     try {
       initError = null;
-      if (isWorkerSupported()) {
-        if (!workerInstance) {
-          workerInstance = new Worker(
-            new URL("../workers/sqlWorker.ts", import.meta.url),
-          );
-
-          workerInstance.onmessage = (e: MessageEvent) => {
-            const { id, status, result, snapshot, error } = e.data;
-            const handler = pendingWorkerRequests.get(id);
-            if (handler) {
-              pendingWorkerRequests.delete(id);
-              if (status === "ERROR") {
-                handler.reject(new Error(error || "Worker error"));
-              } else {
-                handler.resolve({ result, snapshot, status });
-              }
-            }
-          };
-
-          workerInstance.onerror = (err: ErrorEvent | Event) => {
-            if ("message" in err) {
-              console.error(
-                `SQL Worker Runtime Error: ${err.message} at ${err.filename}:${err.lineno}:${err.colno}`,
-              );
-            } else {
-              console.error("SQL Worker Runtime Error:", err);
-            }
-          };
-        }
-
-        const reqId = `init_${Date.now()}_${Math.random()}`;
-        await new Promise<WorkerResponse>((resolve, reject) => {
-          pendingWorkerRequests.set(reqId, { resolve, reject });
-          workerInstance!.postMessage({ id: reqId, type: "INIT" });
-        });
-      } else {
-        // Node.js CLI fallback
-        const SQL = await initSqlJs({
-          locateFile: () => sqlWasmUrl,
-        });
-        nodeDbInstance = new SQL.Database();
-        registerMySqlFunctions(nodeDbInstance);
-        nodeDbInstance.run("PRAGMA foreign_keys = ON;");
-        nodeDbInstance.run("PRAGMA synchronous = OFF;");
-        nodeDbInstance.run("PRAGMA journal_mode = MEMORY;");
-        nodeDbInstance.run("PRAGMA temp_store = MEMORY;");
-        seedDatabaseInstance(nodeDbInstance);
-      }
+      await initializeDatabase();
     } catch (err: unknown) {
       console.error("Failed to initialize SQL engine:", err);
       initError = (err as Error)?.message || String(err);
       initPromise = null;
       throw err;
     }
-  })();
+  });
 
   return initPromise;
 }
 
 export async function cancelActiveQuery(): Promise<void> {
-  if (workerInstance) {
-    workerInstance.terminate();
+  const restart = workerLifecycle.then(async () => {
+    const worker = workerInstance;
+    if (!worker) return;
+
+    rejectPendingWorkerRequests(
+      new Error("SQL worker operation was cancelled."),
+    );
+    worker.terminate();
     workerInstance = null;
-    pendingWorkerRequests.clear();
     initPromise = null;
-    await initDatabase();
+
+    // Initialize directly while holding the lifecycle barrier. Calling the
+    // public initDatabase here would wait on this same promise.
+    await initializeDatabase();
+  });
+  workerLifecycle = restart.catch(() => {});
+  await restart;
+}
+
+async function initializeDatabase(): Promise<void> {
+  if (isWorkerSupported()) {
+    if (!workerInstance) {
+      workerInstance = new Worker(
+        new URL("../workers/sqlWorker.ts", import.meta.url),
+      );
+
+      workerInstance.onmessage = (e: MessageEvent) => {
+        const { id, status, result, snapshot, error } = e.data;
+        const handler = pendingWorkerRequests.get(id);
+        if (!handler) return;
+        pendingWorkerRequests.delete(id);
+        clearTimeout(handler.timer);
+        if (status === "ERROR")
+          handler.reject(new Error(error || "Worker error"));
+        else handler.resolve({ result, snapshot, status });
+      };
+      workerInstance.onerror = () => {
+        rejectPendingWorkerRequests(
+          new Error("SQL worker failed while processing a request."),
+        );
+        workerInstance = null;
+        initPromise = null;
+      };
+    }
+    await requestWorker("INIT", {}, 15000);
+    return;
   }
+
+  const SQL = await initSqlJs({ locateFile: () => sqlWasmUrl });
+  nodeDbInstance = new SQL.Database();
+  registerMySqlFunctions(nodeDbInstance);
+  nodeDbInstance.run("PRAGMA foreign_keys = ON;");
+  nodeDbInstance.run("PRAGMA synchronous = OFF;");
+  nodeDbInstance.run("PRAGMA journal_mode = MEMORY;");
+  nodeDbInstance.run("PRAGMA temp_store = MEMORY;");
+  seedDatabaseInstance(nodeDbInstance);
+}
+
+function requestWorker(
+  type: string,
+  payload: Record<string, unknown>,
+  timeoutMs: number,
+): Promise<WorkerResponse> {
+  const worker = workerInstance;
+  if (!worker) return Promise.reject(new Error("SQL worker is unavailable."));
+  const reqId = `${type.toLowerCase()}_${Date.now()}_${Math.random()}`;
+  return new Promise<WorkerResponse>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      pendingWorkerRequests.delete(reqId);
+      const message =
+        type === "EXECUTE"
+          ? `Query execution timed out after ${timeoutMs}ms and was safely cancelled.`
+          : `SQL worker request timed out after ${timeoutMs}ms.`;
+      reject(new Error(message));
+      if (type === "EXECUTE") void cancelActiveQuery();
+    }, timeoutMs);
+    pendingWorkerRequests.set(reqId, { resolve, reject, timer });
+    try {
+      worker.postMessage({ id: reqId, type, ...payload });
+    } catch (error: unknown) {
+      clearTimeout(timer);
+      pendingWorkerRequests.delete(reqId);
+      reject(error instanceof Error ? error : new Error(String(error)));
+    }
+  });
 }
 
 export async function resetDatabase(force: boolean = false): Promise<void> {
   await initDatabase();
   if (workerInstance) {
-    const reqId = `reset_${Date.now()}_${Math.random()}`;
-    await new Promise<WorkerResponse>((resolve, reject) => {
-      pendingWorkerRequests.set(reqId, { resolve, reject });
-      workerInstance!.postMessage({ id: reqId, type: "RESET", force });
-    });
+    await requestWorker("RESET", { force }, 15000);
   } else if (nodeDbInstance) {
     seedDatabaseInstance(nodeDbInstance);
   }
@@ -146,37 +186,14 @@ export async function runQuery(
   }
 
   if (workerInstance) {
-    const reqId = `exec_${Date.now()}_${Math.random()}`;
-    let timerId: ReturnType<typeof setTimeout> | null = null;
-
     try {
-      const queryPromise = new Promise<WorkerResponse>((resolve, reject) => {
-        pendingWorkerRequests.set(reqId, { resolve, reject });
-        workerInstance!.postMessage({
-          id: reqId,
-          type: "EXECUTE",
-          sql: trimmed,
-          sandbox,
-          takeSnapshot: captureSnapshot,
-        });
-      });
-
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        timerId = setTimeout(() => {
-          cancelActiveQuery().catch(() => {});
-          reject(
-            new Error(
-              `Query execution timed out after ${timeoutMs}ms and was safely cancelled.`,
-            ),
-          );
-        }, timeoutMs);
-      });
-
-      const response = await Promise.race([queryPromise, timeoutPromise]);
-      if (timerId) clearTimeout(timerId);
+      const response = await requestWorker(
+        "EXECUTE",
+        { sql: trimmed, sandbox, takeSnapshot: captureSnapshot },
+        timeoutMs,
+      );
       return response.result as QueryResult;
     } catch (err: unknown) {
-      if (timerId) clearTimeout(timerId);
       const sqlToRun = prepareMySqlForSqlite(trimmed);
       const rawError = (err as Error)?.message || String(err);
       return {
@@ -278,12 +295,8 @@ export async function runQueryAsync(
 export async function getQueryPlan(sql: string): Promise<QueryPlanStep[]> {
   await initDatabase();
   if (workerInstance) {
-    const reqId = `plan_${Date.now()}_${Math.random()}`;
     try {
-      const res = await new Promise<WorkerResponse>((resolve, reject) => {
-        pendingWorkerRequests.set(reqId, { resolve, reject });
-        workerInstance!.postMessage({ id: reqId, type: "GET_PLAN", sql });
-      });
+      const res = await requestWorker("GET_PLAN", { sql }, 10000);
       return (res.result as QueryPlanStep[]) || [];
     } catch (_) {
       return [];
@@ -308,12 +321,8 @@ export async function getQueryPlan(sql: string): Promise<QueryPlanStep[]> {
 export async function exportDatabaseState(): Promise<Uint8Array | null> {
   await initDatabase();
   if (workerInstance) {
-    const reqId = `export_${Date.now()}_${Math.random()}`;
     try {
-      const res = await new Promise<WorkerResponse>((resolve, reject) => {
-        pendingWorkerRequests.set(reqId, { resolve, reject });
-        workerInstance!.postMessage({ id: reqId, type: "EXPORT" });
-      });
+      const res = await requestWorker("EXPORT", {}, 10000);
       return res.snapshot ? new Uint8Array(res.snapshot as ArrayBuffer) : null;
     } catch (_) {
       return null;
@@ -654,12 +663,8 @@ export function generateDynamicHint(
 export async function getLiveSchema(): Promise<typeof tableSchemas> {
   await initDatabase();
   if (workerInstance) {
-    const reqId = `schema_${Date.now()}_${Math.random()}`;
     try {
-      const res = await new Promise<WorkerResponse>((resolve, reject) => {
-        pendingWorkerRequests.set(reqId, { resolve, reject });
-        workerInstance!.postMessage({ id: reqId, type: "GET_SCHEMA" });
-      });
+      const res = await requestWorker("GET_SCHEMA", {}, 10000);
       const schemas: Record<
         string,
         { columns: Array<{ name: string; type: string }>; rowCount: number }

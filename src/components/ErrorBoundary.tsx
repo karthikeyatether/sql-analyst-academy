@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from "react";
+import { Component, ErrorInfo, ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
@@ -30,7 +30,18 @@ export class ErrorBoundary extends Component<Props, State> {
       error?.name === "ChunkLoadError";
 
     if (isChunkLoadError) {
-      window.location.reload();
+      const reloadKey = "sql-aa-chunk-reload-at";
+      const now = Date.now();
+      const lastReload = Number(sessionStorage.getItem(reloadKey) || 0);
+      if (now - lastReload > 10_000) {
+        sessionStorage.setItem(reloadKey, String(now));
+        window.location.reload();
+      } else {
+        console.error(
+          "Chunk loading failed again after an automatic reload; stopping reload loop.",
+          error,
+        );
+      }
       return;
     }
 

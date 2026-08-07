@@ -20,7 +20,7 @@ import {
 
 export * from "./curriculumMetadata";
 
-export const realProblems: Record<number, PracticeProblem[]> = {
+const realProblems: Record<number, PracticeProblem[]> = {
   ...problemsBatch1,
   ...batch2Problems,
   ...problemsBatch3,

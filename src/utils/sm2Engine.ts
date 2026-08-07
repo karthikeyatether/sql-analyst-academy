@@ -78,9 +78,3 @@ export function calculateSM2(
     lastReviewed: now.toISOString().split("T")[0],
   };
 }
-
-export function isProblemDueForReview(item: SM2Item | undefined): boolean {
-  if (!item) return false;
-  const today = new Date().toISOString().split("T")[0];
-  return item.nextReviewDate <= today;
-}

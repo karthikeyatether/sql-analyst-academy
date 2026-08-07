@@ -9,6 +9,42 @@ import { seedDatabaseInstance } from "../utils/dbSeeder";
 let SQL: initSqlJs.SqlJsStatic | null = null;
 let dbInstance: initSqlJs.Database | null = null;
 
+function hasSandboxTransactionControl(sql: string): boolean {
+  const transactionCommands = new Set([
+    "COMMIT",
+    "ROLLBACK",
+    "BEGIN",
+    "SAVEPOINT",
+    "RELEASE",
+  ]);
+  const tokenPattern =
+    /'(?:''|[^'])*'|"(?:""|[^"])*"|`[^`]*`|--[^\r\n]*|\/\*[\s\S]*?\*\/|;|[A-Za-z_][A-Za-z0-9_]*/g;
+  let statementStart = true;
+  let match: RegExpExecArray | null;
+
+  while ((match = tokenPattern.exec(sql)) !== null) {
+    const token = match[0];
+    if (token === ";") {
+      statementStart = true;
+      continue;
+    }
+    if (
+      token.startsWith("'") ||
+      token.startsWith('"') ||
+      token.startsWith("`") ||
+      token.startsWith("--") ||
+      token.startsWith("/*")
+    ) {
+      continue;
+    }
+    if (statementStart && transactionCommands.has(token.toUpperCase())) {
+      return true;
+    }
+    statementStart = false;
+  }
+  return false;
+}
+
 export interface WorkerMessageData {
   id: string;
   type:
@@ -238,6 +274,11 @@ self.onmessage = async (e: MessageEvent<WorkerMessageData>) => {
 
     const t0 = performance.now();
     try {
+      if (sandbox && hasSandboxTransactionControl(sql)) {
+        throw new Error(
+          "Transaction-control statements are not allowed in sandbox mode.",
+        );
+      }
       if (sandbox) {
         dbInstance.run(`SAVEPOINT ${savepointName};`);
         savepointActive = true;

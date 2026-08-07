@@ -1,17 +1,10 @@
 import type { ViewId, PlaygroundMode } from "../types";
 import type { LintError } from "../types";
-import React, {
-  useState,
-  useMemo,
-  useEffect,
-  useRef,
-  useDeferredValue,
-} from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   Database,
   Lightbulb,
   AlertTriangle,
-  Search,
   Maximize2,
   Minimize2,
   Settings,
@@ -54,28 +47,12 @@ import {
 } from "../utils/sqlEngine";
 import { downloadStatsReport } from "../utils/reportGenerator";
 import { buildCsvImportSql } from "../utils/csvParser";
-import QueryPlanFlowchart from "../components/QueryPlanFlowchart";
-import SqlJoinVennDiagram from "../components/SqlJoinVennDiagram";
-import SqlLinterAdvisor from "../components/SqlLinterAdvisor";
-import SqlPerformanceComparer from "../components/SqlPerformanceComparer";
-import ColumnProfileModal from "../components/ColumnProfileModal";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { useLocalStorage } from "../hooks/useLocalStorage";
+import { getStorageItem as safeLocalStorageGet } from "../utils/storage";
 import { SplitPane, VSplitPane } from "../components/SplitPane";
 import ErdModalView from "../components/ErdModalView";
 import LessonProse from "../components/LessonProse";
-import { ResultTablePanel } from "../components/playground/ResultTablePanel";
-
-export function safeLocalStorageGet<T>(key: string, defaultValue: T): T {
-  try {
-    const item = localStorage.getItem(key);
-    if (item === null) return defaultValue;
-    return JSON.parse(item) as T;
-  } catch (e) {
-    console.error(`Error parsing localStorage key "${key}":`, e);
-    return defaultValue;
-  }
-}
 
 import Editor from "@monaco-editor/react";
 import "../utils/monacoConfig";

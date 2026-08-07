@@ -1,5 +1,3 @@
-import React from "react";
-
 export function EditorWorkspaceSkeleton() {
   return (
     <div className="skeleton-workspace">

@@ -34,6 +34,7 @@ import React, {
   lazy,
 } from "react";
 import { useLocalStorage } from "./hooks/useLocalStorage";
+import { getStorageItem as safeLocalStorageGet } from "./utils/storage";
 import { buildCsvImportSql } from "./utils/csvParser";
 import { stripLineNumbersFromQuery } from "./utils/formatters";
 import {
@@ -44,19 +45,6 @@ import {
 } from "./utils/sm2Engine";
 import { gradeQuery, isModifyingQuery } from "./utils/graderService";
 import { deduplicateQuestions } from "./utils/curriculumLoader";
-// Build hash test update v2
-const APP_BUILD_HASH_MARKER = "v2.0";
-
-export function safeLocalStorageGet<T>(key: string, defaultValue: T): T {
-  try {
-    const item = localStorage.getItem(key);
-    if (item === null) return defaultValue;
-    return JSON.parse(item) as T;
-  } catch (e) {
-    console.error(`Error parsing localStorage key "${key}":`, e);
-    return defaultValue;
-  }
-}
 const DashboardView = lazy(() => import("./views/DashboardView"));
 const RoadmapView = lazy(() => import("./views/RoadmapView"));
 const ModulesView = lazy(() => import("./views/ModulesView"));
@@ -74,10 +62,8 @@ import {
 } from "./data/curriculum";
 import type {
   Difficulty,
-  ModuleLevel,
   PracticeProblem,
   RoadmapModule,
-  RoadmapDay,
 } from "./data/curriculum";
 import { debugPuzzles } from "./data/puzzles";
 import type { SqlPuzzle } from "./data/puzzles";
@@ -86,34 +72,21 @@ import {
   initDatabase,
   resetDatabase,
   runQuery,
-  getQueryPlan,
   getLiveSchema,
   formatSql,
 } from "./utils/sqlEngine";
-import QueryPlanFlowchart from "./components/QueryPlanFlowchart";
 import OnboardingModal from "./components/OnboardingModal";
 import ShortcutsModal from "./components/ShortcutsModal";
 import ColumnProfileModal from "./components/ColumnProfileModal";
-import { downloadStatsReport } from "./utils/reportGenerator";
 import { EditorWorkspaceSkeleton } from "./components/EditorWorkspaceSkeleton";
-import type { QueryResult, QueryPlanStep } from "./utils/sqlEngine";
+import type { QueryResult } from "./utils/sqlEngine";
 const SqlJoinVennDiagram = lazy(
   () => import("./components/SqlJoinVennDiagram"),
 );
-import SqlLinterAdvisor from "./components/SqlLinterAdvisor";
 import { lintSqlQuery } from "./utils/sqlLinter";
 import type { LintError } from "./utils/sqlLinter";
-const SqlPerformanceComparer = lazy(
-  () => import("./components/SqlPerformanceComparer"),
-);
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import type {
-  QAItem,
-  ViewId,
-  PlaygroundMode,
-  RightTab,
-  UserProgressState,
-} from "./types";
+import type { ViewId, PlaygroundMode } from "./types";
 
 type ProgressState = {
   completedModules: number[];
@@ -173,9 +146,6 @@ const initialProgress: ProgressState = {
 const defaultQuery = `-- Welcome! Edit this query and press Ctrl+Enter (or Run) to execute.
 SELECT * FROM customers LIMIT 10;`;
 
-function triggerConfetti() {}
-function cleanupConfetti() {}
-
 /* tiny helpers */
 
 function classForDiff(d: string) {
@@ -186,18 +156,6 @@ function classForDiff(d: string) {
     return "medium";
   return "easy";
 }
-function diffScore(d: Difficulty) {
-  return d === "Easy" ? 1 : d === "Medium" ? 2 : 3;
-}
-function fmtTime(iso: string) {
-  return new Intl.DateTimeFormat("en-IN", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(iso));
-}
-
 /* APP */
 export default function App() {
   // Migrate progress schema if older versions exist
@@ -410,29 +368,6 @@ export default function App() {
     );
   }, [selectedProblemId, activeModule]);
 
-  const [diffFilter, setDiffFilter] = useState<Difficulty | "All">("All");
-  const [companyFilter, setCompanyFilter] = useState<string>("All");
-  const [showOnlyEssential, setShowOnlyEssential] = useState(false);
-  const [visibleHints, setVisibleHints] = useState(0);
-  const [roadmapSplit, setRoadmapSplit] = useLocalStorage(
-    "sql-aa-split-roadmap",
-    360,
-  );
-  const [practiceSplit, setPracticeSplit] = useLocalStorage(
-    "sql-aa-split-practice",
-    340,
-  );
-  const [puzzleSplit, setPuzzleSplit] = useLocalStorage(
-    "sql-aa-split-puzzle",
-    340,
-  );
-  const [playgroundSplit, setPlaygroundSplit] = useLocalStorage(
-    "sql-aa-split-playground-v2",
-    450,
-  );
-
-  const [puzzleCategoryFilter, setPuzzleCategoryFilter] =
-    useState<string>("All");
   const [activePuzzleId, setActivePuzzleId] = useLocalStorage<string>(
     "sql-aa-active-puzzle-id",
     debugPuzzles[0]?.id ?? "",
@@ -451,9 +386,6 @@ export default function App() {
     1,
   );
 
-  const [selectedTable, setSelectedTable] = useState<string | null>(null);
-  const [hoveredTable, setHoveredTable] = useState<string | null>(null);
-
   // UX Improvements states
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [graderFeedback, setGraderFeedback] = useState<{
@@ -462,8 +394,6 @@ export default function App() {
     details?: string;
     warning?: string;
   } | null>(null);
-  const [freeWriteMode, setFreeWriteMode] = useState(false);
-
   useEffect(() => {
     if (!localStorage.getItem("sql-aa-onboarded")) {
       setShowOnboarding(true);
@@ -514,27 +444,10 @@ export default function App() {
     false,
   );
   const [rowLimit, setRowLimit] = useLocalStorage("sql-aa-row-limit-v4", "50");
-  const [historySearch, setHistorySearch] = useState("");
-  const [historyFavorites, setHistoryFavorites] = useLocalStorage<string[]>(
-    "sql-aa-history-favs-v4",
-    [],
-  );
-  const [showHistoryPinned, setShowHistoryPinned] = useState(false);
   const [sqlUpperKeywords, setSqlUpperKeywords] = useLocalStorage(
     "sql-aa-upper-kw-v4",
     true,
   );
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [erdZoom, setErdZoom] = useState(1);
-
-  const [compareModeOpen, setCompareModeOpen] = useState(false);
-  const [queryB, setQueryB] = useLocalStorage(
-    "sql-aa-query-b-v2",
-    "SELECT * FROM customers LIMIT 5;",
-  );
-  const [resB, setResB] = useState<QueryResult | null>(null);
-  const [planB, setPlanB] = useState<QueryPlanStep[]>([]);
-  const [benchmarkRunCount, setBenchmarkRunCount] = useState(0);
 
   // Custom Confirmation & Prompt Modal States
   const [customConfirmOpen, setCustomConfirmOpen] = useState(false);
@@ -576,9 +489,6 @@ export default function App() {
     "sql-aa-editor-ts-v5",
     4,
   );
-  const [bookmarkedQueries, setBookmarkedQueries] = useLocalStorage<
-    { id: string; name: string; query: string; createdAt: number }[]
-  >("sql-aa-saved-queries-v4", []);
   const [activeColumnProfile, setActiveColumnProfile] = useState<{
     table: string;
     column: string;
@@ -594,10 +504,7 @@ export default function App() {
     { id: string; company: string; score: number; date: number }[]
   >("sql-aa-mock-history-v4", []);
   const [streak, setStreak] = useState(0);
-  const [lastSavedTime, setLastSavedTime] = useState("");
   const [showShortcuts, setShowShortcuts] = useState(false);
-  const [selectedConceptFilter, setSelectedConceptFilter] =
-    useState<string>("All");
 
   useEffect(() => {
     // Gamified streak check logic with 7-day tracking & 1-day grace protection
@@ -968,135 +875,6 @@ export default function App() {
     );
   };
 
-  const saveCurrentQuery = () => {
-    showPrompt("Enter a name for this query:", "", (name) => {
-      if (!name || !name.trim()) return;
-      const newQuery = {
-        id: "q_" + Date.now(),
-        name: name.trim(),
-        query: queryRef.current,
-        createdAt: Date.now(),
-      };
-      setBookmarkedQueries((prev) => [newQuery, ...prev]);
-      showToast(`Saved query as "${name.trim()}"!`, "success");
-    });
-  };
-
-  const deleteSavedQuery = (id: string) => {
-    showConfirm("Are you sure you want to delete this saved query?", () => {
-      setBookmarkedQueries((prev) => prev.filter((q) => q.id !== id));
-    });
-  };
-
-  const translatePlanToProse = (steps: QueryPlanStep[]): string[] => {
-    if (steps.length === 0) return ["No execution plan steps to translate."];
-    const prose: string[] = [];
-    steps.forEach((step, idx) => {
-      const detail = step.detail;
-      const dUpper = detail.toUpperCase();
-      let prefix = `Step ${idx + 1}: `;
-
-      if (dUpper.includes("SCAN TABLE")) {
-        const match = detail.match(/SCAN TABLE\s+(\S+)(?:\s+AS\s+(\S+))?/i);
-        const tableName = match ? match[1] : "the target table";
-        prose.push(
-          `${prefix}Reads the entire "${tableName}" table row-by-row (Full Table Scan). Slow for large tables.`,
-        );
-      } else if (dUpper.includes("SEARCH TABLE")) {
-        const match = detail.match(/SEARCH TABLE\s+(\S+)\s+USING\s+(.+)/i);
-        const tableName = match ? match[1] : "the target table";
-        const indexInfo = match ? match[2] : "an index";
-        prose.push(
-          `${prefix}Searches "${tableName}" using ${indexInfo} (Index Scan). Fast and optimized.`,
-        );
-      } else if (dUpper.includes("USE TEMP B-TREE FOR")) {
-        const match = detail.match(/USE TEMP B-TREE FOR\s+(.+)/i);
-        const reason = match ? match[1] : "sorting/grouping";
-        prose.push(
-          `${prefix}Creates a temporary memory index for ${reason.toLowerCase()}. Suggests index optimizations.`,
-        );
-      } else if (dUpper.includes("SCALAR SUBQUERY")) {
-        prose.push(
-          `${prefix}Evaluates a scalar subquery for returning an individual cell value.`,
-        );
-      } else if (dUpper.includes("CORRELATED")) {
-        prose.push(
-          `${prefix}Runs a correlated nested-loop subquery for each candidate row (unoptimized).`,
-        );
-      } else if (dUpper.includes("COMPOUND SUBQUERIES")) {
-        prose.push(
-          `${prefix}Combines results via set operations (UNION/INTERSECT/EXCEPT).`,
-        );
-      } else {
-        prose.push(`${prefix}Executes helper operation: "${detail}".`);
-      }
-    });
-    return prose;
-  };
-
-  const toggleSqlKeywordCase = () => {
-    let current = queryRef.current;
-    const keywords = [
-      "select",
-      "from",
-      "where",
-      "group by",
-      "order by",
-      "having",
-      "join",
-      "left join",
-      "right join",
-      "inner join",
-      "full join",
-      "on",
-      "limit",
-      "and",
-      "or",
-      "not",
-      "insert",
-      "update",
-      "delete",
-      "create",
-      "alter",
-      "drop",
-      "table",
-      "into",
-      "values",
-      "set",
-    ];
-
-    keywords.forEach((kw) => {
-      const regex = new RegExp(`\\b${kw}\\b`, "gi");
-      current = current.replace(regex, (match) => {
-        return sqlUpperKeywords ? match.toLowerCase() : match.toUpperCase();
-      });
-    });
-
-    setSqlUpperKeywords(!sqlUpperKeywords);
-    updateEditorQuery(current);
-  };
-
-  const downloadStatsSummary = () => {
-    downloadStatsReport({
-      readiness,
-      progress,
-      totalModules,
-      totalProblems,
-      debugPuzzles,
-      roadmapModules,
-    });
-  };
-
-  // Scroll selected ERD table into view in the sidebar schema accordion
-  useEffect(() => {
-    if (selectedTable) {
-      const element = document.getElementById(`schema-table-${selectedTable}`);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      }
-    }
-  }, [selectedTable]);
-
   /* ── SQL engine ─────────────────────────────────────────── */
   const [query, setQuery] = useLocalStorage(
     "sql-aa-active-query",
@@ -1208,32 +986,9 @@ export default function App() {
   }, [query]);
 
   const [resultPage, setResultPage] = useState(0);
-  const RESULT_PAGE_SIZE = 50;
-
   useEffect(() => {
     setResultPage(0);
   }, [queryResult]);
-  const [activeResultTab, setActiveResultTab] = useState<"your" | "expected">(
-    "your",
-  );
-  const [previewData, setPreviewData] = useState<{
-    [table: string]: QueryResult | null;
-  }>({});
-  const [activeConsoleTab, setActiveConsoleTab] = useState<
-    "results" | "plan" | "history" | "saved" | "benchmark"
-  >("results");
-  const [queryPlanSteps, setQueryPlanSteps] = useState<QueryPlanStep[]>([]);
-  const [resetStatus, setResetStatus] = useState(false);
-  const resetTimeoutRef = useRef<any>(null);
-  const triggerResetStatus = useCallback(() => {
-    setResetStatus(true);
-    if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current);
-    resetTimeoutRef.current = setTimeout(() => {
-      setResetStatus(false);
-      resetTimeoutRef.current = null;
-    }, 2000);
-  }, []);
-
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error" | "info";
@@ -1252,8 +1007,6 @@ export default function App() {
     }
   }, [toast]);
 
-  const [schemaSearch, setSchemaSearch] = useState("");
-
   const [progress, setProgress] = useLocalStorage<ProgressState>(
     "sql-aa-progress-v3",
     initialProgress,
@@ -1261,7 +1014,6 @@ export default function App() {
 
   /* keep ref in sync without causing re-renders */
   const debounceTimerRef = useRef<number | null>(null);
-  const queryStateDebounceRef = useRef<number | null>(null);
 
   const getSavedDraftQuery = useCallback(
     (p: PracticeProblem): string => {
@@ -1597,14 +1349,6 @@ export default function App() {
           } else {
             localStorage.setItem("sql-aa-freeform-query", JSON.stringify(v));
           }
-
-          const now = new Date();
-          const timeStr = now.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          });
-          setLastSavedTime(timeStr);
         }, 500);
       }
     },
@@ -1809,15 +1553,6 @@ export default function App() {
       flushStudyTime();
     };
   }, [setProgress]);
-  const [editorHeight, setEditorHeight] = useLocalStorage(
-    "sql-aa-editor-h",
-    350,
-  );
-  const [resultHeight, setResultHeight] = useLocalStorage(
-    "sql-aa-result-h",
-    250,
-  );
-
   /* ── UI state ────────────────────────────────────────────── */
   const [searchTerm, setSearchTerm] = useState("");
   const [rightOpen, setRightOpen] = useState(true);
@@ -1862,9 +1597,6 @@ export default function App() {
       if (debounceTimerRef.current !== null) {
         window.clearTimeout(debounceTimerRef.current);
       }
-      if (resetTimeoutRef.current !== null) {
-        window.clearTimeout(resetTimeoutRef.current);
-      }
     };
   }, []);
 
@@ -1876,68 +1608,8 @@ export default function App() {
   const isMockFinishingRef = useRef(false);
 
   /* ── derived metrics ─────────────────────────────────────── */
-  const availableCompanies = useMemo(() => {
-    const companies = new Set<string>();
-    allProblems.forEach((p) => {
-      if (p.companyTags) {
-        p.companyTags.forEach((tag) => {
-          if (tag) companies.add(tag);
-        });
-      }
-    });
-    return Array.from(companies).sort();
-  }, [allProblems]);
   const totalModules = roadmapModules.length;
   const totalProblems = allProblems.length;
-
-  const essentialProblems = useMemo(
-    () =>
-      allProblems.filter(
-        (p) =>
-          p.isEssential || p.difficulty === "Easy" || p.difficulty === "Medium",
-      ),
-    [allProblems],
-  );
-  const totalEssential = essentialProblems.length;
-  const solvedEssential = useMemo(
-    () =>
-      progress.solvedProblems.filter((id) =>
-        essentialProblems.some((p) => p.id === id),
-      ).length,
-    [progress.solvedProblems, essentialProblems],
-  );
-
-  const availableConcepts = useMemo(() => {
-    return activeModule.problems.reduce((acc, p) => {
-      if (p.concepts) {
-        p.concepts.forEach((c) => {
-          if (!acc.includes(c)) acc.push(c);
-        });
-      }
-      return acc;
-    }, [] as string[]);
-  }, [activeModule.problems]);
-
-  const visibleProblems = useMemo(() => {
-    return activeModule.problems.filter(
-      (p) =>
-        (diffFilter === "All" || p.difficulty === diffFilter) &&
-        (companyFilter === "All" ||
-          (p.companyTags && p.companyTags.includes(companyFilter))) &&
-        (selectedConceptFilter === "All" ||
-          (p.concepts && p.concepts.includes(selectedConceptFilter))) &&
-        (!showOnlyEssential ||
-          p.isEssential ||
-          p.difficulty === "Easy" ||
-          p.difficulty === "Medium"),
-    );
-  }, [
-    activeModule.problems,
-    diffFilter,
-    companyFilter,
-    selectedConceptFilter,
-    showOnlyEssential,
-  ]);
 
   // Pick 4 random Q&As for the dashboard
   const [qaItems] = useState(() =>
@@ -2186,23 +1858,8 @@ export default function App() {
     setActiveView("mock-results");
   }
 
-  function formatTime(seconds: number) {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${s < 10 ? "0" : ""}${s}`;
-  }
-
   // Interview Readiness: completely integrated metric
   // 20% Modules, 30% Problems, 20% Puzzles, 30% Mocks
-  const modPct = Math.round(
-    (progress.completedModules.length / totalModules) * 100,
-  );
-  const probPct =
-    Math.round((progress.solvedProblems.length / totalProblems) * 100) || 0;
-  const puzPct = Math.round(
-    ((progress.solvedPuzzles || []).length / debugPuzzles.length) * 100,
-  );
-
   const coreMocks = [
     "Blinkit Growth Analyst",
     "Zomato Growth Analyst",
@@ -2227,8 +1884,6 @@ export default function App() {
   });
   const mockAvgScore = mocksTaken > 0 ? mockSum / mocksTaken : 0;
   const mockCoveragePct = (mocksTaken / coreMocks.length) * 100;
-  const mockPct = Math.round(mockCoveragePct * (mockAvgScore / 100));
-
   // Use raw floats to avoid double-rounding artifacts that block early progress increments
   const modPctRaw =
     totalModules > 0
@@ -2445,7 +2100,6 @@ export default function App() {
     }
     return () => {
       window.removeEventListener("keydown", onKey);
-      cleanupConfetti();
     };
   }, []); // intentionally empty — runCurrentQuery is stable via latestRunQueryRef
 
@@ -3094,10 +2748,6 @@ export default function App() {
       }
     }
 
-    // Retrieve SQLite Query Plan
-    const planSteps = await getQueryPlan(sql);
-    setQueryPlanSteps(planSteps);
-
     const isMockMode = activeView === "mock-runner";
     const needsSnapshot = isModifyingQuery(sql);
 
@@ -3217,20 +2867,13 @@ export default function App() {
       setGraderFeedback(feedback);
       const isCorrect = feedback.isCorrect;
       if (isCorrect) {
-        triggerConfetti();
         if (playgroundMode === "practice" && selectedProblem) {
           const attempts = safeLocalStorageGet<Record<string, any>>(
             "sql-aa-failed-attempts",
             {},
           );
           const failedCount = attempts[selectedProblem.id] || 0;
-          const hintsCount = Math.max(0, visibleHints);
-          let quality = 5;
-          if (failedCount > 0 || hintsCount >= 2) {
-            quality = 3;
-          } else if (hintsCount === 1) {
-            quality = 4;
-          }
+          const quality = failedCount > 0 ? 3 : 5;
           markProblemSolved(selectedProblem, quality);
         } else if (playgroundMode === "puzzle" && activePuzzle) {
           markPuzzleSolved(activePuzzle);
@@ -3283,135 +2926,6 @@ export default function App() {
     window.addEventListener("keydown", handleGlobalKeyDown);
     return () => window.removeEventListener("keydown", handleGlobalKeyDown);
   }, []);
-
-  async function runABBenchmark() {
-    let sqlA = queryRef.current;
-    let sqlB = queryB;
-
-    if (
-      rowLimit !== "Unlimited" &&
-      /^\s*SELECT\b/i.test(sqlA) &&
-      !/\bLIMIT\b/i.test(sqlA)
-    ) {
-      sqlA = `${sqlA.trim().replace(/;+$/, "")} LIMIT ${rowLimit};`;
-    }
-    if (
-      rowLimit !== "Unlimited" &&
-      /^\s*SELECT\b/i.test(sqlB) &&
-      !/\bLIMIT\b/i.test(sqlB)
-    ) {
-      sqlB = `${sqlB.trim().replace(/;+$/, "")} LIMIT ${rowLimit};`;
-    }
-
-    const planStepsA = await getQueryPlan(sqlA);
-    const planStepsB = await getQueryPlan(sqlB);
-    setQueryPlanSteps(planStepsA);
-    setPlanB(planStepsB);
-
-    await resetDatabase();
-    const resultA = await runQuery(sqlA, true, false);
-    if (!resultA.error) {
-      const runsA: number[] = [resultA.durationMs || 0];
-      for (let i = 0; i < 4; i++) {
-        await resetDatabase();
-        const r = await runQuery(sqlA, true, false);
-        runsA.push(r.durationMs || 0);
-      }
-      runsA.sort((a, b) => a - b);
-      resultA.durationMs = (runsA[1] + runsA[2] + runsA[3]) / 3;
-    }
-    setQueryResult(resultA);
-
-    await resetDatabase();
-    const resultB = await runQuery(sqlB, true, false);
-    if (!resultB.error) {
-      const runsB: number[] = [resultB.durationMs || 0];
-      for (let i = 0; i < 4; i++) {
-        await resetDatabase();
-        const r = await runQuery(sqlB, true, false);
-        runsB.push(r.durationMs || 0);
-      }
-      runsB.sort((a, b) => a - b);
-      resultB.durationMs = (runsB[1] + runsB[2] + runsB[3]) / 3;
-    }
-    setResB(resultB);
-
-    setBenchmarkRunCount((c) => c + 1);
-    setActiveConsoleTab("benchmark");
-  }
-
-  async function resetPlayground() {
-    await resetDatabase();
-    if (selectedProblemId && playgroundMode === "practice") {
-      const p = allProblems.find((x) => x.id === selectedProblemId);
-      if (p) {
-        const drafts = safeLocalStorageGet<Record<string, any>>(
-          "sql-aa-problem-drafts",
-          {},
-        );
-        delete drafts[selectedProblemId];
-        localStorage.setItem("sql-aa-problem-drafts", JSON.stringify(drafts));
-        const saved = getSavedDraftQuery(p);
-        updateEditorQuery(saved);
-        setQueryResult({ columns: [], rows: [], message: "" });
-        setLiveSchema(await getLiveSchema());
-        triggerResetStatus();
-        return;
-      }
-    } else if (activePuzzleId && playgroundMode === "puzzle") {
-      const p = debugPuzzles.find((x) => x.id === activePuzzleId);
-      if (p) {
-        const drafts = safeLocalStorageGet<Record<string, any>>(
-          "sql-aa-puzzle-drafts",
-          {},
-        );
-        delete drafts[activePuzzleId];
-        localStorage.setItem("sql-aa-puzzle-drafts", JSON.stringify(drafts));
-        const saved = getSavedPuzzleQuery(p);
-        updateEditorQuery(saved);
-        setQueryResult({ columns: [], rows: [], message: "" });
-        setLiveSchema(await getLiveSchema());
-        triggerResetStatus();
-        return;
-      }
-    }
-    updateEditorQuery(defaultQuery);
-    setQueryResult({ columns: [], rows: [], message: "" });
-    setLiveSchema(await getLiveSchema());
-    setPreviewData({});
-    triggerResetStatus();
-  }
-
-  async function togglePreviewData(table: string) {
-    if (previewData[table]) {
-      setPreviewData((prev) => {
-        const next = { ...prev };
-        delete next[table];
-        return next;
-      });
-    } else {
-      const res = await runQuery(`SELECT * FROM ${table} LIMIT 5`);
-      setPreviewData((prev) => ({ ...prev, [table]: res }));
-    }
-  }
-
-  function saveQuery() {
-    const sql = queryRef.current;
-    const status: QueryHistoryItem["status"] = queryResult.error
-      ? "error"
-      : "success";
-    setSavedQueries((s) =>
-      [
-        {
-          id: crypto.randomUUID(),
-          query: sql,
-          createdAt: new Date().toISOString(),
-          status,
-        },
-        ...s,
-      ].slice(0, 12),
-    );
-  }
 
   function copyToClipboard(text: string) {
     navigator.clipboard.writeText(text).catch(() => {});
@@ -3632,7 +3146,6 @@ export default function App() {
 
   function markProblemSolved(p: PracticeProblem, quality = 4) {
     if (!progress.solvedProblems.includes(p.id)) {
-      triggerConfetti();
     }
     const updatedSM2 = calculateSM2(sm2Progress[p.id], p.id, quality);
     setSm2Progress((prev) => {
@@ -3690,7 +3203,6 @@ export default function App() {
   function markPuzzleSolved(p: SqlPuzzle) {
     const sp = progress.solvedPuzzles || [];
     if (!sp.includes(p.id)) {
-      triggerConfetti();
     }
     setProgress((prev) => {
       const sp = prev.solvedPuzzles || [];
@@ -3745,7 +3257,6 @@ export default function App() {
   }
 
   /* RENDER HELPERS */
-  const lessonTabs = ["Concept", "Mistakes", "Cheat Sheet", "Practice"];
 
   /* ── views ─────────────────────────────────────────────── */
 
@@ -4730,468 +4241,6 @@ export default function App() {
           {toast.type === "info" && <Lightbulb size={16} />}
           <span>{toast.message}</span>
         </div>
-      )}
-    </div>
-  );
-}
-
-/* SUB-COMPONENTS */
-function MetricCard({
-  icon: Icon,
-  label,
-  value,
-  accent,
-  subtext,
-  onClick,
-}: {
-  icon: LucideIcon;
-  label: string;
-  value: string;
-  accent: string;
-  subtext?: string;
-  onClick?: () => void;
-}) {
-  return (
-    <article
-      className={`metric-card ${accent} ${onClick ? "interactive" : ""}`}
-      onClick={onClick}
-    >
-      <div className="metric-icon">
-        <Icon size={19} />
-      </div>
-      <span className="metric-lbl">{label}</span>
-      <strong>{value}</strong>
-      {subtext && <span className="metric-sub">{subtext}</span>}
-    </article>
-  );
-}
-
-function SectionTitle({
-  icon: Icon,
-  title,
-  action,
-}: {
-  icon: LucideIcon;
-  title: string;
-  action?: string;
-}) {
-  return (
-    <div className="section-title">
-      <div>
-        <Icon size={17} />
-        <h2>{title}</h2>
-      </div>
-      {action && <span>{action}</span>}
-    </div>
-  );
-}
-
-function BulletList({ items }: { items: string[] }) {
-  return (
-    <ul className="bullet-list">
-      {items.map((item, i) => (
-        <li key={i}>{item}</li>
-      ))}
-    </ul>
-  );
-}
-
-function QACard({
-  q,
-  a,
-  followUp,
-  mistake,
-  onTry,
-}: {
-  q: string;
-  a: string;
-  followUp?: string;
-  mistake?: string;
-  onTry?: (sql: string) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const sqlMatch =
-    a.match(/```sql([\s\S]*?)```/) || a.match(/```([\s\S]*?)```/);
-  const tryQuery = sqlMatch ? sqlMatch[1].trim() : null;
-
-  return (
-    <div className="qa-card">
-      <button className="qa-question" onClick={() => setOpen((o) => !o)}>
-        <span>{q}</span>
-        <ChevronRight size={14} className={open ? "rotated" : ""} />
-      </button>
-      {open && (
-        <div
-          className="qa-answer"
-          style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-        >
-          <p style={{ whiteSpace: "pre-wrap" }}>{a}</p>
-          {followUp && (
-            <p className="qa-followup">
-              <strong>Follow-up:</strong> {followUp}
-            </p>
-          )}
-          {mistake && (
-            <p className="qa-mistake">
-              <strong>Common mistake:</strong> {mistake}
-            </p>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* LESSON PROSE RENDERER 
-   Turns raw text content into readable, styled prose.
-   Detects bullets, SQL code blocks, headings, and paragraphs. */
-const SQL_KEYWORDS =
-  /^\s*(SELECT|FROM|WHERE|GROUP BY|ORDER BY|HAVING|JOIN|LEFT|INNER|WITH|INSERT|UPDATE|DELETE|CREATE|DROP|EXPLAIN|--)/i;
-const BULLET_PREFIXES = /^\s*[-•✓✗→▸*]\s+/;
-const HEADING_RE = /^[A-Z][A-Z0-9 _/:&-]{3,}:?\s*$|^[A-Z].{0,60}:$/;
-
-function LessonProse({ text }: { text: string }) {
-  const lines = text.split("\n");
-  const elements: JSX.Element[] = [];
-  let codeBuffer: string[] = [];
-  let paraBuffer: string[] = [];
-
-  function flushCode() {
-    if (codeBuffer.length === 0) return;
-    elements.push(
-      <pre key={`code-${elements.length}`} className="lp-code">
-        {codeBuffer.join("\n")}
-      </pre>,
-    );
-    codeBuffer = [];
-  }
-
-  function flushPara() {
-    if (paraBuffer.length === 0) return;
-    const joined = paraBuffer.join(" ").trim();
-    if (joined) {
-      elements.push(<p key={`para-${elements.length}`}>{joined}</p>);
-    }
-    paraBuffer = [];
-  }
-
-  for (let i = 0; i < lines.length; i++) {
-    const raw = lines[i];
-    const trimmed = raw.trim();
-
-    // blank line
-    if (!trimmed) {
-      flushCode();
-      flushPara();
-      continue;
-    }
-
-    // SQL code line
-    if (SQL_KEYWORDS.test(trimmed) || trimmed.startsWith("`")) {
-      flushPara();
-      codeBuffer.push(raw.trimStart());
-      continue;
-    }
-
-    // flush code if we're no longer in a SQL block
-    flushCode();
-
-    // bullet line
-    if (BULLET_PREFIXES.test(raw)) {
-      flushPara();
-      const content = trimmed.replace(BULLET_PREFIXES, "");
-      // Bold the part before first colon if any
-      const colonIdx = content.indexOf(":");
-      if (colonIdx > 0 && colonIdx < 50) {
-        const label = content.slice(0, colonIdx);
-        const rest = content.slice(colonIdx + 1);
-        elements.push(
-          <div key={`b-${elements.length}`} className="lp-bullet">
-            <span>
-              <strong>{label}</strong>
-              {rest}
-            </span>
-          </div>,
-        );
-      } else {
-        elements.push(
-          <div key={`b-${elements.length}`} className="lp-bullet">
-            {content}
-          </div>,
-        );
-      }
-      continue;
-    }
-
-    // heading-like line (short, all caps or ends with colon)
-    if (HEADING_RE.test(trimmed) && trimmed.length < 80) {
-      flushPara();
-      elements.push(
-        <div key={`h-${elements.length}`} className="lp-heading">
-          {trimmed.replace(/:$/, "")}
-        </div>,
-      );
-      continue;
-    }
-
-    // regular prose — accumulate into paragraph
-    paraBuffer.push(trimmed);
-  }
-
-  flushCode();
-  flushPara();
-
-  return <div className="lesson-prose">{elements}</div>;
-}
-
-function QueryList({
-  title,
-  items,
-  onLoad,
-}: {
-  title: string;
-  items: QueryHistoryItem[];
-  onLoad: (item: QueryHistoryItem) => void;
-}) {
-  return (
-    <div className="query-list">
-      <div className="query-list-head">
-        <strong>{title}</strong>
-        <span>{items.length}</span>
-      </div>
-      <div className="query-list-body">
-        {items.length === 0 && <p>No queries yet.</p>}
-        {items.slice(0, 5).map((item) => (
-          <button key={item.id} onClick={() => onLoad(item)}>
-            <span className={item.status}>{item.status}</span>
-            <code>
-              {item.query
-                .split("\n")
-                .find((l) => l.trim() && !l.trim().startsWith("--"))
-                ?.trim()
-                .slice(0, 60)}
-            </code>
-            <small>{fmtTime(item.createdAt)}</small>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* SPLIT PANE 
-   Drag the divider between left and right to resize. */
-function SplitPane({
-  left,
-  right,
-  leftWidth,
-  onResize,
-  minLeft = 180,
-  maxLeft = 700,
-}: {
-  left: React.ReactNode;
-  right: React.ReactNode;
-  leftWidth: number;
-  onResize: (w: number) => void;
-  minLeft?: number;
-  maxLeft?: number;
-}) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const dragging = useRef(false);
-
-  function onMouseDown(e: React.MouseEvent) {
-    e.preventDefault();
-    dragging.current = true;
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-
-    const style = document.createElement("style");
-    style.id = "h-split-drag-pointer-events-override";
-    style.innerHTML =
-      "* { pointer-events: none !important; } .split-handle, .split-handle * { pointer-events: auto !important; }";
-    document.head.appendChild(style);
-
-    function onMove(ev: MouseEvent) {
-      if (!dragging.current || !containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const newW = Math.min(maxLeft, Math.max(minLeft, ev.clientX - rect.left));
-      onResize(newW);
-    }
-
-    let safetyTimeout: ReturnType<typeof setTimeout> | null = setTimeout(
-      onUp,
-      3000,
-    );
-
-    function onUp() {
-      if (safetyTimeout) {
-        clearTimeout(safetyTimeout);
-        safetyTimeout = null;
-      }
-      dragging.current = false;
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-      const s = document.getElementById("h-split-drag-pointer-events-override");
-      if (s) s.remove();
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseup", onUp);
-    }
-
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onUp);
-  }
-
-  return (
-    <div className="split-pane" ref={containerRef}>
-      <div
-        className="split-left"
-        style={{ width: leftWidth, minWidth: leftWidth }}
-      >
-        {left}
-      </div>
-      <div
-        className="split-handle"
-        onMouseDown={onMouseDown}
-        title="Drag to resize"
-      >
-        <div className="split-handle-bar" />
-      </div>
-      <div className="split-right">{right}</div>
-    </div>
-  );
-}
-
-function VSplitPane({
-  top,
-  bottom,
-  topHeight,
-  onResize,
-  minTop = 100,
-  maxTop = 1200,
-  maximized = false,
-}: {
-  top: React.ReactNode;
-  bottom: React.ReactNode;
-  topHeight: number;
-  onResize: (h: number) => void;
-  minTop?: number;
-  maxTop?: number;
-  maximized?: boolean;
-}) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const dragging = useRef(false);
-
-  function onMouseDown(e: React.MouseEvent) {
-    if (maximized) return;
-    e.preventDefault();
-    dragging.current = true;
-    document.body.style.cursor = "row-resize";
-    document.body.style.userSelect = "none";
-
-    const style = document.createElement("style");
-    style.id = "v-split-drag-pointer-events-override";
-    style.innerHTML =
-      "* { pointer-events: none !important; } .v-split-handle, .v-split-handle * { pointer-events: auto !important; }";
-    document.head.appendChild(style);
-
-    function onMove(ev: MouseEvent) {
-      if (!dragging.current || !containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const newH = Math.min(maxTop, Math.max(minTop, ev.clientY - rect.top));
-      onResize(newH);
-    }
-
-    let safetyTimeout: ReturnType<typeof setTimeout> | null = setTimeout(
-      onUp,
-      3000,
-    );
-
-    function onUp() {
-      if (safetyTimeout) {
-        clearTimeout(safetyTimeout);
-        safetyTimeout = null;
-      }
-      dragging.current = false;
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-      const s = document.getElementById("v-split-drag-pointer-events-override");
-      if (s) s.remove();
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseup", onUp);
-    }
-
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onUp);
-  }
-
-  return (
-    <div
-      className="v-split-pane"
-      ref={containerRef}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        flex: 1,
-        minHeight: 0,
-      }}
-    >
-      <div
-        className="v-split-top"
-        style={{
-          height: maximized ? "100%" : topHeight,
-          minHeight: maximized ? "100%" : topHeight,
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-          flex: maximized ? 1 : "unset",
-        }}
-      >
-        {top}
-      </div>
-      {!maximized && (
-        <>
-          <div
-            className="v-split-handle"
-            onMouseDown={onMouseDown}
-            title="Drag to resize"
-            style={{
-              height: "6px",
-              cursor: "row-resize",
-              background: "transparent",
-              flexShrink: 0,
-              position: "relative",
-              zIndex: 10,
-              margin: "-3px 0",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <div
-              className="v-split-handle-bar"
-              style={{
-                width: "40px",
-                height: "4px",
-                background: "var(--border)",
-                borderRadius: "2px",
-                transition: "background 0.2s",
-              }}
-            />
-          </div>
-          <div
-            className="v-split-bottom"
-            style={{
-              flex: 1,
-              minHeight: 0,
-              overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            {bottom}
-          </div>
-        </>
       )}
     </div>
   );
