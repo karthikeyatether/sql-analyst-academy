@@ -12,7 +12,6 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc && vite build",
     "postbuild": "node precompress.cjs",
-    "build:fast": "tsc && vite build && node precompress.cjs",
     "preview": "vite preview --host 127.0.0.1",
     "test": "npx tsx testRunner.ts",
     "test:e2e": "playwright test",
