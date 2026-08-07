@@ -47,15 +47,16 @@ import {
 } from "./utils/sm2Engine";
 import { gradeQuery, isModifyingQuery } from "./utils/graderService";
 import { deduplicateQuestions } from "./utils/curriculumLoader";
-const DashboardView = lazy(() => import("./views/DashboardView"));
-const RoadmapView = lazy(() => import("./views/RoadmapView"));
-const ModulesView = lazy(() => import("./views/ModulesView"));
-const PracticeView = lazy(() => import("./views/PracticeView"));
-const PlaygroundView = lazy(() => import("./views/PlaygroundView"));
-const PuzzlesView = lazy(() => import("./views/PuzzlesView"));
-const DayDetailsView = lazy(() => import("./views/DayDetailsView"));
-const MockTestView = lazy(() => import("./views/MockTestView"));
-const MissionCapstoneView = lazy(() => import("./views/MissionCapstoneView"));
+import DashboardView from "./views/DashboardView";
+import RoadmapView from "./views/RoadmapView";
+import ModulesView from "./views/ModulesView";
+import PracticeView from "./views/PracticeView";
+import PlaygroundView from "./views/PlaygroundView";
+import PuzzlesView from "./views/PuzzlesView";
+import DayDetailsView from "./views/DayDetailsView";
+import MockTestView from "./views/MockTestView";
+import MissionCapstoneView from "./views/MissionCapstoneView";
+import SqlJoinVennDiagram from "./components/SqlJoinVennDiagram";
 import {
   interviewQuestionBank,
   mockInterviews,
@@ -75,9 +76,6 @@ import ShortcutsModal from "./components/ShortcutsModal";
 import ColumnProfileModal from "./components/ColumnProfileModal";
 import { EditorWorkspaceSkeleton } from "./components/EditorWorkspaceSkeleton";
 import type { QueryResult } from "./utils/sqlEngine";
-const SqlJoinVennDiagram = lazy(
-  () => import("./components/SqlJoinVennDiagram"),
-);
 import { lintSqlQuery } from "./utils/sqlLinter";
 import type { LintError } from "./utils/sqlLinter";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -217,6 +215,28 @@ export default function App() {
     "sql-aa-active-view",
     "roadmap",
   );
+
+  useEffect(() => {
+    const validViews: ViewId[] = [
+      "dashboard",
+      "roadmap",
+      "modules",
+      "practice",
+      "playground",
+      "puzzles",
+      "mocks",
+      "mock-runner",
+      "mock-test",
+      "mock-results",
+      "day-details",
+      "missions",
+      "join-visualizer",
+    ];
+    if (!validViews.includes(activeView)) {
+      setActiveView("roadmap");
+    }
+  }, [activeView, setActiveView]);
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   /* ── theme ──────────────────────────────────────────────── */
@@ -4161,7 +4181,9 @@ export default function App() {
               activeView === "mock-test" ||
               activeView === "mock-results") && (
               <MockTestView
-                activeView={activeView}
+                activeView={
+                  activeView === "mock-test" ? "mock-runner" : activeView
+                }
                 setActiveView={setActiveView}
                 progress={progress}
                 mockInterviews={mockInterviews}
