@@ -22,6 +22,8 @@ import {
   Edit3,
   Download,
   Monitor,
+  Ghost,
+  Terminal,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import React, {
@@ -3947,10 +3949,10 @@ export default function App() {
                 <Zap size={16} style={{ color: "var(--violet)" }} />
               )}
               {theme === "dracula" && (
-                <Zap size={16} style={{ color: "#bd93f9" }} />
+                <Ghost size={16} style={{ color: "#bd93f9" }} />
               )}
               {theme === "onedark" && (
-                <Moon size={16} style={{ color: "#e5c07b" }} />
+                <Terminal size={16} style={{ color: "#e5c07b" }} />
               )}
             </button>
             <span title="Readiness">
