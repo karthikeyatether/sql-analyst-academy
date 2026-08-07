@@ -1,7 +1,7 @@
 import React from "react";
 import { BarChart2 as BarChart3, X } from "lucide-react";
 
-export interface ColumnProfileData {
+interface ColumnProfileData {
   table: string;
   column: string;
   total: number;

@@ -7,7 +7,7 @@ import {
   Target,
 } from "lucide-react";
 
-export type SkillNode = {
+type SkillNode = {
   id: string;
   name: string;
   category: string;

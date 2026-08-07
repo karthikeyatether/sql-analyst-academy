@@ -3,7 +3,7 @@ export type ModuleLevel = "Beginner" | "Intermediate" | "Advanced";
 
 export type Difficulty = "Easy" | "Medium" | "Hard";
 
-export type LessonExample = {
+type LessonExample = {
   title: string;
 
   query: string;

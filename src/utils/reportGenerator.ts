@@ -1,6 +1,6 @@
 import { formatStudyTime } from "./formatters";
 
-export interface StudyProgress {
+interface StudyProgress {
   completedModules: number[];
   solvedProblems: string[];
   solvedPuzzles?: string[];

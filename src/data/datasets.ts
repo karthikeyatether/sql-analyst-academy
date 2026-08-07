@@ -1,4 +1,4 @@
-export type SchemaColumn = {
+type SchemaColumn = {
   name: string;
   type: string;
   note: string;

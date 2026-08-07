@@ -19,7 +19,7 @@ export type QueryPlanStep = {
   detail: string;
 };
 
-export type WorkerResponse = {
+type WorkerResponse = {
   result?:
     | QueryResult
     | QueryPlanStep[]
@@ -715,7 +715,7 @@ export function getOptimizationAdvice(sql: string): OptimizationAdvice {
   };
 }
 
-export type OptimizationAdvice = {
+type OptimizationAdvice = {
   score: number;
   advice: string[];
 };
