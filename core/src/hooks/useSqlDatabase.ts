@@ -15,7 +15,8 @@ export function useSqlDatabase(activeView: string) {
   const [queryResult, setQueryResult] = useState<QueryResult>({
     rows: [],
     columns: [],
-    error: null,
+    error: undefined,
+    message: "",
     durationMs: 0,
   });
   const [expectedResult, setExpectedResult] = useState<QueryResult | null>(null);

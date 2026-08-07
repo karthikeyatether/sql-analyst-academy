@@ -23,7 +23,7 @@ export function useLocalStorage<T>(key: string, fallback: T) {
   }, [key, value]);
 
   useEffect(() => {
-    const unsubscribe = subscribeToCrossTabSync((updatedKey, newValue) => {
+    const unsubscribe = subscribeToCrossTabSync((updatedKey: string, newValue: unknown) => {
       if (updatedKey === key) {
         setValue(newValue !== null ? (newValue as T) : fallbackRef.current);
       }
