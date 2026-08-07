@@ -5133,3 +5133,85 @@ body,
 :root.light .skeleton-pulse {
   background: rgba(0, 0, 0, 0.08);
 }
+
+/* =========================================================
+   UI BUG REMEDIATION & PREMIUM UX ENHANCEMENT LAYER
+   ========================================================= */
+
+/* 1. Responsive Table Overflow & Cell Text Clipping Protections */
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  max-width: 100%;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+.table-wrap table th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-bg);
+  z-index: 5;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.table-wrap table th,
+.table-wrap table td {
+  padding: 8px 12px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 380px;
+}
+
+/* 2. Accessible Focus Outline Protection Across All Themes */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--cyan, #38d9f5) !important;
+  outline-offset: 2px !important;
+  transition: outline-offset 0.15s ease;
+}
+
+/* 3. Smooth Modal Fade-In & Backdrop Polish */
+.custom-modal-backdrop {
+  animation: fadeInBackdrop 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(4px);
+}
+
+@keyframes fadeInBackdrop {
+  from { opacity: 0; backdrop-filter: blur(0px); }
+  to { opacity: 1; backdrop-filter: blur(4px); }
+}
+
+/* 4. Split-Pane Handle Hover Enhancement */
+.split-pane-handle:hover,
+.split-pane-handle:active {
+  background: var(--cyan, #38d9f5) !important;
+  box-shadow: 0 0 8px rgba(56, 217, 255, 0.5);
+  transition: all 0.2s ease-in-out;
+}
+
+/* 5. Tooltip & Card Micro-Animations */
+.problem-card,
+.dashboard-card,
+.module-card {
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.problem-card:hover,
+.dashboard-card:hover,
+.module-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+

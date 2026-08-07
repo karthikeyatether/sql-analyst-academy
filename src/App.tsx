@@ -20,6 +20,8 @@ import {
   AlertTriangle,
   GitMerge,
   Edit3,
+  Download,
+  Monitor,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import React, {
@@ -263,6 +265,53 @@ export default function App() {
     document.documentElement.classList.toggle("light", theme === "light");
     document.documentElement.classList.toggle("oled", theme === "oled");
   }, [theme]);
+
+  /* ── PWA & Desktop Shortcut Installation ─────────────────── */
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      (window as any).deferredInstallPrompt = e;
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstallApp = useCallback(() => {
+    if ((window as any).deferredInstallPrompt) {
+      (window as any).deferredInstallPrompt.prompt();
+      (window as any).deferredInstallPrompt.userChoice.then(
+        (choiceResult: any) => {
+          if (choiceResult.outcome === "accepted") {
+            (window as any).deferredInstallPrompt = null;
+          }
+        },
+      );
+      return;
+    }
+
+    // Fallback for browsers like Firefox: generate a custom Windows Desktop Internet Shortcut (.url)
+    // with the online favicon.ico hardcoded so Windows ALWAYS renders the correct logo!
+    const currentUrl = window.location.href;
+    const baseUrl = window.location.origin + window.location.pathname;
+    const icoUrl = new URL("favicon.ico", baseUrl).href;
+
+    const urlContent = [
+      "[InternetShortcut]",
+      `URL=${currentUrl}`,
+      "IDList=",
+      `IconFile=${icoUrl}`,
+      "IconIndex=0",
+    ].join("\r\n");
+
+    const blob = new Blob([urlContent], { type: "text/plain" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "SQL Analyst Academy.url";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  }, []);
 
   // Keydown handler for WAI-ARIA tablist in sidebar
   const handleSidebarNavKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
@@ -4225,6 +4274,38 @@ export default function App() {
                   </span>
                 </div>
               </div>
+
+              <button
+                onClick={handleInstallApp}
+                className="button secondary"
+                style={{
+                  width: "100%",
+                  marginTop: "10px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  padding: "8px",
+                  fontSize: "12px",
+                  background: "rgba(56, 217, 255, 0.08)",
+                  borderColor: "rgba(56, 217, 255, 0.25)",
+                }}
+                title="Install Desktop Application or download Desktop Shortcut with official logo"
+                aria-label="Install Desktop Application or download Desktop Shortcut"
+              >
+                <Monitor size={14} style={{ color: "var(--cyan)" }} />
+                <span style={{ fontWeight: 600, color: "var(--cyan)" }}>
+                  Install Desktop App
+                </span>
+                <Download
+                  size={13}
+                  style={{
+                    opacity: 0.7,
+                    color: "var(--cyan)",
+                    marginLeft: "auto",
+                  }}
+                />
+              </button>
             </div>
           </aside>
         </>
@@ -4268,6 +4349,20 @@ export default function App() {
           </div>
 
           <div className="topbar-right">
+            <button
+              className="icon-button"
+              onClick={handleInstallApp}
+              title="Install Desktop Application / Shortcut with Logo"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--cyan)",
+              }}
+              aria-label="Install Desktop Application or Shortcut"
+            >
+              <Monitor size={16} />
+            </button>
             <button
               className={`icon-button theme-toggle-btn ${theme}`}
               onClick={() =>

@@ -4,8 +4,10 @@ const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/favicon.png',
+  '/favicon.ico',
+  '/icon-192.png',
+  '/icon-512.png',
   '/manifest.json',
-  '/logo.jpg',
   '/app_icon.ico',
   '/offline.html',
   '/sql-wasm.wasm'
