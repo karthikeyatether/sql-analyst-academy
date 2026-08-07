@@ -389,7 +389,6 @@ export default function App() {
     1,
   );
 
-  // UX Improvements states
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [graderFeedback, setGraderFeedback] = useState<{
     isCorrect: boolean;
@@ -1861,7 +1860,7 @@ export default function App() {
     setActiveView("mock-results");
   }
 
-  // Interview Readiness: completely integrated metric
+  // Interview readiness combines progress across the core activities.
   // 20% Modules, 30% Problems, 20% Puzzles, 30% Mocks
   const coreMocks = [
     "Blinkit Growth Analyst",
@@ -2063,7 +2062,7 @@ export default function App() {
           rows: [],
           message: "Database Engine Initialization Failed",
           error:
-            "Failed to initialize the MySQL-compatible database engine. Please refresh the page to reload the engine.",
+            "Failed to initialize the SQLite database engine. Please refresh the page to reload the engine.",
         });
       }
     };

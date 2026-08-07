@@ -514,7 +514,7 @@ const PlaygroundView = React.memo(function PlaygroundView({
     localStorage.setItem("sql-aa-split-playground-v2", JSON.stringify(w));
   };
 
-  // Keep a one-click way to recover from an overly wide context pane without
+  // Keep a quick way to recover from an overly wide context pane without
   // losing the user's preferred expanded width.
   const [expandedContextWidth, setExpandedContextWidth] = useState<
     number | null
