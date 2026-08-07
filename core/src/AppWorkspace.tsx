@@ -4156,6 +4156,7 @@ export default function App() {
             )}
             {(activeView === "mocks" ||
               activeView === "mock-runner" ||
+              activeView === "mock-test" ||
               activeView === "mock-results") && (
               <MockTestView
                 activeView={activeView}
