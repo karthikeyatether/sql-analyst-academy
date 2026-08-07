@@ -1879,11 +1879,15 @@ export default function App() {
     "Netflix Streaming Analyst",
     "Stripe Financial Analyst",
   ];
+  const safeMockScores = progress?.mockScores || {};
+  const safeCompletedModules = progress?.completedModules || [];
+  const safeSolvedProblems = progress?.solvedProblems || [];
+  const safeSolvedPuzzles = progress?.solvedPuzzles || [];
   let mockSum = 0;
   let mocksTaken = 0;
   coreMocks.forEach((m) => {
-    if (progress.mockScores[m] !== undefined) {
-      mockSum += progress.mockScores[m];
+    if (safeMockScores[m] !== undefined) {
+      mockSum += safeMockScores[m];
       mocksTaken++;
     }
   });
@@ -1892,24 +1896,24 @@ export default function App() {
   // Use raw floats to avoid double-rounding artifacts that block early progress increments
   const modPctRaw =
     totalModules > 0
-      ? (progress.completedModules.length / totalModules) * 100
+      ? (safeCompletedModules.length / totalModules) * 100
       : 0;
   const probPctRaw =
     totalProblems > 0
-      ? (progress.solvedProblems.length / totalProblems) * 100
+      ? (safeSolvedProblems.length / totalProblems) * 100
       : 0;
   const puzPctRaw =
     debugPuzzles.length > 0
-      ? ((progress.solvedPuzzles || []).length / debugPuzzles.length) * 100
+      ? (safeSolvedPuzzles.length / debugPuzzles.length) * 100
       : 0;
   const mockPctRaw = mockCoveragePct * (mockAvgScore / 100);
 
   const rawScore =
     modPctRaw * 0.25 + probPctRaw * 0.4 + puzPctRaw * 0.15 + mockPctRaw * 0.2;
   const hasStarted =
-    progress.completedModules.length > 0 ||
-    progress.solvedProblems.length > 0 ||
-    (progress.solvedPuzzles || []).length > 0 ||
+    safeCompletedModules.length > 0 ||
+    safeSolvedProblems.length > 0 ||
+    safeSolvedPuzzles.length > 0 ||
     mocksTaken > 0;
 
   // Robust weighted algorithm: Modules 25%, Core Problems 40%, Debug Puzzles 15%, Mock Coverage & Performance 20%
@@ -1919,10 +1923,10 @@ export default function App() {
   );
 
   const totalXP =
-    progress.completedModules.length * 15 +
-    progress.solvedProblems.length * 10 +
-    (progress.solvedPuzzles || []).length * 20 +
-    Object.keys(progress.mockScores).length * 100;
+    safeCompletedModules.length * 15 +
+    safeSolvedProblems.length * 10 +
+    safeSolvedPuzzles.length * 20 +
+    Object.keys(safeMockScores).length * 100;
 
   const currentLevel = Math.floor(totalXP / 150) + 1;
   const xpForNextLevel = 150;
@@ -1934,9 +1938,9 @@ export default function App() {
   const xpRemaining = xpForNextLevel - currentLevelXP;
   const next = useMemo(
     () =>
-      roadmapModules.find((m) => !progress.completedModules.includes(m.id)) ||
+      roadmapModules.find((m) => !safeCompletedModules.includes(m.id)) ||
       roadmapModules[0],
-    [progress.completedModules],
+    [safeCompletedModules],
   );
 
   const earnedBadges = useMemo(() => {
@@ -1946,46 +1950,46 @@ export default function App() {
         title: "First Query",
         desc: "Ran your first database query",
         icon: "🎯",
-        earned: progress.queryRuns > 0,
+        earned: (progress?.queryRuns || 0) > 0,
       },
       {
         id: "select_master",
         title: "Select Master",
         desc: "Solved at least 3 practice problems",
         icon: "💾",
-        earned: progress.solvedProblems.length >= 3,
+        earned: safeSolvedProblems.length >= 3,
       },
       {
         id: "join_champion",
         title: "Join Champion",
         desc: "Solved at least 10 practice problems",
         icon: "🔗",
-        earned: progress.solvedProblems.length >= 10,
+        earned: safeSolvedProblems.length >= 10,
       },
       {
         id: "window_wizard",
         title: "Window Wizard",
         desc: "Solved at least 25 practice problems",
         icon: "✨",
-        earned: progress.solvedProblems.length >= 25,
+        earned: safeSolvedProblems.length >= 25,
       },
       {
         id: "bug_hunter",
         title: "Bug Hunter",
         desc: "Solved at least 3 debugging puzzles",
         icon: "🐛",
-        earned: (progress.solvedPuzzles || []).length >= 3,
+        earned: safeSolvedPuzzles.length >= 3,
       },
       {
         id: "interview_ready",
         title: "Interview Ready",
         desc: "Completed at least one Mock Interview",
         icon: "🏆",
-        earned: Object.keys(progress.mockScores).length >= 1,
+        earned: Object.keys(safeMockScores).length >= 1,
       },
     ];
     return list;
-  }, [progress]);
+  }, [progress, safeSolvedProblems, safeSolvedPuzzles, safeMockScores]);
 
   /* ── search ──────────────────────────────────────────────── */
   const filteredSearch = useMemo(() => {
