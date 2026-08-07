@@ -218,13 +218,15 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   /* ── theme ──────────────────────────────────────────────── */
-  const [theme, setTheme] = useLocalStorage<"dark" | "light" | "oled">(
+  const [theme, setTheme] = useLocalStorage<"dark" | "light" | "oled" | "dracula" | "onedark">(
     "sql-aa-theme",
     "dark",
   );
   useEffect(() => {
     document.documentElement.classList.toggle("light", theme === "light");
     document.documentElement.classList.toggle("oled", theme === "oled");
+    document.documentElement.classList.toggle("dracula", theme === "dracula");
+    document.documentElement.classList.toggle("onedark", theme === "onedark");
   }, [theme]);
 
   /* ── PWA & Desktop Shortcut Installation ─────────────────── */
@@ -3923,9 +3925,13 @@ export default function App() {
             <button
               className={`icon-button theme-toggle-btn ${theme}`}
               onClick={() =>
-                setTheme((t) =>
-                  t === "dark" ? "light" : t === "light" ? "oled" : "dark",
-                )
+                setTheme((t) => {
+                  if (t === "dark") return "light";
+                  if (t === "light") return "oled";
+                  if (t === "oled") return "dracula";
+                  if (t === "dracula") return "onedark";
+                  return "dark";
+                })
               }
               title={`Theme: ${theme}. Click to switch theme.`}
               style={{
@@ -3939,6 +3945,12 @@ export default function App() {
               {theme === "light" && <Moon size={16} />}
               {theme === "oled" && (
                 <Zap size={16} style={{ color: "var(--violet)" }} />
+              )}
+              {theme === "dracula" && (
+                <Zap size={16} style={{ color: "#bd93f9" }} />
+              )}
+              {theme === "onedark" && (
+                <Moon size={16} style={{ color: "#e5c07b" }} />
               )}
             </button>
             <span title="Readiness">
