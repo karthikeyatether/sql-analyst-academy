@@ -190,7 +190,7 @@ interface PlaygroundViewProps {
   setEditorTabSize: (val: number | ((prev: number) => number)) => void;
   editorTheme: string;
   setEditorTheme: (val: string | ((prev: string) => string)) => void;
-  theme: "dark" | "light" | "oled" | "dracula" | "onedark";
+  theme: "dark" | "light" | "oled" | "dracula" | "onedark" | "ember";
   query: string;
   setQuery: (val: string | ((prev: string) => string)) => void;
   queryResult: QueryResult;
