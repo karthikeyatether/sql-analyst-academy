@@ -399,6 +399,8 @@ export default function App() {
     details?: string;
     warning?: string;
   } | null>(null);
+
+
   useEffect(() => {
     if (!localStorage.getItem("sql-aa-onboarded")) {
       setShowOnboarding(true);
