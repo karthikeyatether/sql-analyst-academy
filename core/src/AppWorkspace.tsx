@@ -253,7 +253,7 @@ export default function App() {
   /* ── theme ──────────────────────────────────────────────── */
   const [theme, setTheme] = useLocalStorage<"dark" | "light" | "oled" | "dracula" | "onedark" | "ember">(
     "sql-aa-theme",
-    "dark",
+    "oled",
   );
   useEffect(() => {
     document.documentElement.classList.toggle("light", theme === "light");
