@@ -151,9 +151,9 @@ body,
   --glass-border: rgba(15, 23, 42, 0.1);
   --overlay-bg: rgba(15, 23, 42, 0.35);
 
-  /* Accent adaptation - rich high contrast for light mode */
-  --cyan: #0284c7;
-  --cyan-glow: rgba(2, 132, 199, 0.12);
+  /* Accent adaptation - rich, sophisticated contrast for light mode */
+  --cyan: #0369a1;        /* Sky 700 - much deeper, less glaring blue */
+  --cyan-glow: rgba(3, 105, 161, 0.12);
   --emerald: #059669;
   --emerald-glow: rgba(5, 150, 105, 0.12);
   --amber: #d97706;
@@ -1888,6 +1888,11 @@ a {
 .monaco-editor.vs .inputarea.ime-input {
   background-color: #e2e8f0 !important; /* Soft Slate 200 */
 }
+
+/* Override glaring default Monaco colors in Light Theme */
+.monaco-editor.vs .mtk5 { color: #0369a1 !important; } /* Keywords (SELECT, FROM) */
+.monaco-editor.vs .mtk12 { color: #b91c1c !important; } /* Strings ('App') */
+.monaco-editor.vs .mtk4 { color: #0f766e !important; } /* Numbers/Constants */
 
 /* Keep line numbers visually separate from SQL text on wide displays. */
 .monaco-editor .margin-view-overlays .line-numbers {
