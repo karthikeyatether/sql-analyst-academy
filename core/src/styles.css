@@ -131,27 +131,25 @@ body,
 
 :root.light {
   color-scheme: light;
-  --bg-h: 210;
-  --bg-s: 20%;
+  /* The Ultimate "Cloud Slate" Soft Light Theme */
+  --bg: #eceff4;          /* Soft, cool ambient background */
+  --bg2: #e5e9f0;         /* Slightly deeper for contrast areas */
+  --panel: #f2f4f8;       /* Subtle elevation, completely avoids #ffffff */
+  --panel2: #d8dee9;      
+  --input-bg: #e5e9f0;    /* Recessed input areas, darker than the panel */
+  
+  --text: #2e3440;        /* Deep arctic blue-gray instead of harsh #000 */
+  --text-secondary: #3b4252;
+  --muted: #4c566a;       /* Perfect for SQL comments, readable but receded */
+  --faint: #d8dee9;       
+  --border: rgba(46, 52, 64, 0.12); /* Crisp but subtle slate border */
 
-  /* Softened from blinding #fff to premium slate-gray tones */
-  --bg: #e2e8f0; /* deeper gray background */
-  --bg2: #f1f5f9;
-  --panel: #f1f5f9; /* softer panel instead of stark white */
-  --panel2: #cbd5e1;
-  --input-bg: #f8fafc; /* off-white instead of pure white */
-  --text: #0f172a;
-  --text-secondary: #334155;
-  --muted: #475569;
-  --faint: #94a3b8;
-  --border: rgba(0, 0, 0, 0.12);
-
-  /* Softened glass panels */
-  --glass-panel-bg: rgba(255, 255, 255, 0.65); /* Was 0.90, making it stark white */
-  --glass-modal-bg: rgba(255, 255, 255, 0.95);
-  --glass-popover-bg: rgba(248, 250, 252, 0.98); /* #f8fafc */
-  --glass-border: rgba(0, 0, 0, 0.08);
-  --overlay-bg: rgba(15, 23, 42, 0.2);
+  /* Tuned Glass Panels */
+  --glass-panel-bg: rgba(242, 244, 248, 0.75); 
+  --glass-modal-bg: rgba(236, 239, 244, 0.95);
+  --glass-popover-bg: rgba(242, 244, 248, 0.98);
+  --glass-border: rgba(46, 52, 64, 0.08);
+  --overlay-bg: rgba(46, 52, 64, 0.25);
 
   /* Accent adaptation - rich high contrast for light mode */
   --cyan: #0284c7;
@@ -202,36 +200,36 @@ body,
 
 :root.onedark {
   color-scheme: dark;
-  --bg-h: 220;
-  --bg-s: 13%;
-
+  /* Goldilocks Zone OneDark Palette */
   --bg: #282c34;
   --bg2: #21252b;
   --panel: #282c34;
   --panel2: #3e4451;
   --input-bg: #1e2227;
-  --text: #e5e9f0; /* Was #abb2bf, too grey and faded */
+  
+  --text: #d7dae0; /* Goldilocks zone text contrast */
   --text-secondary: #abb2bf;
-  --muted: #7f848e; /* Was #5c6370 */
+  --muted: #7f848e; 
   --faint: #5c6370;
-  --border: rgba(255, 255, 255, 0.15);
+  --border: rgba(171, 178, 191, 0.15); /* Tied to slate-grey instead of white */
 
-  --glass-panel-bg: rgba(40, 44, 52, 0.75);
-  --glass-modal-bg: rgba(40, 44, 52, 0.92);
+  --glass-panel-bg: rgba(40, 44, 52, 0.85);
+  --glass-modal-bg: rgba(33, 37, 43, 0.95);
   --glass-popover-bg: rgba(62, 68, 81, 0.96);
-  --glass-border: rgba(255, 255, 255, 0.15);
+  --glass-border: rgba(171, 178, 191, 0.15);
   --overlay-bg: rgba(0, 0, 0, 0.6);
 
+  /* Atom OneDark Signature Accents */
   --cyan: #56b6c2;
-  --cyan-glow: rgba(86, 182, 194, 0.15);
+  --cyan-glow: rgba(86, 182, 194, 0.2);
   --emerald: #98c379;
-  --emerald-glow: rgba(152, 195, 121, 0.15);
+  --emerald-glow: rgba(152, 195, 121, 0.2);
   --amber: #e5c07b;
-  --amber-glow: rgba(229, 192, 123, 0.15);
+  --amber-glow: rgba(229, 192, 123, 0.2);
   --rose: #e06c75;
-  --rose-glow: rgba(224, 108, 117, 0.15);
+  --rose-glow: rgba(224, 108, 117, 0.2);
   --violet: #c678dd;
-  --violet-glow: rgba(198, 120, 221, 0.15);
+  --violet-glow: rgba(198, 120, 221, 0.2);
 }
 
 html,
