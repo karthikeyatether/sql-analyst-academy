@@ -134,21 +134,21 @@ body,
   --bg-s: 20%;
 
   /* Softened from blinding #fff to premium slate-gray tones */
-  --bg: #eef2f6;
-  --bg2: #f8fafc;
-  --panel: #f8fafc;
-  --panel2: #e2e8f0;
-  --input-bg: #ffffff;
-  --text: #1e293b;
+  --bg: #e2e8f0; /* deeper gray background */
+  --bg2: #f1f5f9;
+  --panel: #f1f5f9; /* softer panel instead of stark white */
+  --panel2: #cbd5e1;
+  --input-bg: #f8fafc; /* off-white instead of pure white */
+  --text: #0f172a;
   --text-secondary: #334155;
   --muted: #475569;
   --faint: #94a3b8;
-  --border: rgba(0, 0, 0, 0.08);
+  --border: rgba(0, 0, 0, 0.12);
 
   /* Softened glass panels */
-  --glass-panel-bg: rgba(248, 250, 252, 0.75);
-  --glass-modal-bg: rgba(248, 250, 252, 0.90);
-  --glass-popover-bg: rgba(255, 255, 255, 0.95);
+  --glass-panel-bg: rgba(241, 245, 249, 0.85); /* #f1f5f9 */
+  --glass-modal-bg: rgba(241, 245, 249, 0.95);
+  --glass-popover-bg: rgba(248, 250, 252, 0.98); /* #f8fafc */
   --glass-border: rgba(0, 0, 0, 0.08);
   --overlay-bg: rgba(15, 23, 42, 0.2);
 
