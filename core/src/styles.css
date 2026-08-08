@@ -232,6 +232,40 @@ body,
   --violet-glow: rgba(198, 120, 221, 0.2);
 }
 
+:root.ember {
+  color-scheme: dark;
+  /* Ember - Anti-Blue Light Theme for Late Night Coding */
+  --bg: #1c1917;          /* Warm Obsidian Black */
+  --bg2: #292524;         /* Deep Taupe */
+  --panel: #292524;
+  --panel2: #44403c;
+  --input-bg: #1c1917;
+  
+  --text: #f5f5f4;        /* Warm Ivory */
+  --text-secondary: #d6d3d1;
+  --muted: #a8a29e;
+  --faint: #78716c;
+  --border: rgba(214, 211, 209, 0.12);
+
+  --glass-panel-bg: rgba(41, 37, 36, 0.85);
+  --glass-modal-bg: rgba(28, 25, 23, 0.95);
+  --glass-popover-bg: rgba(68, 64, 60, 0.96);
+  --glass-border: rgba(214, 211, 209, 0.12);
+  --overlay-bg: rgba(0, 0, 0, 0.7);
+
+  /* Ember Signature Accents (No Blues) */
+  --cyan: #f59e0b;        /* Swapped to Amber for buttons */
+  --cyan-glow: rgba(245, 158, 11, 0.2);
+  --emerald: #84cc16;     /* Lime Green */
+  --emerald-glow: rgba(132, 204, 22, 0.2);
+  --amber: #f97316;       /* Bright Orange */
+  --amber-glow: rgba(249, 115, 22, 0.2);
+  --rose: #ef4444;        /* Red */
+  --rose-glow: rgba(239, 68, 68, 0.2);
+  --violet: #eab308;      /* Warm Gold instead of violet */
+  --violet-glow: rgba(234, 179, 8, 0.2);
+}
+
 html,
 body,
 #root {

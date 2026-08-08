@@ -14,6 +14,7 @@ import {
   Timer,
   X,
   Zap,
+  Flame,
   Bug,
   Sun,
   Moon,
@@ -242,7 +243,7 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   /* ── theme ──────────────────────────────────────────────── */
-  const [theme, setTheme] = useLocalStorage<"dark" | "light" | "oled" | "dracula" | "onedark">(
+  const [theme, setTheme] = useLocalStorage<"dark" | "light" | "oled" | "dracula" | "onedark" | "ember">(
     "sql-aa-theme",
     "dark",
   );
@@ -251,6 +252,7 @@ export default function App() {
     document.documentElement.classList.toggle("oled", theme === "oled");
     document.documentElement.classList.toggle("dracula", theme === "dracula");
     document.documentElement.classList.toggle("onedark", theme === "onedark");
+    document.documentElement.classList.toggle("ember", theme === "ember");
   }, [theme]);
 
   /* ── PWA & Desktop Shortcut Installation ─────────────────── */
@@ -4033,6 +4035,7 @@ export default function App() {
                   if (t === "light") return "oled";
                   if (t === "oled") return "dracula";
                   if (t === "dracula") return "onedark";
+                  if (t === "onedark") return "ember";
                   return "dark";
                 })
               }
@@ -4054,6 +4057,9 @@ export default function App() {
               )}
               {theme === "onedark" && (
                 <Terminal size={16} style={{ color: "#e5c07b" }} />
+              )}
+              {theme === "ember" && (
+                <Flame size={16} style={{ color: "#f97316" }} />
               )}
             </button>
             <span title="Readiness">
