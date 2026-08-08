@@ -197,7 +197,7 @@ function RoadmapView({
                   ? "1px solid var(--cyan)"
                   : "1px solid var(--border)",
                 boxShadow: isSelected
-                  ? "0 0 16px rgba(56, 217, 255, 0.25)"
+                  ? "0 0 16px var(--cyan-glow)"
                   : "none",
                 borderRadius: "8px",
                 padding: "1.5rem",
@@ -214,7 +214,7 @@ function RoadmapView({
                   alignItems: "center",
                   justifyContent: "center",
                   background: isDone ? "var(--emerald)" : "var(--bg)",
-                  color: isDone ? "var(--hex-color-040d12)" : "inherit",
+                  color: isDone ? "#ffffff" : "var(--text)",
                   width: 60,
                   height: 60,
                   borderRadius: "50%",
@@ -295,9 +295,9 @@ function RoadmapView({
                               textTransform: "uppercase",
                               background:
                                 statusClass === "done"
-                                  ? "rgba(48,230,149,0.1)"
+                                  ? "var(--emerald-glow)"
                                   : statusClass === "progress"
-                                    ? "rgba(56,217,255,0.1)"
+                                    ? "var(--cyan-glow)"
                                     : "var(--border)",
                               color:
                                 statusClass === "done"
@@ -308,9 +308,9 @@ function RoadmapView({
                               border:
                                 "1px solid " +
                                 (statusClass === "done"
-                                  ? "rgba(48,230,149,0.15)"
+                                  ? "var(--emerald)"
                                   : statusClass === "progress"
-                                    ? "rgba(56,217,255,0.2)"
+                                    ? "var(--cyan)"
                                     : "var(--border)"),
                             }}
                           >
@@ -338,7 +338,7 @@ function RoadmapView({
                     title={isDone ? "Mark incomplete" : "Mark as done"}
                   >
                     {isDone ? (
-                      <CheckCircle2 size={24} color="#30e695" />
+                      <CheckCircle2 size={24} color="var(--emerald)" />
                     ) : (
                       <Circle size={24} />
                     )}
@@ -414,7 +414,7 @@ function RoadmapView({
                       style={
                         mod!.isHighWeight
                           ? {
-                              borderColor: "rgba(56, 217, 255, 0.3)",
+                              borderColor: "var(--cyan)",
                               background: "transparent",
                             }
                           : undefined
@@ -457,14 +457,14 @@ function RoadmapView({
                         style={
                           isSolved
                             ? {
-                                borderColor: "rgba(48, 230, 149, 0.4)",
-                                background: "rgba(48, 230, 149, 0.08)",
+                                borderColor: "var(--emerald)",
+                                background: "var(--emerald-glow)",
                                 color: "var(--emerald)",
                               }
                             : isHigh
                               ? {
-                                  borderColor: "rgba(56, 217, 255, 0.3)",
-                                  background: "transparent",
+                                  borderColor: "var(--cyan)",
+                                  background: "var(--cyan-glow)",
                                 }
                               : undefined
                         }
@@ -519,8 +519,8 @@ function RoadmapView({
                           style={
                             isPuzzleSolved
                               ? {
-                                  borderColor: "rgba(48, 230, 149, 0.4)",
-                                  background: "rgba(48, 230, 149, 0.08)",
+                                  borderColor: "var(--emerald)",
+                                  background: "var(--emerald-glow)",
                                   color: "var(--emerald)",
                                 }
                               : undefined
