@@ -125,7 +125,7 @@ const AdaptiveSkillGraph: React.FC<AdaptiveSkillGraphProps> = ({
 
   return (
     <div
-      className="adaptive-skill-graph surface-panel premium-panel"
+      className="adaptive-skill-graph surface-panel"
       style={{
         padding: "1.25rem 1.5rem",
         borderRadius: "12px",

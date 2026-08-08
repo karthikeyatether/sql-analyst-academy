@@ -443,7 +443,7 @@ function DashboardView({
 
       {/* COLLAPSIBLE ENGAGEMENT & STREAK TRACKER */}
       <div
-        className="surface-panel engagement-panel premium-panel"
+        className="surface-panel engagement-panel"
         style={{
           marginBottom: "16px",
           padding: isCompact ? "12px 16px" : "16px 20px",
@@ -654,7 +654,7 @@ function DashboardView({
       >
         {/* READINESS WIDGET */}
         <div
-          className="surface-panel readiness-breakdown premium-panel"
+          className="surface-panel readiness-breakdown"
           style={{
             padding: isCompact ? "1rem 1.25rem" : "1.25rem 1.5rem",
             borderRadius: "12px",
@@ -1147,7 +1147,7 @@ function CollapsibleInsightsSection({
           }}
         >
           {/* ACHIEVEMENTS AND BADGES */}
-          <div className="surface-panel premium-panel achievements-panel">
+          <div className="surface-panel achievements-panel">
             <div
               style={{
                 display: "flex",
@@ -1319,7 +1319,7 @@ function CollapsibleInsightsSection({
           </div>
 
           {/* QUICK INTERVIEW Q&A ACCORDION */}
-          <div className="surface-panel premium-panel qa-panel-wrap">
+          <div className="surface-panel qa-panel-wrap">
             <div
               style={{
                 display: "flex",
