@@ -1251,6 +1251,7 @@ function MockTestView({
                     onMount={handleMount}
                     onChange={handleEditorChange}
                     options={{
+                      automaticLayout: true,
                       minimap: { enabled: editorMinimap },
                       fontSize: editorFontSize,
                       fontFamily: editorFontFamily,

@@ -2797,6 +2797,7 @@ SELECT * FROM customers LIMIT 10;`;
                         value={queryB}
                         onChange={(val) => handleSetQueryB(val || "")}
                         options={{
+                          automaticLayout: true,
                           minimap: { enabled: false },
                           fontSize: editorFontSize - 1,
                           fontFamily: editorFontFamily,
