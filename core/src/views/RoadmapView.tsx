@@ -54,11 +54,26 @@ function RoadmapView({
   updateEditorQuery,
   stopAutoTyping,
 }: RoadmapViewProps) {
-  const days = progress.completedDays || [];
-  const totalCompleted = days.length;
-  const progressPct = Math.round(
-    (totalCompleted / learningRoadmap.length) * 100,
-  );
+  const actualCompletedDays = learningRoadmap.filter((day) => {
+    if ((progress.completedDays || []).includes(day.day)) return true;
+    const dayModules = day.modules
+      .map((id) => roadmapModules.find((m) => m.id === id))
+      .filter((m) => m !== undefined);
+    const dayProblems = dayModules.flatMap((m) => m!.problems);
+    const dayPuzzles = debugPuzzles.filter((pz) => pz.dayId === day.day);
+    const totalDayItems = dayProblems.length + dayPuzzles.length + (day.mockInterview && day.mockInterview.company ? 1 : 0);
+    
+    if (totalDayItems === 0) return false;
+
+    const solvedDayProblems = dayProblems.filter((p) => progress.solvedProblems.includes(p.id)).length;
+    const solvedPuzzlesCount = dayPuzzles.filter((pz) => (progress.solvedPuzzles || []).includes(pz.id)).length;
+    const mockScore = day.mockInterview && day.mockInterview.company ? (progress.mockScores?.[day.mockInterview.company] ?? 0) : 0;
+    const solvedMockCount = mockScore > 0 ? 1 : 0;
+    
+    return (solvedDayProblems + solvedPuzzlesCount + solvedMockCount) >= totalDayItems;
+  }).length;
+
+  const progressPct = Math.round((actualCompletedDays / learningRoadmap.length) * 100);
 
   React.useEffect(() => {
     if (selectedDayId) {
