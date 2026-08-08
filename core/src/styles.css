@@ -3226,6 +3226,11 @@ details > p {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   position: relative;
   overflow: hidden;
+  /* Override global variables for this dark banner */
+  --text: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --muted: #94a3b8;
+  color: var(--text);
 }
 
 .premium-panel::before {
@@ -3248,12 +3253,12 @@ details > p {
     radial-gradient(
       circle at 90% 10%,
       rgba(56, 217, 255, 0.08),
-      transparent 50%
+      transparent 30%
     ),
     radial-gradient(
       circle at 10% 90%,
-      rgba(155, 124, 255, 0.04),
-      transparent 50%
+      rgba(124, 58, 237, 0.08),
+      transparent 30%
     ),
     linear-gradient(
       135deg,
@@ -3264,6 +3269,11 @@ details > p {
   box-shadow: 0 6px 30px rgba(0, 0, 0, 0.3);
   position: relative;
   overflow: hidden;
+  /* Override global variables for this dark banner */
+  --text: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --muted: #94a3b8;
+  color: var(--text);
 }
 /* Scanline overlay removed */
 

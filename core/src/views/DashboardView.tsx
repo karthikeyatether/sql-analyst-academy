@@ -345,13 +345,13 @@ function DashboardView({
             style={{
               fontSize: isCompact ? "18px" : "22px",
               margin: "6px 0 2px 0",
-              color: "var(--text)",
+              color: "#f8fafc",
             }}
           >
             {currentDay.title}
           </h2>
-          <p style={{ margin: 0, color: "var(--muted)", fontSize: "13px" }}>
-            <strong>Current Focus:</strong> {currentDay.focus}
+          <p style={{ margin: 0, color: "#cbd5e1", fontSize: "13px" }}>
+            Current Focus: {currentDay.focus}
           </p>
         </div>
 
@@ -463,7 +463,7 @@ function DashboardView({
         >
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <TrendingUp size={16} style={{ color: "var(--cyan)" }} />
-            <strong style={{ fontSize: "14px" }}>
+            <strong style={{ fontSize: "14px", color: "var(--text)" }}>
               Study Engagement & Streak Tracker
             </strong>
           </div>
@@ -674,7 +674,7 @@ function DashboardView({
           >
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <Target size={16} style={{ color: "var(--cyan)" }} />
-              <strong style={{ fontSize: "0.95rem" }}>
+              <strong style={{ fontSize: "0.95rem", color: "var(--text)" }}>
                 Interview Readiness Breakdown
               </strong>
             </div>
@@ -818,6 +818,7 @@ function DashboardView({
                         justifyContent: "space-between",
                         fontSize: "0.75rem",
                         marginBottom: "0.1rem",
+                        color: "var(--text)",
                       }}
                     >
                       <span>
@@ -854,6 +855,7 @@ function DashboardView({
                         justifyContent: "space-between",
                         fontSize: "0.75rem",
                         marginBottom: "0.1rem",
+                        color: "var(--text)",
                       }}
                     >
                       <span>
@@ -890,6 +892,7 @@ function DashboardView({
                         justifyContent: "space-between",
                         fontSize: "0.75rem",
                         marginBottom: "0.1rem",
+                        color: "var(--text)",
                       }}
                     >
                       <span>
@@ -926,6 +929,7 @@ function DashboardView({
                         justifyContent: "space-between",
                         fontSize: "0.75rem",
                         marginBottom: "0.1rem",
+                        color: "var(--text)",
                       }}
                     >
                       <span>
@@ -1001,7 +1005,7 @@ function DashboardView({
             left: 0,
             right: 0,
             bottom: 0,
-            background: "var(--panel)",
+            background: "rgba(0,0,0,0.5)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
