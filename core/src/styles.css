@@ -131,25 +131,25 @@ body,
 
 :root.light {
   color-scheme: light;
-  /* The Ultimate "Cloud Slate" Soft Light Theme */
-  --bg: #eceff4;          /* Soft, cool ambient background */
-  --bg2: #e5e9f0;         /* Slightly deeper for contrast areas */
-  --panel: #f2f4f8;       /* Subtle elevation, completely avoids #ffffff */
-  --panel2: #d8dee9;      
-  --input-bg: #e5e9f0;    /* Recessed input areas, darker than the panel */
+  /* Ultra-Soft Dimmed Light Theme - Zero White/Glare */
+  --bg: #cbd5e1;          /* Slate 300 - deeply muted background */
+  --bg2: #94a3b8;         
+  --panel: #e2e8f0;       /* Slate 200 - noticeable gray, zero eye strain */
+  --panel2: #cbd5e1;      
+  --input-bg: #cbd5e1;    /* Matches background for recessed feel */
   
-  --text: #2e3440;        /* Deep arctic blue-gray instead of harsh #000 */
-  --text-secondary: #3b4252;
-  --muted: #4c566a;       /* Perfect for SQL comments, readable but receded */
-  --faint: #d8dee9;       
-  --border: rgba(46, 52, 64, 0.12); /* Crisp but subtle slate border */
+  --text: #1e293b;        /* Dark Slate 800 */
+  --text-secondary: #334155;
+  --muted: #475569;       
+  --faint: #94a3b8;       
+  --border: rgba(15, 23, 42, 0.15); /* Slightly darker border for contrast */
 
-  /* Tuned Glass Panels */
-  --glass-panel-bg: rgba(242, 244, 248, 0.75); 
-  --glass-modal-bg: rgba(236, 239, 244, 0.95);
-  --glass-popover-bg: rgba(242, 244, 248, 0.98);
-  --glass-border: rgba(46, 52, 64, 0.08);
-  --overlay-bg: rgba(46, 52, 64, 0.25);
+  /* Tuned Glass Panels - darker opacity */
+  --glass-panel-bg: rgba(226, 232, 240, 0.85); /* Slate 200 glass */
+  --glass-modal-bg: rgba(203, 213, 225, 0.95); /* Slate 300 glass */
+  --glass-popover-bg: rgba(226, 232, 240, 0.98);
+  --glass-border: rgba(15, 23, 42, 0.1);
+  --overlay-bg: rgba(15, 23, 42, 0.35);
 
   /* Accent adaptation - rich high contrast for light mode */
   --cyan: #0284c7;
@@ -250,8 +250,8 @@ body,
 :root.light .monaco-editor .margin,
 :root.light .monaco-editor-background,
 :root.light .monaco-editor .inputarea.ime-input {
-  background-color: #f8fafc !important; /* Was #ffffff, which was too stark */
-  color: #0f172a !important;
+  background-color: #e2e8f0 !important; /* Soft Slate 200, matching --panel */
+  color: #1e293b !important;
 }
 
 :root.light .sql-pre,
@@ -1886,7 +1886,7 @@ a {
 .monaco-editor.vs .margin,
 .monaco-editor.vs .monaco-editor-background,
 .monaco-editor.vs .inputarea.ime-input {
-  background-color: #f8fafc !important; /* Was #ffffff */
+  background-color: #e2e8f0 !important; /* Soft Slate 200 */
 }
 
 /* Keep line numbers visually separate from SQL text on wide displays. */
