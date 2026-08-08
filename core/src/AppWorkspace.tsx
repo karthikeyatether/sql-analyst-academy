@@ -1121,11 +1121,6 @@ export default function App() {
         return defaultQuery;
       }
 
-      // If solved but they just have the starter query saved as a draft somehow
-      if (isSolved && isStarter && p.solution) {
-        return p.solution;
-      }
-
       // Strip legacy comment header if present
       stored = stored.replace(/^(--[^\n]*\n)+(\s*\n)*/, (match: string) => {
         if (

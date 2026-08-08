@@ -1680,8 +1680,14 @@ SELECT * FROM customers LIMIT 10;`;
           "sql-aa-problem-drafts",
           {},
         );
-        delete drafts[selectedProblem.id];
+        // Explicitly write the starter query as the draft instead of deleting it,
+        // so that auto-solution injection for solved problems doesn't override it.
+        drafts[selectedProblem.id] = p.starterQuery;
         localStorage.setItem("sql-aa-problem-drafts", JSON.stringify(drafts));
+        
+        // Also wipe any bookmark for this problem
+        setBookmarks((prev) => prev.filter((b) => b.problemId !== p.id));
+
         const saved = getSavedDraftQuery(p);
         updateEditorQuery(saved);
         setQueryResult(await runQuery(saved, true));
@@ -1696,8 +1702,12 @@ SELECT * FROM customers LIMIT 10;`;
           "sql-aa-puzzle-drafts",
           {},
         );
-        delete drafts[activePuzzle?.id];
+        drafts[activePuzzle.id] = p.flawedQuery;
         localStorage.setItem("sql-aa-puzzle-drafts", JSON.stringify(drafts));
+        
+        // Also wipe any bookmark for this puzzle
+        setBookmarks((prev) => prev.filter((b) => b.problemId !== p.id));
+
         const saved = getSavedPuzzleQuery(p);
         updateEditorQuery(saved);
         setQueryResult(await runQuery(saved, true));
@@ -2591,11 +2601,10 @@ SELECT * FROM customers LIMIT 10;`;
                   <div
                     style={{
                       padding: "8px 16px",
-                      background:
-                        "linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.03) 100%)",
-                      borderBottom: "1px solid rgba(34, 197, 94, 0.25)",
+                      background: "var(--emerald-glow)",
+                      borderBottom: "1px solid var(--border)",
                       fontSize: "12px",
-                      color: "#4ade80",
+                      color: "var(--emerald)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
@@ -2613,7 +2622,7 @@ SELECT * FROM customers LIMIT 10;`;
                     >
                       <CheckCircle2
                         size={14}
-                        style={{ color: "#4ade80", flexShrink: 0 }}
+                        style={{ color: "var(--emerald)", flexShrink: 0 }}
                       />
                       You solved this{" "}
                       {playgroundMode === "puzzle" ? "puzzle" : "problem"}! You
@@ -2622,9 +2631,9 @@ SELECT * FROM customers LIMIT 10;`;
                     <button
                       onClick={resetPlayground}
                       style={{
-                        background: "rgba(34, 197, 94, 0.14)",
-                        border: "1px solid rgba(34, 197, 94, 0.3)",
-                        color: "#4ade80",
+                        background: "var(--bg)",
+                        border: "1px solid var(--emerald)",
+                        color: "var(--emerald)",
                         borderRadius: "6px",
                         padding: "4px 10px",
                         fontSize: "11px",

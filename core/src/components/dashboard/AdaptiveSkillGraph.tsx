@@ -171,8 +171,8 @@ const AdaptiveSkillGraph: React.FC<AdaptiveSkillGraphProps> = ({
       {weakestSkill && weakestSkill.masteryPct < 100 && (
         <div
           style={{
-            background: "rgba(234, 179, 8, 0.08)",
-            border: "1px solid rgba(234, 179, 8, 0.25)",
+            background: "var(--cyan-glow)",
+            border: "1px solid var(--cyan)",
             borderRadius: "8px",
             padding: "10px 14px",
             marginBottom: "16px",
@@ -182,10 +182,10 @@ const AdaptiveSkillGraph: React.FC<AdaptiveSkillGraphProps> = ({
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <Zap size={18} color="#eab308" />
+            <Zap size={18} color="var(--cyan)" />
             <div>
               <div
-                style={{ fontSize: "12px", fontWeight: 700, color: "var(--amber)" }}
+                style={{ fontSize: "12px", fontWeight: 700, color: "var(--cyan)" }}
               >
                 RECOMMENDED 3-MINUTE REPAIR DRILL:{" "}
                 {weakestSkill.name.toUpperCase()} ({weakestSkill.masteryPct}%
