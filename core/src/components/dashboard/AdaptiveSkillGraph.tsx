@@ -185,13 +185,13 @@ const AdaptiveSkillGraph: React.FC<AdaptiveSkillGraphProps> = ({
             <Zap size={18} color="#eab308" />
             <div>
               <div
-                style={{ fontSize: "12px", fontWeight: 700, color: "#eab308" }}
+                style={{ fontSize: "12px", fontWeight: 700, color: "var(--amber)" }}
               >
                 RECOMMENDED 3-MINUTE REPAIR DRILL:{" "}
                 {weakestSkill.name.toUpperCase()} ({weakestSkill.masteryPct}%
                 Mastery)
               </div>
-              <div style={{ fontSize: "12px", color: "var(--muted)" }}>
+              <div style={{ fontSize: "12px", color: "var(--text)" }}>
                 {weakestSkill.recommendedDrillTitle}
               </div>
             </div>
@@ -222,7 +222,7 @@ const AdaptiveSkillGraph: React.FC<AdaptiveSkillGraphProps> = ({
             <div
               key={node.id}
               style={{
-                background: "rgba(255, 255, 255, 0.02)",
+                background: "var(--panel)",
                 border: isMastered
                   ? "1px solid rgba(34, 197, 94, 0.3)"
                   : "1px solid var(--border)",
@@ -249,9 +249,9 @@ const AdaptiveSkillGraph: React.FC<AdaptiveSkillGraphProps> = ({
                   {node.category}
                 </span>
                 {isMastered ? (
-                  <CheckCircle size={14} color="#22c55e" />
+                  <CheckCircle size={14} color="var(--emerald)" />
                 ) : (
-                  <AlertTriangle size={14} color="#eab308" />
+                  <AlertTriangle size={14} color="var(--amber)" />
                 )}
               </div>
 
@@ -270,7 +270,7 @@ const AdaptiveSkillGraph: React.FC<AdaptiveSkillGraphProps> = ({
               <div
                 style={{
                   height: "6px",
-                  background: "rgba(255, 255, 255, 0.08)",
+                  background: "var(--border)",
                   borderRadius: "3px",
                   overflow: "hidden",
                   marginBottom: "6px",
@@ -280,7 +280,7 @@ const AdaptiveSkillGraph: React.FC<AdaptiveSkillGraphProps> = ({
                   style={{
                     height: "100%",
                     width: `${node.masteryPct}%`,
-                    background: isMastered ? "#22c55e" : "var(--cyan)",
+                    background: isMastered ? "var(--emerald)" : "var(--cyan)",
                     transition: "width 400ms ease",
                   }}
                 />
@@ -298,7 +298,7 @@ const AdaptiveSkillGraph: React.FC<AdaptiveSkillGraphProps> = ({
                   {node.solvedCount} / {node.totalCount} Solved
                 </span>
                 <strong
-                  style={{ color: isMastered ? "#22c55e" : "var(--cyan)" }}
+                  style={{ color: isMastered ? "var(--emerald)" : "var(--cyan)" }}
                 >
                   {node.masteryPct}%
                 </strong>
