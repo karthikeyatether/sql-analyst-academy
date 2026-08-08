@@ -26,6 +26,7 @@ import {
   BarChart3,
   Upload,
   Zap,
+  Bookmark,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { BeforeMount, OnMount } from "@monaco-editor/react";
@@ -57,7 +58,7 @@ import LessonProse from "../components/LessonProse";
 import Editor from "@monaco-editor/react";
 import "../utils/monacoConfig";
 
-type RightTab = "hints" | "schema";
+type RightTab = "hints" | "schema" | "bookmarks";
 
 interface QueryHistoryItem {
   id: string;
@@ -69,6 +70,8 @@ interface QueryHistoryItem {
 }
 
 import type { TableSchema } from "../data/datasets";
+import type { BookmarkItem } from "../AppWorkspace";
+import BookmarksPanel from "../components/playground/BookmarksPanel";
 
 function TargetTablesCard({
   relevantTables,
@@ -230,6 +233,10 @@ interface PlaygroundViewProps {
   liveSchema: TableSchema[];
   setLiveSchema: React.Dispatch<React.SetStateAction<TableSchema[]>>;
 
+  // Bookmarks
+  bookmarks: BookmarkItem[];
+  setBookmarks: React.Dispatch<React.SetStateAction<BookmarkItem[]>>;
+
   // Saved queries
   savedQueries: {
     id: string;
@@ -349,6 +356,8 @@ const PlaygroundView = React.memo(function PlaygroundView({
   showToast,
   liveSchema,
   setLiveSchema,
+  bookmarks,
+  setBookmarks,
   savedQueries,
   setSavedQueries,
   showConfirm,
@@ -416,7 +425,7 @@ const PlaygroundView = React.memo(function PlaygroundView({
     propRightOpen !== undefined ? propRightOpen : internalRightOpen;
   const setRightOpen = propSetRightOpen || setInternalRightOpen;
   const [activeLeftTab, setActiveLeftTab] = useState<
-    "problem" | "schema" | "hints"
+    "problem" | "schema" | "hints" | "bookmarks"
   >("problem");
   const [editorMaximized, setEditorMaximized] = useState(false);
   const [activeResultTab, setActiveResultTab] = useState<"your" | "expected">(
@@ -1776,6 +1785,7 @@ SELECT * FROM customers LIMIT 10;`;
   const tabs: { id: RightTab; icon: LucideIcon; label: string }[] = [
     { id: "hints", icon: BookOpen, label: "Problem Specs" },
     { id: "schema", icon: Database, label: "Schema Explorer" },
+    { id: "bookmarks", icon: Bookmark, label: "Saved Solutions" },
   ];
 
   // currentSchema referenced locally
@@ -1952,6 +1962,56 @@ SELECT * FROM customers LIMIT 10;`;
               }}
             >
               Format
+            </span>
+          </button>
+          <button
+            className="icon-button labeled"
+            title="Save to Bookmarks"
+            onClick={() => {
+              const currentQuery = queryRef.current;
+              if (!currentQuery.trim()) return;
+              const title = playgroundMode === "practice" 
+                ? (selectedProblem?.title || "Draft Query")
+                : (activePuzzle?.title || "Puzzle Query");
+              const probId = playgroundMode === "practice" ? selectedProblem?.id : activePuzzle?.id;
+              
+              setBookmarks((prev) => {
+                const filtered = prev.filter((b) => b.problemId !== probId);
+                return [
+                  {
+                    id: crypto.randomUUID(),
+                    title: title,
+                    query: currentQuery,
+                    problemId: probId,
+                    timestamp: Date.now(),
+                  },
+                  ...filtered,
+                ];
+              });
+              showToast("Query saved to bookmarks!", "success");
+            }}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "5px",
+              padding: "4px 10px",
+              height: "28px",
+              borderRadius: "4px",
+              border: "1px solid var(--border)",
+              background: "var(--bg)",
+            }}
+            aria-label="Save to Bookmarks"
+          >
+            <Bookmark size={14} style={{ color: "var(--emerald)", flexShrink: 0 }} />
+            <span
+              style={{
+                fontSize: "11px",
+                fontWeight: 600,
+                color: "var(--text)",
+              }}
+            >
+              Bookmark
             </span>
           </button>
           <div style={{ position: "relative", display: "inline-flex" }}>
@@ -4209,6 +4269,17 @@ SELECT * FROM customers LIMIT 10;`;
               );
             })()}
           </div>
+        )}
+
+        {activeRightTab === "bookmarks" && (
+          <BookmarksPanel
+            bookmarks={bookmarks}
+            setBookmarks={setBookmarks}
+            updateEditorQuery={updateEditorQuery}
+            copyToClipboard={copyToClipboard}
+            playgroundMode={playgroundMode}
+            activeId={playgroundMode === "practice" ? selectedProblem?.id : activePuzzle?.id}
+          />
         )}
 
         {activeRightTab === "hints" && (

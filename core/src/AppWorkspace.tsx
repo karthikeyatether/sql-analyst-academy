@@ -114,6 +114,14 @@ type QueryHistoryItem = {
   durationMs?: number;
 };
 
+export type BookmarkItem = {
+  id: string;
+  title: string;
+  query: string;
+  problemId?: string;
+  timestamp: number;
+};
+
 type MockTestState = {
   company: string;
   questions: PracticeProblem[];
@@ -1066,6 +1074,15 @@ export default function App() {
 
   const getSavedDraftQuery = useCallback(
     (p: PracticeProblem): string => {
+      // 1. Check if we have an explicit bookmark for this solved problem
+      const savedBookmarks = safeLocalStorageGet<BookmarkItem[]>(
+        "sql-aa-bookmarks",
+        [],
+      );
+      const solvedBookmark = savedBookmarks.find((b) => b.problemId === p.id);
+      if (solvedBookmark) return solvedBookmark.query;
+
+      // 2. Otherwise load draft
       const drafts = safeLocalStorageGet<Record<string, any>>(
         "sql-aa-problem-drafts",
         {},
@@ -1120,6 +1137,15 @@ export default function App() {
 
   const getSavedPuzzleQuery = useCallback(
     (p: SqlPuzzle): string => {
+      // 1. Check if we have an explicit bookmark for this solved puzzle
+      const savedBookmarks = safeLocalStorageGet<BookmarkItem[]>(
+        "sql-aa-bookmarks",
+        [],
+      );
+      const solvedBookmark = savedBookmarks.find((b) => b.problemId === p.id);
+      if (solvedBookmark) return solvedBookmark.query;
+
+      // 2. Otherwise load draft
       const drafts = safeLocalStorageGet<Record<string, any>>(
         "sql-aa-puzzle-drafts",
         {},
@@ -1418,6 +1444,11 @@ export default function App() {
   );
   const [savedQueries, setSavedQueries] = useLocalStorage<QueryHistoryItem[]>(
     "sql-aa-saved",
+    [],
+  );
+
+  const [bookmarks, setBookmarks] = useLocalStorage<BookmarkItem[]>(
+    "sql-aa-bookmarks",
     [],
   );
 
@@ -2993,8 +3024,18 @@ export default function App() {
           const failedCount = attempts[selectedProblem.id] || 0;
           const quality = failedCount > 0 ? 3 : 5;
           markProblemSolved(selectedProblem, quality);
+          saveBookmark(
+            selectedProblem.id,
+            selectedProblem.title,
+            sql
+          );
         } else if (playgroundMode === "puzzle" && activePuzzle) {
           markPuzzleSolved(activePuzzle);
+          saveBookmark(
+            activePuzzle.id,
+            activePuzzle.title,
+            sql
+          );
         }
       } else {
         if (playgroundMode === "practice" && selectedProblem) {
@@ -3317,6 +3358,26 @@ export default function App() {
       };
     });
   }
+
+  const saveBookmark = useCallback(
+    (problemId: string, title: string, query: string) => {
+      setBookmarks((prev) => {
+        // Remove existing bookmark for this problem if it exists to replace it
+        const filtered = prev.filter((b) => b.problemId !== problemId);
+        return [
+          {
+            id: crypto.randomUUID(),
+            title: title,
+            query: query,
+            problemId: problemId,
+            timestamp: Date.now(),
+          },
+          ...filtered,
+        ];
+      });
+    },
+    [setBookmarks],
+  );
 
   function markPuzzleSolved(p: SqlPuzzle) {
     const sp = progress.solvedPuzzles || [];
@@ -4221,6 +4282,8 @@ export default function App() {
                 setLiveSchema={setLiveSchema}
                 savedQueries={savedQueries}
                 setSavedQueries={setSavedQueries}
+                bookmarks={bookmarks}
+                setBookmarks={setBookmarks}
                 showConfirm={showConfirm}
                 showPrompt={showPrompt}
                 graderStrict={graderStrict}
