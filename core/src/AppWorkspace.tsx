@@ -452,24 +452,6 @@ export default function App() {
     setShowOnboarding(false);
   };
 
-  /* ── One-time puzzle progress restore (remove after confirmed) ── */
-  useEffect(() => {
-    if (!localStorage.getItem("sql-aa-puzzles-restored-day18")) {
-      const existing = localStorage.getItem("sql-aa-progress-v3");
-      const parsed = existing ? JSON.parse(existing) : null;
-      if (parsed) {
-        const targetPuzzles = debugPuzzles
-          .filter((p) => p.dayId <= 18)
-          .map((p) => p.id);
-        const uniquePuzzles = Array.from(new Set([...(parsed.solvedPuzzles || []), ...targetPuzzles]));
-        parsed.solvedPuzzles = uniquePuzzles;
-        localStorage.setItem("sql-aa-progress-v3", JSON.stringify(parsed));
-        localStorage.setItem("sql-aa-puzzles-restored-day18", "true");
-        window.location.reload();
-      }
-    }
-  }, []);
-
   /* tiny helpers */
 
   const enterFreeformPlayground = () => {
