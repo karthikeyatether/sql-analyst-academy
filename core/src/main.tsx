@@ -18,5 +18,15 @@ if ("serviceWorker" in navigator && import.meta.env.PROD) {
     navigator.serviceWorker.register("/sw.js").catch((err) => {
       console.warn("ServiceWorker registration failed:", err);
     });
+
+    // When a new service worker takes over (via skipWaiting), automatically refresh the page
+    // so the user instantly sees the latest pushed changes without needing to reload twice.
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
+    });
   });
 }
