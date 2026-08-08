@@ -1093,7 +1093,12 @@ export default function App() {
           ? p.starterQuery
           : `-- Write your SQL query here\n`;
 
-      if (!draftVal) return defaultQuery;
+      const isSolved = progress.solvedProblems.includes(p.id);
+
+      if (!draftVal) {
+        // If solved but no draft/bookmark, auto-provide the solution
+        return isSolved && p.solution ? p.solution : defaultQuery;
+      }
       let stored = typeof draftVal === "string" ? draftVal : draftVal.query;
       if (!stored) return defaultQuery;
       stored = stripLineNumbersFromQuery(stored);
@@ -1111,9 +1116,14 @@ export default function App() {
         p.solution &&
         stored.replace(/\s+/g, "").toLowerCase() ===
           p.solution.replace(/\s+/g, "").toLowerCase();
-      const isSolved = progress.solvedProblems.includes(p.id);
+      
       if (!isSolved && (stored.includes("???") || isStarter || isSolution)) {
         return defaultQuery;
+      }
+
+      // If solved but they just have the starter query saved as a draft somehow
+      if (isSolved && isStarter && p.solution) {
+        return p.solution;
       }
 
       // Strip legacy comment header if present
@@ -1152,8 +1162,11 @@ export default function App() {
       );
       const draftVal = drafts[p.id];
       const defaultQuery = p.flawedQuery;
+      const isSolved = progress.solvedPuzzles?.includes(p.id);
 
-      if (!draftVal) return defaultQuery;
+      if (!draftVal) {
+        return isSolved && p.solutionQuery ? p.solutionQuery : defaultQuery;
+      }
       let stored = typeof draftVal === "string" ? draftVal : draftVal.query;
       if (!stored) return defaultQuery;
 
@@ -1174,7 +1187,6 @@ export default function App() {
         p.solutionQuery &&
         stored.replace(/\s+/g, "").toLowerCase() ===
           p.solutionQuery.replace(/\s+/g, "").toLowerCase();
-      const isSolved = (progress.solvedPuzzles || []).includes(p.id);
       if (!isSolved && isSolution) {
         return defaultQuery;
       }
