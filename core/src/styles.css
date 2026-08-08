@@ -50,15 +50,16 @@ body,
   --input-bg: hsl(var(--bg-h), var(--bg-s), 5%); /* #08090b */
 
   --text: #ffffff;
-  --muted: #cbd5e1;
-  --faint: #94a3b8;
+  --text-secondary: #cbd5e1; /* Added to fix missing variable */
+  --muted: #94a3b8; /* Swapped muted and faint to make semantic sense */
+  --faint: #475569;
   --border: rgba(255, 255, 255, 0.14);
   
   --glass-panel-bg: rgba(11, 13, 16, 0.65);
-  --glass-modal-bg: rgba(11, 13, 16, 0.85);
-  --glass-popover-bg: rgba(15, 18, 22, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.12);
-  --overlay-bg: rgba(0, 0, 0, 0.2);
+  --glass-modal-bg: rgba(11, 13, 16, 0.90); /* Darker modal bg */
+  --glass-popover-bg: rgba(15, 18, 22, 0.95); /* Darker popover bg */
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --overlay-bg: rgba(0, 0, 0, 0.6); /* Was 0.2, which looked like a milky faded filter */
 
   --hex-color-040d12: #040d12;
   --hex-color-dde8f5: #dde8f5;
@@ -175,17 +176,17 @@ body,
   --panel: #282a36;
   --panel2: #44475a;
   --input-bg: #191a21;
-  --text: #f8f8f2;
-  --text-secondary: #bfbfbf;
-  --muted: #6272a4;
-  --faint: #44475a;
-  --border: rgba(255, 255, 255, 0.1);
+  --text: #ffffff; /* Was #f8f8f2, bumping up contrast */
+  --text-secondary: #f8f8f2;
+  --muted: #8ca2d9; /* Was #6272a4, bumping brightness */
+  --faint: #6272a4;
+  --border: rgba(255, 255, 255, 0.15);
 
   --glass-panel-bg: rgba(40, 42, 54, 0.75);
-  --glass-modal-bg: rgba(40, 42, 54, 0.90);
-  --glass-popover-bg: rgba(68, 71, 90, 0.95);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --overlay-bg: rgba(0, 0, 0, 0.5);
+  --glass-modal-bg: rgba(40, 42, 54, 0.92);
+  --glass-popover-bg: rgba(68, 71, 90, 0.96);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --overlay-bg: rgba(0, 0, 0, 0.6);
 
   --cyan: #8be9fd;
   --cyan-glow: rgba(139, 233, 253, 0.15);
@@ -209,17 +210,17 @@ body,
   --panel: #282c34;
   --panel2: #3e4451;
   --input-bg: #1e2227;
-  --text: #abb2bf;
-  --text-secondary: #828997;
-  --muted: #5c6370;
-  --faint: #3e4451;
-  --border: rgba(255, 255, 255, 0.1);
+  --text: #e5e9f0; /* Was #abb2bf, too grey and faded */
+  --text-secondary: #abb2bf;
+  --muted: #7f848e; /* Was #5c6370 */
+  --faint: #5c6370;
+  --border: rgba(255, 255, 255, 0.15);
 
   --glass-panel-bg: rgba(40, 44, 52, 0.75);
-  --glass-modal-bg: rgba(40, 44, 52, 0.90);
-  --glass-popover-bg: rgba(62, 68, 81, 0.95);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --overlay-bg: rgba(0, 0, 0, 0.5);
+  --glass-modal-bg: rgba(40, 44, 52, 0.92);
+  --glass-popover-bg: rgba(62, 68, 81, 0.96);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --overlay-bg: rgba(0, 0, 0, 0.6);
 
   --cyan: #56b6c2;
   --cyan-glow: rgba(86, 182, 194, 0.15);
