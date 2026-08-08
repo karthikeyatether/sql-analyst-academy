@@ -24,6 +24,8 @@ import {
   Monitor,
   Ghost,
   Terminal,
+  DownloadCloud,
+  UploadCloud,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import React, {
@@ -399,6 +401,44 @@ export default function App() {
     details?: string;
     warning?: string;
   } | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExportProgress = () => {
+    const data = localStorage.getItem("sql-aa-progress-v3");
+    if (!data) return alert("No progress to export.");
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `sql-analyst-progress-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportProgress = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const parsed = JSON.parse(content);
+        if (!parsed || !Array.isArray(parsed.completedModules)) {
+          throw new Error("Invalid format");
+        }
+        localStorage.setItem("sql-aa-progress-v3", JSON.stringify(parsed));
+        alert("Progress successfully restored! Reloading...");
+        window.location.reload();
+      } catch (err) {
+        alert("Failed to parse backup file. Make sure it's a valid JSON file exported from this app.");
+      }
+    };
+    reader.readAsText(file);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
 
   useEffect(() => {
@@ -3935,7 +3975,42 @@ export default function App() {
             </div>
           </div>
 
-          <div className="topbar-right">
+            <div className="topbar-right">
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                style={{ display: 'none' }} 
+                accept=".json" 
+                onChange={handleImportProgress} 
+              />
+              <button
+                className="icon-button"
+                onClick={() => fileInputRef.current?.click()}
+                title="Import Progress Backup (.json)"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "var(--cyan)",
+                }}
+                aria-label="Import Progress Backup"
+              >
+                <UploadCloud size={16} />
+              </button>
+              <button
+                className="icon-button"
+                onClick={handleExportProgress}
+                title="Export Progress Backup (.json)"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "var(--cyan)",
+                }}
+                aria-label="Export Progress Backup"
+              >
+                <DownloadCloud size={16} />
+              </button>
             <button
               className="icon-button"
               onClick={handleInstallApp}

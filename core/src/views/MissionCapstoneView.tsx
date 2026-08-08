@@ -11,6 +11,7 @@ import {
   Award,
   FileText,
   ArrowLeft,
+  DownloadCloud,
 } from "lucide-react";
 
 interface MissionCapstoneViewProps {
@@ -42,6 +43,18 @@ const MissionCapstoneView: React.FC<MissionCapstoneViewProps> = ({
 
   const handleGenerateReport = () => {
     setGeneratedReport(activeMission.executiveReportTemplate);
+  };
+
+  const handleExportReport = () => {
+    if (!generatedReport) return;
+    const blob = new Blob([generatedReport], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const filename = activeMission.title.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+    a.download = `${filename}_executive_report.md`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -300,20 +313,30 @@ const MissionCapstoneView: React.FC<MissionCapstoneViewProps> = ({
               </button>
 
               {generatedReport && (
-                <pre
-                  style={{
-                    background: "var(--panel)",
-                    padding: "12px",
-                    borderRadius: "6px",
-                    color: "var(--cyan)",
-                    fontSize: "12px",
-                    fontFamily: "monospace",
-                    whiteSpace: "pre-wrap",
-                    margin: 0,
-                  }}
-                >
-                  {generatedReport}
-                </pre>
+                <>
+                  <pre
+                    style={{
+                      background: "var(--panel)",
+                      padding: "12px",
+                      borderRadius: "6px",
+                      color: "var(--cyan)",
+                      fontSize: "12px",
+                      fontFamily: "monospace",
+                      whiteSpace: "pre-wrap",
+                      margin: "0 0 10px 0",
+                    }}
+                  >
+                    {generatedReport}
+                  </pre>
+                  <button
+                    onClick={handleExportReport}
+                    className="secondary-button"
+                    style={{ padding: "6px 14px", fontSize: "12px" }}
+                  >
+                    <DownloadCloud size={14} style={{ marginRight: "6px" }} />
+                    Download Report (.md)
+                  </button>
+                </>
               )}
             </div>
           )}
