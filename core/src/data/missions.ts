@@ -38,20 +38,20 @@ export const missionCapstones: MissionCapstone[] = [
           "Calculate total orders per customer and classify diners with 0 orders in the last 60 days as CHURN_RISK.",
         hint: "Use COUNT(order_id) and CASE WHEN order_date < DATE('now', '-60 days') THEN 'CHURN_RISK' ELSE 'ACTIVE' END.",
         starterQuery:
-          "SELECT c.id, c.name, COUNT(o.id) as order_count FROM customers c LEFT JOIN orders o ON c.id = o.customer_id GROUP BY c.id, c.name;",
+          "SELECT c.customer_id, c.full_name, COUNT(o.order_id) as order_count FROM customers c LEFT JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id, c.full_name;",
         solutionQuery:
-          "SELECT c.id, c.name, COUNT(o.id) as order_count, CASE WHEN MAX(o.order_date) < '2024-05-01' THEN 'CHURN_RISK' ELSE 'ACTIVE' END as status FROM customers c LEFT JOIN orders o ON c.id = o.customer_id GROUP BY c.id, c.name;",
+          "SELECT c.customer_id, c.full_name, COUNT(o.order_id) as order_count, CASE WHEN MAX(o.order_date) < '2024-05-01' THEN 'CHURN_RISK' ELSE 'ACTIVE' END as status FROM customers c LEFT JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id, c.full_name;",
       },
       {
         stepNumber: 2,
         title: "Revenue Impact of Churned VIPs",
         objective:
           "Find total spent by customers in CHURN_RISK category who previously spent over $500.",
-        hint: "Filter aggregated results using HAVING SUM(o.amount) > 500.",
+        hint: "Filter aggregated results using HAVING SUM(o.total_amount) > 500.",
         starterQuery:
-          "SELECT c.id, c.name, SUM(o.amount) as total_spent FROM customers c JOIN orders o ON c.id = o.customer_id GROUP BY c.id, c.name HAVING total_spent > 500;",
+          "SELECT c.customer_id, c.full_name, SUM(o.total_amount) as total_spent FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id, c.full_name HAVING total_spent > 500;",
         solutionQuery:
-          "SELECT c.id, c.name, SUM(o.amount) as total_spent FROM customers c JOIN orders o ON c.id = o.customer_id GROUP BY c.id, c.name HAVING SUM(o.amount) > 500 ORDER BY total_spent DESC;",
+          "SELECT c.customer_id, c.full_name, SUM(o.total_amount) as total_spent FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id, c.full_name HAVING SUM(o.total_amount) > 500 ORDER BY total_spent DESC;",
       },
     ],
     executiveReportTemplate:
@@ -75,9 +75,9 @@ export const missionCapstones: MissionCapstone[] = [
           "Find orders where refund requests were processed more than once.",
         hint: "Group by order_id and count refund occurrences > 1.",
         starterQuery:
-          "SELECT order_id, COUNT(*) as refund_count FROM refunds GROUP BY order_id HAVING refund_count > 1;",
+          "SELECT order_id, COUNT(*) as refund_count FROM payments WHERE payment_status = 'Refunded' GROUP BY order_id HAVING refund_count > 1;",
         solutionQuery:
-          "SELECT order_id, COUNT(*) as refund_count, SUM(amount) as leaked_amount FROM refunds GROUP BY order_id HAVING COUNT(*) > 1;",
+          "SELECT order_id, COUNT(*) as refund_count, SUM(amount) as leaked_amount FROM payments WHERE payment_status = 'Refunded' GROUP BY order_id HAVING COUNT(*) > 1;",
       },
     ],
     executiveReportTemplate:
