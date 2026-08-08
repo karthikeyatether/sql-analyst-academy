@@ -2316,13 +2316,14 @@ details > p {
   gap: 10px;
 }
 .hint-scenario {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.5;
-  background: rgba(56, 217, 255, 0.04);
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid rgba(56, 217, 255, 0.1);
+  background: rgba(56, 217, 255, 0.03);
+  border: 1px solid rgba(56, 217, 255, 0.15);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--text-secondary); /* Fixed hardcoded #cbd5e1 */
+  line-height: 1.6;
+  margin-bottom: 10px;
 }
 .hint-prompt-box {
   background: rgba(255, 255, 255, 0.03);
@@ -2340,19 +2341,9 @@ details > p {
 .hint-prompt-box p {
   margin-top: 6px;
   font-size: 13.5px;
-  color: #f1f5f9;
+  color: var(--text); /* Fixed hardcoded #f1f5f9 */
   line-height: 1.6;
   font-weight: 450;
-}
-.hint-scenario {
-  background: rgba(56, 217, 255, 0.03);
-  border: 1px solid rgba(56, 217, 255, 0.15);
-  border-radius: 8px;
-  padding: 12px 14px;
-  font-size: 13px;
-  color: #cbd5e1;
-  line-height: 1.6;
-  margin-bottom: 10px;
 }
 .pg-hint-actions {
   display: flex;
