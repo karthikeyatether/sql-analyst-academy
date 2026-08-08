@@ -147,8 +147,8 @@ body,
   --border: rgba(0, 0, 0, 0.12);
 
   /* Softened glass panels */
-  --glass-panel-bg: rgba(241, 245, 249, 0.85); /* #f1f5f9 */
-  --glass-modal-bg: rgba(241, 245, 249, 0.95);
+  --glass-panel-bg: rgba(255, 255, 255, 0.65); /* Was 0.90, making it stark white */
+  --glass-modal-bg: rgba(255, 255, 255, 0.95);
   --glass-popover-bg: rgba(248, 250, 252, 0.98); /* #f8fafc */
   --glass-border: rgba(0, 0, 0, 0.08);
   --overlay-bg: rgba(15, 23, 42, 0.2);
@@ -252,7 +252,7 @@ body,
 :root.light .monaco-editor .margin,
 :root.light .monaco-editor-background,
 :root.light .monaco-editor .inputarea.ime-input {
-  background-color: #ffffff !important;
+  background-color: #f8fafc !important; /* Was #ffffff, which was too stark */
   color: #0f172a !important;
 }
 
@@ -1888,7 +1888,7 @@ a {
 .monaco-editor.vs .margin,
 .monaco-editor.vs .monaco-editor-background,
 .monaco-editor.vs .inputarea.ime-input {
-  background-color: #ffffff !important;
+  background-color: #f8fafc !important; /* Was #ffffff */
 }
 
 /* Keep line numbers visually separate from SQL text on wide displays. */
