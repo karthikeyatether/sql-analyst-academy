@@ -1,0 +1,150 @@
+:root {
+  /* Ultra-Premium SaaS Dark Theme (Vercel/Linear style) */
+  --bg-base: #000000;
+  --bg-panel: #0a0a0a;
+  --bg-elevated: #111111;
+  --bg-glass: rgba(10, 10, 10, 0.7);
+
+  --text-primary: #ededed;
+  --text-secondary: #a1a1aa;
+  --text-muted: #52525b;
+
+  /* Module Themes */
+  --theme-practice: #00e5ff; /* Cyan for technical IDE feel */
+  --theme-practice-bg: rgba(0, 229, 255, 0.1);
+
+  --theme-puzzle: #ff0055; /* Pink/Red for debugging/errors */
+  --theme-puzzle-bg: rgba(255, 0, 85, 0.1);
+
+  --theme-mock: #9d00ff; /* Purple for high-stakes assessment */
+  --theme-mock-bg: rgba(157, 0, 255, 0.1);
+
+  /* Standard Accents */
+  --accent-cyan: #0070f3; /* Using a deeper Vercel-like blue for generic accents */
+  --accent-cyan-hover: #3291ff;
+  --accent-purple: #7928ca;
+  --accent-purple-hover: #8a2be2;
+
+  --success: #10b981;
+  --warning: #f5a623;
+  --error: #ef4444;
+
+  --border-subtle: rgba(255, 255, 255, 0.1);
+  --border-focus: rgba(255, 255, 255, 0.2);
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.8);
+  --shadow-glow-practice: 0 0 20px rgba(0, 229, 255, 0.2);
+  --shadow-glow-puzzle: 0 0 20px rgba(255, 0, 85, 0.2);
+  --shadow-glow-mock: 0 0 20px rgba(157, 0, 255, 0.2);
+
+  --backdrop-blur: blur(16px);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Premium Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin: 0 0 0.5em 0;
+}
+
+a {
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--theme-practice);
+}
+
+/* Neobrutalist / SaaS Panel Utility */
+.premium-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  transition: all 0.2s ease;
+}
+
+.premium-panel:hover {
+  border-color: var(--border-focus);
+}
+
+/* Module Specific Panels */
+.panel-practice {
+  border-left: 3px solid var(--theme-practice);
+}
+.panel-practice:hover {
+  box-shadow: var(--shadow-glow-practice);
+  border-color: var(--theme-practice);
+}
+
+.panel-puzzle {
+  border-left: 3px solid var(--theme-puzzle);
+  font-family: "JetBrains Mono", monospace; /* Hacker feel */
+}
+.panel-puzzle:hover {
+  box-shadow: var(--shadow-glow-puzzle);
+  border-color: var(--theme-puzzle);
+}
+
+.panel-mock {
+  border-top: 3px solid var(--theme-mock);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg); /* Certification badge feel */
+}
+.panel-mock:hover {
+  box-shadow: var(--shadow-glow-mock);
+  border-color: var(--theme-mock);
+}
+
+/* Background utilities */
+.bg-grid {
+  background-size: 30px 30px;
+  background-image: radial-gradient(
+    circle at center,
+    var(--border-subtle) 1px,
+    transparent 1px
+  );
+}
+
+/* Base Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}

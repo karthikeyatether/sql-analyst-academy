@@ -11,48 +11,48 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Type-check, Format, Test, Build & E2E
+  build-and-test:
+    name: Quality Gates, Build & E2E Tests
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: core
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
+          cache-dependency-path: core/package-lock.json
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm ci
 
-      - name: Security audit
+      - name: Security Audit
         run: npm audit --omit=dev --audit-level=high
 
-      - name: Check code formatting
-        run: npm run format:check
+      - name: Code Formatting & ESLint Check
+        run: |
+          npm run format:check
+          npm run lint
 
-      - name: Run ESLint quality gate
-        run: npm run lint
-
-      - name: Run SQL validation tests
+      - name: Run SQL Validation Tests
         run: npm test
 
-      - name: Type-check & production build
+      - name: Type-Check & Production Build
         run: npm run build
 
-      - name: Pre-compress assets (Gzip & Brotli)
-        run: node precompress.cjs
-
-      - name: Install Playwright Browsers
+      - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Run Playwright E2E tests against fresh production build
+      - name: Run Playwright E2E Tests
         run: npm run test:e2e
 
-      - name: Validate build artifacts
+      - name: Validate Build Artifacts
         run: |
           test -f dist/index.html
           test -f dist/index.html.gz
