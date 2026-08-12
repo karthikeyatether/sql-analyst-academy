@@ -70,6 +70,9 @@ export function PremiumPracticeView() {
             gap: "16px",
             marginBottom: "32px",
             overflowX: "auto",
+            scrollBehavior: "smooth",
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "none",
             paddingBottom: "8px",
           }}
         >

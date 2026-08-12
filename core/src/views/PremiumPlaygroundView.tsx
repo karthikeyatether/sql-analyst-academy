@@ -262,9 +262,18 @@ export function PremiumPlaygroundView() {
               fontSize: 16,
               fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
               padding: { top: 24, bottom: 24 },
-              scrollbar: { vertical: "hidden", horizontal: "hidden" },
+              scrollbar: { 
+                vertical: "auto", 
+                horizontal: "auto",
+                verticalScrollbarSize: 10,
+                horizontalScrollbarSize: 10
+              },
               overviewRulerBorder: false,
               hideCursorInOverviewRuler: true,
+              mouseWheelScrollSensitivity: 2,
+              fastScrollSensitivity: 7,
+              smoothScrolling: true,
+              scrollBeyondLastLine: false,
             }}
           />
         </div>
