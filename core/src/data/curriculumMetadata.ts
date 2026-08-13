@@ -225,56 +225,50 @@ LIMIT 10;`,
   },
 
   2: {
-    conceptExplanation: `WHERE filters ROWS before any grouping or selection happens. It is your first
-      line of defence against processing unnecessary data.
+    conceptExplanation: `The WHERE clause is like a bouncer at a club door — it inspects every single row in your table and only lets through rows that satisfy your exact rules.
 
-Syntax:
+BASIC SYNTAX STRUCTURE:
 
   SELECT columns
-
   FROM table
-
   WHERE condition;
 
-Comparison operators:
+1. COMPARISON OPERATORS (Comparing single values):
 
-  =    equal to           WHERE status = 'Delivered'
+  =    Equal to           WHERE status = 'Delivered'
+  !=   Not equal to       WHERE status != 'Cancelled'
+  >    Greater than       WHERE total_amount > 1000
+  >=   Greater or equal   WHERE total_amount >= 500
+  <    Less than          WHERE total_amount < 200
+  <=   Less or equal      WHERE total_amount <= 100
 
-  !=   not equal          WHERE status != 'Cancelled'
+2. COMBINING CONDITIONS (AND / OR / NOT):
 
-  >    greater than       WHERE total_amount > 1000
+  AND  — Both rules MUST be true (e.g., Delivered AND amount > 1000)
+  OR   — At least ONE rule must be true (e.g., city = 'Mumbai' OR city = 'Delhi')
+  NOT  — Inverts a rule (e.g., NOT status = 'Cancelled')
 
-  >=   greater or equal   WHERE total_amount >= 500
+3. RANGE & LIST OPERATORS (Beginner-Friendly Breakdown):
 
-  <    less than
+  • BETWEEN min AND max — Filters values inside an INCLUSIVE range (includes min and max).
+    Example: WHERE total_amount BETWEEN 500 AND 2000  (Matches amounts from $500 up to $2000).
 
-  <=   less or equal
+  • IN ('val1', 'val2') — A clean shortcut for matching any item in a list (replaces repeating multiple OR conditions).
+    Example: WHERE city IN ('Mumbai', 'Delhi', 'Bengaluru')
 
-Logical operators (combine conditions):
+  • LIKE 'pattern%' — Matches text patterns using wildcards (% means 0 or more characters).
+    Example: WHERE full_name LIKE 'Amit%'  (Matches names starting with 'Amit' like Amitabh, Amita).
 
-  AND  — both conditions must be true
+  • IS NULL / IS NOT NULL — Checks for missing or unknown data values (NULL means no value was entered).
+    Example: WHERE discount_amount IS NULL
 
-  OR   — at least one condition must be true
+4. CRITICAL BEGINNER RULE (Quotes vs Numbers):
 
-  NOT  — reverses the condition
+  • Text values MUST be enclosed in 'single quotes'.
+  • Numbers DO NOT use quotes.
 
-Range and list operators:
-
-  BETWEEN x AND y   WHERE total_amount BETWEEN 500 AND 2000
-
-  IN (...)          WHERE city IN ('Mumbai', 'Delhi', 'Bengaluru')
-
-  LIKE 'pattern'    WHERE full_name LIKE 'Amit%'  (% = any characters)
-
-  IS NULL           WHERE discount_amount IS NULL
-
-  IS NOT NULL       WHERE discount_amount IS NOT NULL
-
-Important: String values need SINGLE quotes. Numbers do not.
-
-  WHERE city = 'Mumbai'   ✓ correct
-
-  WHERE city = Mumbai     ✗ error`,
+  WHERE city = 'Mumbai'   ✓ correct  (Searching for text 'Mumbai')
+  WHERE city = Mumbai     ✗ error    (SQL treats unquoted Mumbai as a column name!)`,
 
     visualExplanation: `Imagine the full orders table has 1000 rows. Without WHERE, SELECT returns all 1000.
 
