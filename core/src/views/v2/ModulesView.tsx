@@ -22,6 +22,7 @@ import { DoVsDontCard } from "../../components/DoVsDontCard";
 import SqlExecutionPipeline from "../../components/SqlExecutionPipeline";
 import InlineMicroQuiz from "../../components/InlineMicroQuiz";
 import DataFlowVisualizer from "../../components/DataFlowVisualizer";
+import StoryboardNoteTaker from "../../components/StoryboardNoteTaker";
 import type { ViewId, PlaygroundMode } from "../../types";
 
 interface ModulesViewProps {
@@ -342,6 +343,12 @@ function ModulesView({
       </div>
 
       <div className="lesson-body">{renderLessonBody()}</div>
+
+      {/* Persistent note-taker & text highlighter sidebar */}
+      <StoryboardNoteTaker
+        moduleId={activeModule.id}
+        moduleTitle={activeModule.title}
+      />
     </div>
   );
 }
