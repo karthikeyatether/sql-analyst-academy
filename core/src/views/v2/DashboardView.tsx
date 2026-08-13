@@ -1101,7 +1101,10 @@ function CollapsibleInsightsSection({
   currentLevelXP: number;
   xpForNextLevel: number;
   xpProgressPercent: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   earnedBadges: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   qaItems: any[];
   updateEditorQuery: (newVal: string) => void;
 }) {

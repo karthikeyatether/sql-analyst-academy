@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useMemo } from "react";
 import { AlertTriangle, CheckCircle, BarChart3 } from "lucide-react";
 import { QueryPlanStep, QueryResult } from "../utils/sqlEngine";

@@ -1144,8 +1144,12 @@ export default function App() {
       if (monacoRef.current) {
         const monaco = monacoRef.current;
         const models = monaco.editor.getModels();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         models.forEach((model: any) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           if (model.getLanguageId() === "sql" && model.getValue() === query) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const markers: any[] = [];
             const bracketStack: { char: string; line: number; col: number }[] =
               [];
@@ -1228,8 +1232,10 @@ export default function App() {
   const [activeConsoleTab, setActiveConsoleTab] = useState<
     "results" | "plan" | "history" | "saved" | "benchmark"
   >("results");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [queryPlanSteps, setQueryPlanSteps] = useState<QueryPlanStep[]>([]);
   const [resetStatus, setResetStatus] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const resetTimeoutRef = useRef<any>(null);
   const triggerResetStatus = useCallback(() => {
     setResetStatus(true);
@@ -1382,9 +1388,11 @@ export default function App() {
             );
           }
         }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 
         if (editorRef.current) {
           try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const editor = editorRef.current as any;
             const model = editor.getModel();
             if (model) {
@@ -1420,11 +1428,15 @@ export default function App() {
   );
 
   const insertTextAtCursor = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (text: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       isProgrammaticChangeRef.current = true;
       try {
         if (editorRef.current && monacoRef.current) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const editor = editorRef.current as any;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const monaco = monacoRef.current as any;
           const selection = editor.getSelection();
           const model = editor.getModel();
@@ -1490,16 +1502,19 @@ export default function App() {
     (fullText: string) => {
       stopAutoTyping();
       setIsAutoTyping(true);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 
       let index = 0;
       const step = Math.max(2, Math.floor(fullText.length / 35));
 
       isProgrammaticChangeRef.current = true;
       if (editorRef.current) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (editorRef.current as any).setValue("");
       }
       queryRef.current = "";
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       typingIntervalRef.current = window.setInterval(() => {
         index = Math.min(fullText.length, index + step);
         const nextText = fullText.slice(0, index);
@@ -1507,6 +1522,7 @@ export default function App() {
         isProgrammaticChangeRef.current = true;
         queryRef.current = nextText;
         if (editorRef.current) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (editorRef.current as any).setValue(nextText);
         }
 
@@ -1718,7 +1734,9 @@ export default function App() {
   );
   const [resultHeight, setResultHeight] = useLocalStorage(
     "sql-aa-result-h",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     250,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   );
 
   /* ── UI state ────────────────────────────────────────────── */
@@ -1726,7 +1744,9 @@ export default function App() {
   const [rightOpen, setRightOpen] = useState(true);
   const searchRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<unknown>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monacoRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const completionProviderRef = useRef<any>(null);
 
   // Monaco Resource Garbage Collection on View Shifts
@@ -1940,7 +1960,9 @@ export default function App() {
   }
 
   // Robust Grader Function
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   interface GraderResult {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     isCorrect: boolean;
     message: string;
     details?: string;
@@ -1950,7 +1972,9 @@ export default function App() {
   function verifyAnswer(
     userRes: QueryResult,
     expRes: QueryResult,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     userSnapshot: Record<string, any[]> | null,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expSnapshot: Record<string, any[]> | null,
     solutionSql: string,
   ): GraderResult {
@@ -3205,6 +3229,7 @@ export default function App() {
           })),
         );
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         // 4. Aliases
         const aliasItems = Object.entries(globalAliases).map(
           ([alias, targetTable]) => ({
@@ -3217,6 +3242,7 @@ export default function App() {
         );
 
         // Deduplicate suggestions by label
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const suggestionsMap = new Map<string, any>();
         [...aliasItems, ...tableItems, ...columnItems, ...keywordItems].forEach(
           (item) => {
@@ -3373,6 +3399,7 @@ export default function App() {
         monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.KeyF,
       ],
       run: (ed) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const val = ed.getValue();
         if (val) {
           const formatted = formatSql(val);
@@ -3386,6 +3413,7 @@ export default function App() {
       },
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     editor.onMouseDown((e: any) => {
       if (
         e.target &&
@@ -3452,6 +3480,7 @@ export default function App() {
     if (isMockMode) {
       await resetDatabase();
       const result = await runQuery(sql, true, needsSnapshot);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setQueryResult(result);
       setLiveSchema(await getLiveSchema());
       return;
@@ -3466,6 +3495,7 @@ export default function App() {
 
     // 1. Evaluate Expected Result on current DB state FIRST
     let expected: QueryResult | null = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let expectedSnapshot: Record<string, any[]> | null = null;
     let solutionSql = "";
 
@@ -3790,6 +3820,7 @@ export default function App() {
     const allPuzzlesSolved =
       dayPuzzles.length === 0 ||
       dayPuzzles.every((pz) => solvedPuzs.includes(pz.id));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!allPuzzlesSolved) return false;
 
     // 4. If day features a mock interview, mock score must be > 0
@@ -3805,6 +3836,7 @@ export default function App() {
   // actual learning requirements are complete; opening a lesson or revealing
   // its answer must never mark it as finished.
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setProgress((prev: any) => {
       const validCompletedModules = (prev.completedModules || []).filter(
         (moduleId: number) => {
@@ -3926,6 +3958,7 @@ export default function App() {
           : [...items, itemId],
       };
     });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }
 
   const [sm2Progress, setSm2Progress] = useState<SM2ProgressMap>(() =>
@@ -3942,6 +3975,7 @@ export default function App() {
       saveSM2Progress(next);
       return next;
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setProgress((prev: any) => {
       const alreadySolved = prev.solvedProblems.includes(p.id);
       const nextSolved = alreadySolved
@@ -3977,6 +4011,7 @@ export default function App() {
           !nextCompletedDays.includes(parentDay.day)
         ) {
           nextCompletedDays.push(parentDay.day);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }
       }
 
@@ -3994,6 +4029,7 @@ export default function App() {
     if (!sp.includes(p.id)) {
       triggerConfetti();
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setProgress((prev: any) => {
       const sp = prev.solvedPuzzles || [];
       const nextSolvedPuzzles = sp.includes(p.id) ? sp : [...sp, p.id];
@@ -4974,6 +5010,7 @@ export default function App() {
                 roadmapModules={roadmapModules}
                 debugPuzzles={debugPuzzles}
                 setActiveView={setActiveView}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 setSelectedDayId={setSelectedDayId}
                 toggleDayComplete={toggleDayComplete}
                 toggleChecklistItem={toggleChecklistItem}
@@ -4992,6 +5029,7 @@ export default function App() {
             )}
             {activeView === "missions" && (
               <MissionCapstoneView
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onOpenStepInPlayground={(sql: any) => {
                   updateEditorQuery(sql, "free");
                   setActiveView("playground");

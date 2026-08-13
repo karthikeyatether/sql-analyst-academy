@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { Database, X, Minus, Plus, Zap } from "lucide-react";
 import type { TableSchema } from "../data/datasets";

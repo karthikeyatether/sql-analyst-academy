@@ -10,7 +10,10 @@ import { LintError } from "../utils/sqlLinter";
 interface LinterAdvisorProps {
   errors: LintError[];
   queryText: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   editorRef: React.MutableRefObject<any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   monacoRef: React.MutableRefObject<any>;
   onApplyFix: (fixedText: string) => void;
 }

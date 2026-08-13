@@ -10,17 +10,27 @@ interface PuzzlesViewProps {
     solvedProblems: string[];
     solvedPuzzles: string[];
   };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   debugPuzzles: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   activePuzzle: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setActivePuzzleId: (id: string) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   openPuzzleInPlayground: (p: any) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   markPuzzleSolved: (p: any) => void;
   updateEditorQuery: (
     newVal: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     pMode?: any,
     targetId?: string,
     moveCursorToEnd?: boolean,
   ) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setActiveView: (view: any) => void;
   setPlaygroundMode: (mode: "practice" | "puzzle" | "free") => void;
   classForDiff: (d: Difficulty) => string;

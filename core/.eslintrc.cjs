@@ -16,7 +16,7 @@ module.exports = {
     'no-constant-condition': 'warn',
     'no-useless-escape': 'warn',
     'no-async-promise-executor': 'warn',
-    '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
   },
 };

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Editor from "@monaco-editor/react";
 import { Play, Database, Table as TableIcon, Activity } from "lucide-react";

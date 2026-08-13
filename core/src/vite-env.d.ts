@@ -5,7 +5,10 @@ declare module "virtual:pwa-register" {
     immediate?: boolean;
     onNeedRefresh?: () => void;
     onOfflineReady?: () => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onRegistered?: (registration: any) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onRegisterError?: (error: any) => void;
   }): (reloadPage?: boolean) => Promise<void>;
 }

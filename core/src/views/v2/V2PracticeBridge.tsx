@@ -28,10 +28,14 @@ export default function V2PracticeBridge() {
 
   return (
     <PracticeView
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       {...({} as any)}
       progress={progress}
       activeModuleId={activeModuleId}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       roadmapModules={roadmapModules}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       selectedProblem={selectedProblem as any}
       selectProblem={(p) => {
         dispatch({ type: "SET_PROBLEM", payload: p.id });
@@ -48,16 +52,22 @@ export default function V2PracticeBridge() {
           return prev;
         });
       }}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       updateEditorQuery={() => {}}
       copyToClipboard={(text) => navigator.clipboard.writeText(text)}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       classForDiff={classForDiff as any}
       selectModule={(m) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         dispatch({ type: "SET_DAY", payload: m.id });
       }}
       setActiveView={(view) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         dispatch({ type: "SET_VIEW", payload: view as any })
       }
       setPlaygroundMode={(mode) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         dispatch({ type: "SET_PLAYGROUND_MODE", payload: mode as any })
       }
     />

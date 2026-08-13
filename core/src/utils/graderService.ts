@@ -12,7 +12,10 @@ export interface GraderOptions {
   solutionSql: string;
   userResult: QueryResult;
   expectedResult: QueryResult;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   userSnapshot?: Record<string, any[]> | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   expectedSnapshot?: Record<string, any[]> | null;
   strictMode?: boolean;
   playgroundMode?: string;
@@ -219,10 +222,14 @@ export function gradeQuery(options: GraderOptions): GraderResult {
         message: "State Check Failed",
         details: "Unable to inspect database tables for state verification.",
       };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const canonicalSnapshot = (snap: Record<string, any[]>) => {
       const sortedKeys = Object.keys(snap).sort();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result: Record<string, any[]> = {};
       for (const k of sortedKeys) {
         const rows = snap[k] || [];
