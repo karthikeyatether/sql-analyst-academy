@@ -5,15 +5,31 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+function copyIncremental(src, dest) {
+  if (!fs.existsSync(src)) return;
+  const stats = fs.statSync(src);
+  if (stats.isDirectory()) {
+    if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
+    for (const item of fs.readdirSync(src)) {
+      copyIncremental(path.join(src, item), path.join(dest, item));
+    }
+  } else {
+    if (!fs.existsSync(dest) || fs.statSync(dest).mtimeMs < stats.mtimeMs) {
+      fs.copyFileSync(src, dest);
+    }
+  }
+}
+
 async function build() {
   const distDir = path.resolve(__dirname, "dist");
   const assetsDir = path.join(distDir, "assets");
+  const workersDir = path.join(distDir, "workers");
 
-  // 1. Clean dist directory
-  if (fs.existsSync(distDir)) {
-    fs.rmSync(distDir, { recursive: true, force: true });
-  }
+  // 1. Clean build output directories (without wiping static public assets)
+  if (fs.existsSync(assetsDir)) fs.rmSync(assetsDir, { recursive: true, force: true });
+  if (fs.existsSync(workersDir)) fs.rmSync(workersDir, { recursive: true, force: true });
   fs.mkdirSync(assetsDir, { recursive: true });
+  fs.mkdirSync(workersDir, { recursive: true });
 
   // 2. Run esbuild
   const startTime = Date.now();
@@ -73,10 +89,10 @@ async function build() {
 
   const buildTime = Date.now() - startTime;
 
-  // 3. Copy public files (Optimized using native cpSync)
+  // 3. Copy public files incrementally (skip unchanged Monaco editor & WASM assets)
   const publicDir = path.resolve(__dirname, "public");
   if (fs.existsSync(publicDir)) {
-    fs.cpSync(publicDir, distDir, { recursive: true });
+    copyIncremental(publicDir, distDir);
   }
 
   const serviceWorkerPath = path.join(distDir, "sw.js");
@@ -106,7 +122,7 @@ async function build() {
 
   fs.writeFileSync(path.join(distDir, "index.html"), html, "utf-8");
 
-  console.log(`\n⚡ esbuild finished in ${buildTime}ms!`);
+  console.log(`\n? esbuild finished in ${buildTime}ms!`);
 }
 
 build().catch((err) => {
