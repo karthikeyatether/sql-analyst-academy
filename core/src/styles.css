@@ -3019,7 +3019,9 @@ details > summary:focus-visible {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(4, 6, 10, 0.85);
+  background: rgba(4, 6, 10, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3027,6 +3029,43 @@ details > summary:focus-visible {
   animation: fadeIn 0.25s ease-out;
   padding: 16px;
   box-sizing: border-box;
+}
+
+kbd {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.03) 100%);
+  border: 1px solid var(--border);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+  padding: 3px 7px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cyan);
+}
+
+.search-type-pill {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.search-type-pill.module {
+  background: rgba(56, 217, 255, 0.12);
+  color: var(--cyan);
+  border: 1px solid rgba(56, 217, 255, 0.25);
+}
+.search-type-pill.problem {
+  background: rgba(48, 230, 149, 0.12);
+  color: var(--emerald);
+  border: 1px solid rgba(48, 230, 149, 0.25);
+}
+.search-type-pill.puzzle {
+  background: rgba(155, 124, 255, 0.12);
+  color: var(--violet);
+  border: 1px solid rgba(155, 124, 255, 0.25);
 }
 
 .custom-modal-window {

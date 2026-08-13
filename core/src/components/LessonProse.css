@@ -55,6 +55,18 @@
   color: var(--text);
 }
 
+.lp-code-success {
+  background: rgba(48, 230, 149, 0.06) !important;
+  border: 1px solid rgba(48, 230, 149, 0.3) !important;
+  color: #a7f3d0 !important;
+}
+
+.lp-code-error {
+  background: rgba(244, 63, 94, 0.06) !important;
+  border: 1px solid rgba(244, 63, 94, 0.3) !important;
+  color: #fecdd3 !important;
+}
+
 .markdown-body ul,
 .markdown-body ol {
   margin-bottom: 16px;

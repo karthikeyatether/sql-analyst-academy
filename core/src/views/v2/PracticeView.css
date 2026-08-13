@@ -196,18 +196,22 @@
   letter-spacing: 0.03em;
 }
 .difficulty-pill.easy {
-  background: rgba(48, 230, 149, 0.15);
-  color: var(--emerald);
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  color: #34d399;
 }
 .difficulty-pill.medium {
-  background: rgba(255, 190, 61, 0.15);
-  color: var(--amber);
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  color: #fbbf24;
 }
 .difficulty-pill.hard {
-  background: rgba(255, 96, 133, 0.15);
-  color: var(--rose);
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  color: #f43f5e;
 }
 .difficulty-pill.expert {
-  background: rgba(155, 124, 255, 0.15);
-  color: var(--violet);
+  background: rgba(192, 132, 252, 0.12);
+  border: 1px solid rgba(192, 132, 252, 0.3);
+  color: #c084fc;
 }

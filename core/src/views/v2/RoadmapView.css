@@ -350,6 +350,16 @@
   overflow-x: auto;
   line-height: 1.6;
 }
+.lesson-prose .lp-code.lp-code-success {
+  background: rgba(48, 230, 149, 0.06);
+  border: 1px solid rgba(48, 230, 149, 0.3);
+  color: #a7f3d0;
+}
+.lesson-prose .lp-code.lp-code-error {
+  background: rgba(244, 63, 94, 0.06);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  color: #fecdd3;
+}
 .lesson-prose .lp-heading {
   font-size: 13px;
   font-weight: 700;

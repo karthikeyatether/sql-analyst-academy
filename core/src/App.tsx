@@ -4933,6 +4933,21 @@ function LessonProse({ text }: { text: string }) {
     // SQL code line
     if (SQL_KEYWORDS.test(trimmed) || trimmed.startsWith("`")) {
       flushPara();
+      const isSuccess = /✓|\bcorrect\b/i.test(trimmed);
+      const isError = /✗|\b(error|incorrect)\b/i.test(trimmed) || /\bX\s+error\b/i.test(trimmed);
+
+      if (isSuccess || isError) {
+        flushCode();
+        elements.push(
+          <pre
+            key={`code-${elements.length}`}
+            className={`lp-code ${isSuccess ? "lp-code-success" : "lp-code-error"}`}
+          >
+            {trimmed}
+          </pre>,
+        );
+        continue;
+      }
       codeBuffer.push(raw.trimStart());
       continue;
     }

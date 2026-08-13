@@ -79,7 +79,7 @@ export function TopBar({
                   key={`${item.type}-${item.id}`}
                   onClick={() => handleSearchPick(item)}
                 >
-                  <span>{item.type}</span>
+                  <span className={`search-type-pill ${item.type}`}>[{item.type}]</span>
                   <strong>{item.label}</strong>
                 </button>
               ))}
