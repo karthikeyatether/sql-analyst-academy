@@ -131,11 +131,13 @@ async function initializeDatabase(): Promise<void> {
   if (isWorkerSupported()) {
     if (!workerInstance) {
       if (import.meta.env.VITE_BUILD_TOOL === "esbuild") {
-        workerInstance = new Worker("/workers/sqlWorker.js", { type: "module" });
+        workerInstance = new Worker("/workers/sqlWorker.js", {
+          type: "module",
+        });
       } else {
         workerInstance = new Worker(
           new URL("../workers/sqlWorker.ts", import.meta.url),
-          { type: "module" }
+          { type: "module" },
         );
       }
 
