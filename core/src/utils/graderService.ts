@@ -222,7 +222,7 @@ export function gradeQuery(options: GraderOptions): GraderResult {
         message: "State Check Failed",
         details: "Unable to inspect database tables for state verification.",
       };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

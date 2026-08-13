@@ -1045,11 +1045,6 @@ a {
   will-change: scroll-position;
 }
 
-
-
-
-
-
 /* MOCKS */
 .mock-grid {
   display: grid;

@@ -732,10 +732,7 @@ export default function App() {
             );
           }
           if (backup.history && Array.isArray(backup.history)) {
-            setStorageItem(
-              "sql-aa-history",
-              JSON.stringify(backup.history),
-            );
+            setStorageItem("sql-aa-history", JSON.stringify(backup.history));
           }
           if (backup.saved && Array.isArray(backup.saved)) {
             setStorageItem("sql-aa-saved", JSON.stringify(backup.saved));
@@ -1367,10 +1364,7 @@ export default function App() {
               query: newVal,
               starterQueryUsed: prob ? prob.starterQuery : "",
             };
-            setStorageItem(
-              "sql-aa-problem-drafts",
-              JSON.stringify(drafts),
-            );
+            setStorageItem("sql-aa-problem-drafts", JSON.stringify(drafts));
           }
         } else if (mode === "puzzle") {
           const id = targetId ?? activePuzzleId;
@@ -1383,13 +1377,11 @@ export default function App() {
               query: newVal,
               flawedQueryUsed: puzzle ? puzzle.flawedQuery : "",
             };
-            setStorageItem(
-              "sql-aa-puzzle-drafts",
-              JSON.stringify(drafts),
-            );
+            setStorageItem("sql-aa-puzzle-drafts", JSON.stringify(drafts));
           }
         }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
         if (editorRef.current) {
           try {
@@ -1471,10 +1463,7 @@ export default function App() {
             const updatedValue = editor.getValue();
             setQuery(updatedValue);
             queryRef.current = updatedValue;
-            setStorageItem(
-              "sql-aa-active-query",
-              JSON.stringify(updatedValue),
-            );
+            setStorageItem("sql-aa-active-query", JSON.stringify(updatedValue));
           } else {
             setQuery((q) => q + text);
           }
@@ -1503,7 +1492,8 @@ export default function App() {
     (fullText: string) => {
       stopAutoTyping();
       setIsAutoTyping(true);
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
       let index = 0;
       const step = Math.max(2, Math.floor(fullText.length / 35));
@@ -1566,10 +1556,7 @@ export default function App() {
               query: v,
               starterQueryUsed: prob ? prob.starterQuery : "",
             };
-            setStorageItem(
-              "sql-aa-problem-drafts",
-              JSON.stringify(drafts),
-            );
+            setStorageItem("sql-aa-problem-drafts", JSON.stringify(drafts));
           } else if (playgroundMode === "puzzle" && activePuzzleId) {
             const drafts = JSON.parse(
               localStorage.getItem("sql-aa-puzzle-drafts") || "{}",
@@ -1579,10 +1566,7 @@ export default function App() {
               query: v,
               flawedQueryUsed: puzzle ? puzzle.flawedQuery : "",
             };
-            setStorageItem(
-              "sql-aa-puzzle-drafts",
-              JSON.stringify(drafts),
-            );
+            setStorageItem("sql-aa-puzzle-drafts", JSON.stringify(drafts));
           } else {
             setStorageItem("sql-aa-freeform-query", JSON.stringify(v));
           }
@@ -1737,7 +1721,7 @@ export default function App() {
     "sql-aa-result-h",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     250,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   );
 
   /* ── UI state ────────────────────────────────────────────── */
@@ -2778,10 +2762,7 @@ export default function App() {
 
         setQuery(initialQuery);
         queryRef.current = initialQuery;
-        setStorageItem(
-          "sql-aa-active-query",
-          JSON.stringify(initialQuery),
-        );
+        setStorageItem("sql-aa-active-query", JSON.stringify(initialQuery));
 
         setQueryResult(await runQuery(initialQuery));
         setLiveSchema(await getLiveSchema());
@@ -3585,10 +3566,7 @@ export default function App() {
           );
           attempts[selectedProblem.id] =
             (attempts[selectedProblem.id] || 0) + 1;
-          setStorageItem(
-            "sql-aa-failed-attempts",
-            JSON.stringify(attempts),
-          );
+          setStorageItem("sql-aa-failed-attempts", JSON.stringify(attempts));
         }
       }
     } else {
@@ -3959,7 +3937,7 @@ export default function App() {
           : [...items, itemId],
       };
     });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }
 
   const [sm2Progress, setSm2Progress] = useState<SM2ProgressMap>(() =>
@@ -4012,7 +3990,7 @@ export default function App() {
           !nextCompletedDays.includes(parentDay.day)
         ) {
           nextCompletedDays.push(parentDay.day);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }
       }
 
@@ -4413,8 +4391,40 @@ export default function App() {
     <>
       <MainLayout
         sidebarOpen={sidebarOpen}
-        sideNavProps={{ sidebarOpen, setSidebarOpen, navItems, activeView, setActiveView, enterFreeformPlayground, setSelectedDayId, activeDayWhereLeftOff, handleSidebarNavKeyDown, currentLevel, totalXP, xpProgressPercent, readiness, progress, totalModules, totalProblems }}
-        topBarProps={{ sidebarOpen, setSidebarOpen, searchRef, searchTerm, setSearchTerm, filteredSearch, handleSearchPick, theme, themeMenuOpen, setThemeMenuOpen, cycleTheme, THEME_OPTIONS, setTheme, readiness }}
+        sideNavProps={{
+          sidebarOpen,
+          setSidebarOpen,
+          navItems,
+          activeView,
+          setActiveView,
+          enterFreeformPlayground,
+          setSelectedDayId,
+          activeDayWhereLeftOff,
+          handleSidebarNavKeyDown,
+          currentLevel,
+          totalXP,
+          xpProgressPercent,
+          readiness,
+          progress,
+          totalModules,
+          totalProblems,
+        }}
+        topBarProps={{
+          sidebarOpen,
+          setSidebarOpen,
+          searchRef,
+          searchTerm,
+          setSearchTerm,
+          filteredSearch,
+          handleSearchPick,
+          theme,
+          themeMenuOpen,
+          setThemeMenuOpen,
+          cycleTheme,
+          THEME_OPTIONS,
+          setTheme,
+          readiness,
+        }}
         pageContentProps={{
           className: `page-content ${
             [
@@ -4432,282 +4442,282 @@ export default function App() {
           id: "main-scroll-container",
         }}
       >
-          <Suspense
-            fallback={
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: "100%",
-                  width: "100%",
-                  flexDirection: "column",
-                  gap: "1rem",
-                  color: "var(--muted)",
-                }}
-              >
-                <div className="spinner"></div>
-                <p>Loading module...</p>
-              </div>
-            }
-          >
-            {activeView === "dashboard" && (
-              <DashboardView
-                progress={progress}
-                learningRoadmap={learningRoadmap}
-                roadmapModules={roadmapModules}
-                debugPuzzles={debugPuzzles}
-                streak={streak}
-                setActiveView={setActiveView}
-                setSelectedDayId={setSelectedDayId}
-                readiness={readiness}
-                totalModules={totalModules}
-                totalProblems={totalProblems}
-                totalXP={totalXP}
-                currentLevel={currentLevel}
-                xpProgressPercent={xpProgressPercent}
-                xpRemaining={xpRemaining}
-                earnedBadges={earnedBadges}
-                qaItems={qaItems}
-                enterFreeformPlayground={enterFreeformPlayground}
-                selectModule={selectModule}
-                updateEditorQuery={updateEditorQuery}
-                toggleChecklistItem={toggleChecklistItem}
-                next={next}
-              />
-            )}
-            {activeView === "roadmap" && (
-              <RoadmapView
-                progress={progress}
-                learningRoadmap={learningRoadmap}
-                roadmapModules={roadmapModules}
-                setSelectedDayId={setSelectedDayId}
-                setActiveView={setActiveView}
-                toggleDayComplete={toggleDayComplete}
-                selectModule={selectModule}
-                openInPlayground={openInPlayground}
-                debugPuzzles={debugPuzzles}
-                setActivePuzzleId={setActivePuzzleId}
-                setPlaygroundMode={setPlaygroundMode}
-                getSavedPuzzleQuery={getSavedPuzzleQuery}
-                updateEditorQuery={updateEditorQuery}
-                stopAutoTyping={stopAutoTyping}
-              />
-            )}
-            {activeView === "modules" && (
-              <ModulesView
-                activeModule={activeModule}
-                roadmapModules={roadmapModules}
-                progress={progress}
-                selectModule={selectModule}
-                setActiveView={setActiveView}
-                openInPlayground={openInPlayground}
-                markModuleDone={markModuleDone}
-                markProblemSolved={markProblemSolved}
-                updateEditorQuery={updateEditorQuery}
-                copyToClipboard={copyToClipboard}
-                classForDiff={classForDiff}
-              />
-            )}
-            {activeView === "practice" && (
-              <PracticeView
-                progress={progress}
-                activeModuleId={activeModuleId}
-                roadmapModules={roadmapModules}
-                selectedProblem={selectedProblem}
-                selectProblem={selectProblem}
-                openInPlayground={openInPlayground}
-                markProblemSolved={markProblemSolved}
-                updateEditorQuery={updateEditorQuery}
-                copyToClipboard={copyToClipboard}
-                classForDiff={classForDiff}
-                selectModule={selectModule}
-                setActiveView={setActiveView}
-                setPlaygroundMode={setPlaygroundMode}
-              />
-            )}
-            {activeView === "playground" && (
-              <PlaygroundView
-                progress={progress}
-                selectedProblem={selectedProblem}
-                playgroundMode={playgroundMode}
-                setPlaygroundMode={setPlaygroundMode}
-                roadmapModules={roadmapModules}
-                tableSchemas={tableSchemas}
-                datasetDomains={datasetDomains}
-                rowLimit={rowLimit}
-                setRowLimit={setRowLimit}
-                sqlUpperKeywords={sqlUpperKeywords}
-                setSqlUpperKeywords={setSqlUpperKeywords}
-                editorFontSize={editorFontSize}
-                setEditorFontSize={setEditorFontSize}
-                editorWordWrap={editorWordWrap}
-                setEditorWordWrap={setEditorWordWrap}
-                editorMinimap={editorMinimap}
-                setEditorMinimap={setEditorMinimap}
-                editorFontFamily={editorFontFamily}
-                setEditorFontFamily={setEditorFontFamily}
-                editorTabSize={editorTabSize}
-                setEditorTabSize={setEditorTabSize}
-                editorTheme={editorTheme}
-                setEditorTheme={setEditorTheme}
-                theme={theme}
-                setTheme={setTheme}
-                rightOpen={rightOpen}
-                setRightOpen={setRightOpen}
-                query={query}
-                setQuery={setQuery}
-                queryResult={queryResult}
-                setQueryResult={setQueryResult}
-                expectedResult={expectedResult}
-                setExpectedResult={setExpectedResult}
-                graderFeedback={graderFeedback}
-                setGraderFeedback={setGraderFeedback}
-                runCurrentQuery={runCurrentQuery}
-                copyToClipboard={copyToClipboard}
-                openInPlayground={openInPlayground}
-                markProblemSolved={markProblemSolved}
-                handleRightNavKeyDown={handleRightNavKeyDown}
-                classForDiff={classForDiff}
-                editorRef={editorRef}
-                queryRef={queryRef}
-                handleBeforeMount={handleBeforeMount}
-                handleMount={handleMount}
-                handleEditorChange={handleEditorChange}
-                dbReady={dbReady}
-                streak={streak}
-                showToast={showToast}
-                liveSchema={liveSchema}
-                setLiveSchema={setLiveSchema}
-                savedQueries={savedQueries}
-                setSavedQueries={setSavedQueries}
-                showConfirm={showConfirm}
-                showPrompt={showPrompt}
-                graderStrict={graderStrict}
-                setGraderStrict={setGraderStrict}
-                activePuzzle={activePuzzle}
-                setActivePuzzleId={setActivePuzzleId}
-                debugPuzzles={debugPuzzles}
-                getSavedPuzzleQuery={getSavedPuzzleQuery}
-                getSavedDraftQuery={getSavedDraftQuery}
-                updateEditorQuery={updateEditorQuery}
-                stopAutoTyping={stopAutoTyping}
-                allProblems={allProblems}
-                monacoRef={monacoRef}
-                insertTextAtCursor={insertTextAtCursor}
-                lintErrors={lintErrors}
-                isAutoTyping={isAutoTyping}
-                autoTypeQuery={autoTypeQuery}
-                queryHistory={queryHistory}
-                setQueryHistory={setQueryHistory}
-                setSelectedDayId={setSelectedDayId}
-                setActiveView={setActiveView}
-                learningRoadmap={learningRoadmap}
-                readiness={readiness}
-                totalModules={totalModules}
-                totalProblems={totalProblems}
-              />
-            )}
-            {activeView === "puzzles" && (
-              <PuzzlesView
-                progress={progress}
-                debugPuzzles={debugPuzzles}
-                activePuzzle={activePuzzle}
-                setActivePuzzleId={setActivePuzzleId}
-                openPuzzleInPlayground={openPuzzleInPlayground}
-                markPuzzleSolved={markPuzzleSolved}
-                updateEditorQuery={updateEditorQuery}
-                setActiveView={setActiveView}
-                setPlaygroundMode={setPlaygroundMode}
-                classForDiff={classForDiff}
-              />
-            )}
-            {(activeView === "mocks" ||
-              activeView === "mock-runner" ||
-              activeView === "mock-results") && (
-              <MockTestView
-                activeView={activeView}
-                setActiveView={setActiveView}
-                progress={progress}
-                mockInterviews={mockInterviews}
-                mockHistory={mockHistory}
-                interviewQuestionBank={interviewQuestionBank}
-                mockTest={mockTest}
-                setMockTest={setMockTest}
-                mockReviewIndex={mockReviewIndex}
-                setMockReviewIndex={setMockReviewIndex}
-                startMockTest={startMockTest}
-                submitMockAnswer={submitMockAnswer}
-                runCurrentQuery={runCurrentQuery}
-                queryRef={queryRef}
-                queryResult={queryResult}
-                resultPage={resultPage}
-                setResultPage={setResultPage}
-                RESULT_PAGE_SIZE={15}
-                updateEditorQuery={updateEditorQuery}
-                editorTheme={editorTheme}
-                theme={theme}
-                query={query}
-                handleBeforeMount={handleBeforeMount}
-                handleMount={handleMount}
-                handleEditorChange={handleEditorChange}
-                editorMinimap={editorMinimap}
-                editorFontSize={editorFontSize}
-                editorFontFamily={editorFontFamily}
-                editorTabSize={editorTabSize}
-                editorWordWrap={editorWordWrap}
-              />
-            )}
-            {activeView === "day-details" && (
-              <DayDetailsView
-                selectedDayId={selectedDayId}
-                progress={progress}
-                learningRoadmap={learningRoadmap}
-                roadmapModules={roadmapModules}
-                debugPuzzles={debugPuzzles}
-                setActiveView={setActiveView}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                setSelectedDayId={setSelectedDayId}
-                toggleDayComplete={toggleDayComplete}
-                toggleChecklistItem={toggleChecklistItem}
-                selectModule={selectModule}
-                openInPlayground={openInPlayground}
-                markProblemSolved={markProblemSolved}
-                markPuzzleSolved={markPuzzleSolved}
-                setActivePuzzleId={setActivePuzzleId}
-                setPlaygroundMode={setPlaygroundMode}
-                getSavedPuzzleQuery={getSavedPuzzleQuery}
-                updateEditorQuery={updateEditorQuery}
-                stopAutoTyping={stopAutoTyping}
-                setQueryResult={setQueryResult}
-                setExpectedResult={setExpectedResult}
-              />
-            )}
-            {activeView === "missions" && (
-              <MissionCapstoneView
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                onOpenStepInPlayground={(sql: any) => {
-                  updateEditorQuery(sql, "free");
-                  setActiveView("playground");
-                }}
-                onBackToRoadmap={() => setActiveView("roadmap")}
-              />
-            )}
-            {activeView === "join-visualizer" && (
-              <div
-                style={{
-                  padding: "2rem 3rem",
-                  maxWidth: "900px",
-                  margin: "0 auto",
-                  width: "100%",
-                }}
-              >
-                <ErrorBoundary fallbackTitle="SQL Join Venn Sandbox Panel">
-                  <SqlJoinVennDiagram />
-                </ErrorBoundary>
-              </div>
-            )}
-          </Suspense>
+        <Suspense
+          fallback={
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "100%",
+                width: "100%",
+                flexDirection: "column",
+                gap: "1rem",
+                color: "var(--muted)",
+              }}
+            >
+              <div className="spinner"></div>
+              <p>Loading module...</p>
+            </div>
+          }
+        >
+          {activeView === "dashboard" && (
+            <DashboardView
+              progress={progress}
+              learningRoadmap={learningRoadmap}
+              roadmapModules={roadmapModules}
+              debugPuzzles={debugPuzzles}
+              streak={streak}
+              setActiveView={setActiveView}
+              setSelectedDayId={setSelectedDayId}
+              readiness={readiness}
+              totalModules={totalModules}
+              totalProblems={totalProblems}
+              totalXP={totalXP}
+              currentLevel={currentLevel}
+              xpProgressPercent={xpProgressPercent}
+              xpRemaining={xpRemaining}
+              earnedBadges={earnedBadges}
+              qaItems={qaItems}
+              enterFreeformPlayground={enterFreeformPlayground}
+              selectModule={selectModule}
+              updateEditorQuery={updateEditorQuery}
+              toggleChecklistItem={toggleChecklistItem}
+              next={next}
+            />
+          )}
+          {activeView === "roadmap" && (
+            <RoadmapView
+              progress={progress}
+              learningRoadmap={learningRoadmap}
+              roadmapModules={roadmapModules}
+              setSelectedDayId={setSelectedDayId}
+              setActiveView={setActiveView}
+              toggleDayComplete={toggleDayComplete}
+              selectModule={selectModule}
+              openInPlayground={openInPlayground}
+              debugPuzzles={debugPuzzles}
+              setActivePuzzleId={setActivePuzzleId}
+              setPlaygroundMode={setPlaygroundMode}
+              getSavedPuzzleQuery={getSavedPuzzleQuery}
+              updateEditorQuery={updateEditorQuery}
+              stopAutoTyping={stopAutoTyping}
+            />
+          )}
+          {activeView === "modules" && (
+            <ModulesView
+              activeModule={activeModule}
+              roadmapModules={roadmapModules}
+              progress={progress}
+              selectModule={selectModule}
+              setActiveView={setActiveView}
+              openInPlayground={openInPlayground}
+              markModuleDone={markModuleDone}
+              markProblemSolved={markProblemSolved}
+              updateEditorQuery={updateEditorQuery}
+              copyToClipboard={copyToClipboard}
+              classForDiff={classForDiff}
+            />
+          )}
+          {activeView === "practice" && (
+            <PracticeView
+              progress={progress}
+              activeModuleId={activeModuleId}
+              roadmapModules={roadmapModules}
+              selectedProblem={selectedProblem}
+              selectProblem={selectProblem}
+              openInPlayground={openInPlayground}
+              markProblemSolved={markProblemSolved}
+              updateEditorQuery={updateEditorQuery}
+              copyToClipboard={copyToClipboard}
+              classForDiff={classForDiff}
+              selectModule={selectModule}
+              setActiveView={setActiveView}
+              setPlaygroundMode={setPlaygroundMode}
+            />
+          )}
+          {activeView === "playground" && (
+            <PlaygroundView
+              progress={progress}
+              selectedProblem={selectedProblem}
+              playgroundMode={playgroundMode}
+              setPlaygroundMode={setPlaygroundMode}
+              roadmapModules={roadmapModules}
+              tableSchemas={tableSchemas}
+              datasetDomains={datasetDomains}
+              rowLimit={rowLimit}
+              setRowLimit={setRowLimit}
+              sqlUpperKeywords={sqlUpperKeywords}
+              setSqlUpperKeywords={setSqlUpperKeywords}
+              editorFontSize={editorFontSize}
+              setEditorFontSize={setEditorFontSize}
+              editorWordWrap={editorWordWrap}
+              setEditorWordWrap={setEditorWordWrap}
+              editorMinimap={editorMinimap}
+              setEditorMinimap={setEditorMinimap}
+              editorFontFamily={editorFontFamily}
+              setEditorFontFamily={setEditorFontFamily}
+              editorTabSize={editorTabSize}
+              setEditorTabSize={setEditorTabSize}
+              editorTheme={editorTheme}
+              setEditorTheme={setEditorTheme}
+              theme={theme}
+              setTheme={setTheme}
+              rightOpen={rightOpen}
+              setRightOpen={setRightOpen}
+              query={query}
+              setQuery={setQuery}
+              queryResult={queryResult}
+              setQueryResult={setQueryResult}
+              expectedResult={expectedResult}
+              setExpectedResult={setExpectedResult}
+              graderFeedback={graderFeedback}
+              setGraderFeedback={setGraderFeedback}
+              runCurrentQuery={runCurrentQuery}
+              copyToClipboard={copyToClipboard}
+              openInPlayground={openInPlayground}
+              markProblemSolved={markProblemSolved}
+              handleRightNavKeyDown={handleRightNavKeyDown}
+              classForDiff={classForDiff}
+              editorRef={editorRef}
+              queryRef={queryRef}
+              handleBeforeMount={handleBeforeMount}
+              handleMount={handleMount}
+              handleEditorChange={handleEditorChange}
+              dbReady={dbReady}
+              streak={streak}
+              showToast={showToast}
+              liveSchema={liveSchema}
+              setLiveSchema={setLiveSchema}
+              savedQueries={savedQueries}
+              setSavedQueries={setSavedQueries}
+              showConfirm={showConfirm}
+              showPrompt={showPrompt}
+              graderStrict={graderStrict}
+              setGraderStrict={setGraderStrict}
+              activePuzzle={activePuzzle}
+              setActivePuzzleId={setActivePuzzleId}
+              debugPuzzles={debugPuzzles}
+              getSavedPuzzleQuery={getSavedPuzzleQuery}
+              getSavedDraftQuery={getSavedDraftQuery}
+              updateEditorQuery={updateEditorQuery}
+              stopAutoTyping={stopAutoTyping}
+              allProblems={allProblems}
+              monacoRef={monacoRef}
+              insertTextAtCursor={insertTextAtCursor}
+              lintErrors={lintErrors}
+              isAutoTyping={isAutoTyping}
+              autoTypeQuery={autoTypeQuery}
+              queryHistory={queryHistory}
+              setQueryHistory={setQueryHistory}
+              setSelectedDayId={setSelectedDayId}
+              setActiveView={setActiveView}
+              learningRoadmap={learningRoadmap}
+              readiness={readiness}
+              totalModules={totalModules}
+              totalProblems={totalProblems}
+            />
+          )}
+          {activeView === "puzzles" && (
+            <PuzzlesView
+              progress={progress}
+              debugPuzzles={debugPuzzles}
+              activePuzzle={activePuzzle}
+              setActivePuzzleId={setActivePuzzleId}
+              openPuzzleInPlayground={openPuzzleInPlayground}
+              markPuzzleSolved={markPuzzleSolved}
+              updateEditorQuery={updateEditorQuery}
+              setActiveView={setActiveView}
+              setPlaygroundMode={setPlaygroundMode}
+              classForDiff={classForDiff}
+            />
+          )}
+          {(activeView === "mocks" ||
+            activeView === "mock-runner" ||
+            activeView === "mock-results") && (
+            <MockTestView
+              activeView={activeView}
+              setActiveView={setActiveView}
+              progress={progress}
+              mockInterviews={mockInterviews}
+              mockHistory={mockHistory}
+              interviewQuestionBank={interviewQuestionBank}
+              mockTest={mockTest}
+              setMockTest={setMockTest}
+              mockReviewIndex={mockReviewIndex}
+              setMockReviewIndex={setMockReviewIndex}
+              startMockTest={startMockTest}
+              submitMockAnswer={submitMockAnswer}
+              runCurrentQuery={runCurrentQuery}
+              queryRef={queryRef}
+              queryResult={queryResult}
+              resultPage={resultPage}
+              setResultPage={setResultPage}
+              RESULT_PAGE_SIZE={15}
+              updateEditorQuery={updateEditorQuery}
+              editorTheme={editorTheme}
+              theme={theme}
+              query={query}
+              handleBeforeMount={handleBeforeMount}
+              handleMount={handleMount}
+              handleEditorChange={handleEditorChange}
+              editorMinimap={editorMinimap}
+              editorFontSize={editorFontSize}
+              editorFontFamily={editorFontFamily}
+              editorTabSize={editorTabSize}
+              editorWordWrap={editorWordWrap}
+            />
+          )}
+          {activeView === "day-details" && (
+            <DayDetailsView
+              selectedDayId={selectedDayId}
+              progress={progress}
+              learningRoadmap={learningRoadmap}
+              roadmapModules={roadmapModules}
+              debugPuzzles={debugPuzzles}
+              setActiveView={setActiveView}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              setSelectedDayId={setSelectedDayId}
+              toggleDayComplete={toggleDayComplete}
+              toggleChecklistItem={toggleChecklistItem}
+              selectModule={selectModule}
+              openInPlayground={openInPlayground}
+              markProblemSolved={markProblemSolved}
+              markPuzzleSolved={markPuzzleSolved}
+              setActivePuzzleId={setActivePuzzleId}
+              setPlaygroundMode={setPlaygroundMode}
+              getSavedPuzzleQuery={getSavedPuzzleQuery}
+              updateEditorQuery={updateEditorQuery}
+              stopAutoTyping={stopAutoTyping}
+              setQueryResult={setQueryResult}
+              setExpectedResult={setExpectedResult}
+            />
+          )}
+          {activeView === "missions" && (
+            <MissionCapstoneView
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onOpenStepInPlayground={(sql: any) => {
+                updateEditorQuery(sql, "free");
+                setActiveView("playground");
+              }}
+              onBackToRoadmap={() => setActiveView("roadmap")}
+            />
+          )}
+          {activeView === "join-visualizer" && (
+            <div
+              style={{
+                padding: "2rem 3rem",
+                maxWidth: "900px",
+                margin: "0 auto",
+                width: "100%",
+              }}
+            >
+              <ErrorBoundary fallbackTitle="SQL Join Venn Sandbox Panel">
+                <SqlJoinVennDiagram />
+              </ErrorBoundary>
+            </div>
+          )}
+        </Suspense>
       </MainLayout>
 
       {showOnboarding && (

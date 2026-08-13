@@ -157,7 +157,8 @@ export default function V2MockTestBridge() {
         [histEntry.id]: score,
       },
     });
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
     // Update failed attempts
     const failedMap = JSON.parse(
@@ -213,7 +214,7 @@ export default function V2MockTestBridge() {
           message: "Run your query to test it.",
         });
       }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       setQueryResult({ columns: [], rows: [], message: "", error: e.message });
     }
@@ -228,8 +229,8 @@ export default function V2MockTestBridge() {
         rows: res.rows || [],
         message: "Success",
       });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setQueryResult({ columns: [], rows: [], message: "", error: e.message });

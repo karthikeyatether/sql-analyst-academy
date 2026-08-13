@@ -73,10 +73,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       } catch (e) {}
     }
     if (migratedProgress) {
-      setStorageItem(
-        currentProgressKey,
-        JSON.stringify(migratedProgress),
-      );
+      setStorageItem(currentProgressKey, JSON.stringify(migratedProgress));
     }
   }
 

@@ -102,14 +102,14 @@ export default function V2PlaygroundBridge() {
         activeProblem &&
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (playgroundMode === "practice" || playgroundMode === "puzzle")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ) {
         const solutionSql =
           playgroundMode === "practice"
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ? (activeProblem as any).solution
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            : (activeProblem as any).solutionQuery;
+            ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (activeProblem as any).solution
+            : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (activeProblem as any).solutionQuery;
 
         if (solutionSql) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -154,7 +154,7 @@ export default function V2PlaygroundBridge() {
                   solvedPuzzles: [
                     ...(progress.solvedPuzzles || []),
                     activeProblem.id,
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   ],
                 });
               }
@@ -162,7 +162,7 @@ export default function V2PlaygroundBridge() {
           }
         }
       }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       setQueryResult({
         columns: [],
@@ -171,7 +171,7 @@ export default function V2PlaygroundBridge() {
         error: e.message || "Error running query",
       });
     }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

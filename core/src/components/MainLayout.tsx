@@ -8,7 +8,7 @@ export function MainLayout({
   sideNavProps,
   topBarProps,
   pageContentProps,
-  children
+  children,
 }: {
   sidebarOpen: boolean;
   sideNavProps: any;
@@ -21,9 +21,7 @@ export function MainLayout({
       <SideNav props={sideNavProps} />
       <main className="main-shell">
         <TopBar props={topBarProps} />
-        <div {...pageContentProps}>
-          {children}
-        </div>
+        <div {...pageContentProps}>{children}</div>
       </main>
     </div>
   );

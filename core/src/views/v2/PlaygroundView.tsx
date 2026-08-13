@@ -379,7 +379,7 @@ const PlaygroundView = React.memo(function PlaygroundView({
     activePuzzle?.id,
     activePuzzle?.solutionQuery,
     expectedResult,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ]);
   const [resetStatus, setResetStatus] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -399,9 +399,10 @@ const PlaygroundView = React.memo(function PlaygroundView({
       setResetStatus(false);
       resetTimeoutRef.current = null;
     }, 2000);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   };
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
   const [schemaSearch, setSchemaSearch] = useState("");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -781,15 +782,9 @@ SELECT * FROM customers LIMIT 10;`;
       try {
         const backup = JSON.parse(event.target?.result as string);
         if (backup.progress)
-          setStorageItem(
-            "sql-aa-progress-v3",
-            JSON.stringify(backup.progress),
-          );
+          setStorageItem("sql-aa-progress-v3", JSON.stringify(backup.progress));
         if (backup.history)
-          setStorageItem(
-            "sql-aa-history",
-            JSON.stringify(backup.history),
-          );
+          setStorageItem("sql-aa-history", JSON.stringify(backup.history));
         if (backup.saved)
           setStorageItem("sql-aa-saved", JSON.stringify(backup.saved));
         if (backup.drafts)
@@ -1414,8 +1409,8 @@ SELECT * FROM customers LIMIT 10;`;
       (t as any).domain ||
       (t.name.toLowerCase().startsWith("temp")
         ? "Temporary Data"
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        : "Custom Data"),
+        : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          "Custom Data"),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     description:
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
