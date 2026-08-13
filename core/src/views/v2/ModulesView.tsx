@@ -19,6 +19,9 @@ import type {
 } from "../../data/curriculum";
 import LessonProse from "../../components/LessonProse";
 import { DoVsDontCard } from "../../components/DoVsDontCard";
+import SqlExecutionPipeline from "../../components/SqlExecutionPipeline";
+import InlineMicroQuiz from "../../components/InlineMicroQuiz";
+import DataFlowVisualizer from "../../components/DataFlowVisualizer";
 import type { ViewId, PlaygroundMode } from "../../types";
 
 interface ModulesViewProps {
@@ -102,6 +105,22 @@ function ModulesView({
               <LessonProse text={l.visualExplanation} onRunCode={handleRunCode} />
             </div>
           )}
+
+          {/* DUAL CODING DATA-FLOW VISUALIZER */}
+          <DataFlowVisualizer />
+
+          {/* ELABORATIVE INTEGRATION: LOGICAL EXECUTION PIPELINE */}
+          <SqlExecutionPipeline />
+
+          {/* ACTIVE RETRIEVAL PRACTICE CHECKPOINT */}
+          <InlineMicroQuiz
+            question={`In Module ${activeModule.id} (${activeModule.title}), which clause evaluates individual rows first before any grouping or ordering takes place?`}
+            options={[
+              { id: "opt1", text: "WHERE clause", isCorrect: true, explanation: "Correct! WHERE evaluates individual rows immediately after FROM, filtering rows before GROUP BY or ORDER BY." },
+              { id: "opt2", text: "HAVING clause", isCorrect: false, explanation: "Incorrect. HAVING filters groups AFTER GROUP BY aggregation is complete." },
+              { id: "opt3", text: "ORDER BY clause", isCorrect: false, explanation: "Incorrect. ORDER BY runs near the very end to sort the output rows." },
+            ]}
+          />
         </section>
 
         {/* SECTION 2: COMMON PITFALLS & DO VS DON'T */}
