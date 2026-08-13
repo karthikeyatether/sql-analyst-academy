@@ -134,6 +134,9 @@ import OnboardingModal from "./components/OnboardingModal";
 import ShortcutsModal from "./components/ShortcutsModal";
 import ColumnProfileModal from "./components/ColumnProfileModal";
 import { downloadStatsReport } from "./utils/reportGenerator";
+import CommandPalette from "./components/CommandPalette";
+import type { CommandItem } from "./components/CommandPalette";
+import GamifiedHud from "./components/GamifiedHud";
 import type { QueryResult, QueryPlanStep } from "./utils/sqlEngine";
 const SqlJoinVennDiagram = lazy(
   () => import("./components/SqlJoinVennDiagram"),
@@ -1727,6 +1730,7 @@ export default function App() {
 
   /* ── UI state ────────────────────────────────────────────── */
   const [searchTerm, setSearchTerm] = useState("");
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(true);
   const searchRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<unknown>(null);
@@ -2727,6 +2731,51 @@ export default function App() {
       }));
     return [...mods, ...probs];
   }, [allProblems, searchTerm]);
+
+  // Command palette items
+  const commandItems = useMemo<CommandItem[]>(() => {
+    const moduleItems: CommandItem[] = roadmapModules.slice(0, 20).map(m => ({
+      id: `mod-${m.id}`,
+      type: "module" as const,
+      label: `M${m.id}: ${m.title}`,
+      subtitle: `${m.level} · ${m.track}`,
+      action: () => {
+        setActiveModuleId(m.id);
+        setActiveView("modules");
+      },
+    }));
+    const problemItems: CommandItem[] = allProblems.slice(0, 40).map(p => ({
+      id: `prob-${p.id}`,
+      type: "problem" as const,
+      label: p.title,
+      subtitle: `${p.difficulty} · Module ${p.moduleId}`,
+      action: () => {
+        setSelectedProblemId(p.id);
+        setPlaygroundMode("practice");
+        setActiveView("playground");
+      },
+    }));
+    const puzzleItems: CommandItem[] = debugPuzzles.slice(0, 15).map(pz => ({
+      id: `puz-${pz.id}`,
+      type: "puzzle" as const,
+      label: pz.title,
+      subtitle: pz.category,
+      action: () => {
+        setActivePuzzleId(pz.id);
+        setPlaygroundMode("puzzle");
+        setActiveView("playground");
+      },
+    }));
+    const actionItems: CommandItem[] = [
+      { id: "action-playground", type: "action" as const, label: "Open Freeform Playground", shortcut: "F", action: enterFreeformPlayground },
+      { id: "action-roadmap",    type: "nav"    as const, label: "Go to Learning Roadmap",  shortcut: "R", action: () => setActiveView("roadmap") },
+      { id: "action-practice",  type: "nav"    as const, label: "Go to Practice Problems", shortcut: "P", action: () => setActiveView("practice") },
+      { id: "action-puzzles",   type: "nav"    as const, label: "Go to Debug Puzzles",     shortcut: "D", action: () => setActiveView("puzzles") },
+      { id: "action-mocks",     type: "nav"    as const, label: "Go to Mock Tests",         shortcut: "M", action: () => setActiveView("mocks") },
+      { id: "action-dashboard", type: "nav"    as const, label: "Go to Dashboard",          shortcut: "H", action: () => setActiveView("dashboard") },
+    ];
+    return [...actionItems, ...moduleItems, ...problemItems, ...puzzleItems];
+  }, [allProblems, roadmapModules, debugPuzzles, setActiveView, setActiveModuleId, setSelectedProblemId, setPlaygroundMode, setActivePuzzleId, enterFreeformPlayground]);
 
   const [dbReady, setDbReady] = useState(false);
 
@@ -4388,8 +4437,25 @@ export default function App() {
 
   /* SHELL */
 
+  // Ctrl+K command palette handler
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setCommandPaletteOpen(o => !o);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
   return (
     <>
+      <CommandPalette
+        open={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+        items={commandItems}
+      />
       <MainLayout
         sidebarOpen={sidebarOpen}
         sideNavProps={{
@@ -4425,6 +4491,13 @@ export default function App() {
           THEME_OPTIONS,
           setTheme,
           readiness,
+          onOpenCommandPalette: () => setCommandPaletteOpen(true),
+          // Gamified HUD props
+          solvedProblems: progress.solvedProblems,
+          solvedPuzzles: progress.solvedPuzzles,
+          streak,
+          queryRuns: progress.queryRuns,
+          minutesStudied: progress.minutesStudied,
         }}
         pageContentProps={{
           className: `page-content ${

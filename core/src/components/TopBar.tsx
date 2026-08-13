@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 import React from "react";
 import {
   Menu,
@@ -16,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { Target } from "lucide-react";
+import GamifiedHud from "./GamifiedHud";
 export function TopBar({
   props,
 }: {
@@ -34,6 +34,12 @@ export function TopBar({
     THEME_OPTIONS: any[];
     setTheme: (t: any) => void;
     readiness: number;
+    onOpenCommandPalette?: () => void;
+    solvedProblems?: string[];
+    solvedPuzzles?: string[];
+    streak?: number;
+    queryRuns?: number;
+    minutesStudied?: number;
   };
 }) {
   const {
@@ -51,6 +57,12 @@ export function TopBar({
     THEME_OPTIONS,
     setTheme,
     readiness,
+    onOpenCommandPalette,
+    solvedProblems = [],
+    solvedPuzzles = [],
+    streak = 0,
+    queryRuns = 0,
+    minutesStudied = 0,
   } = props;
 
   return (
@@ -89,6 +101,36 @@ export function TopBar({
       </div>
 
       <div className="topbar-right">
+        {/* Ctrl+K Command Palette Button */}
+        {onOpenCommandPalette && (
+          <button
+            className="icon-button labeled"
+            onClick={onOpenCommandPalette}
+            title="Open Command Palette (Ctrl+K)"
+            style={{
+              display: "flex", alignItems: "center", gap: "5px",
+              fontSize: "11px", fontWeight: 600, opacity: 0.7,
+              padding: "4px 10px", borderRadius: "7px",
+              border: "1px solid rgba(255,255,255,0.1)",
+              background: "rgba(255,255,255,0.04)",
+              transition: "all 0.15s ease",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = "0.7"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+          >
+            <Command size={12} />
+            <span>K</span>
+          </button>
+        )}
+
+        {/* Gamified HUD */}
+        <GamifiedHud
+          solvedProblems={solvedProblems}
+          solvedPuzzles={solvedPuzzles}
+          streak={streak}
+          queryRuns={queryRuns}
+          minutesStudied={minutesStudied}
+        />
         <div style={{ position: "relative", display: "inline-block" }}>
           <button
             className={`icon-button theme-toggle-btn ${theme} ${themeMenuOpen ? "active" : ""}`}

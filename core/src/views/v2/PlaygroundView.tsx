@@ -66,6 +66,8 @@ import { SplitPane, VSplitPane } from "../../components/SplitPane";
 import ErdModalView from "../../components/ErdModalView";
 import LessonProse from "../../components/LessonProse";
 import { ResultTablePanel } from "../../components/playground/ResultTablePanel";
+import SqlDiagnosticCoach from "../../components/SqlDiagnosticCoach";
+import QueryExecutionStudio from "../../components/QueryExecutionStudio";
 
 import Editor from "@monaco-editor/react";
 
@@ -2830,6 +2832,31 @@ SELECT * FROM customers LIMIT 10;`;
                     </div>
                   </div>
                 )}
+
+                {/* AI SQL Diagnostic Coach */}
+                {(graderFeedback || queryResult?.error) && (
+                  <div style={{ padding: "0 12px" }}>
+                    <SqlDiagnosticCoach
+                      queryResult={queryResult}
+                      expectedResult={computedExpectedResult}
+                      isCorrect={graderFeedback?.isCorrect ?? null}
+                      feedback={graderFeedback}
+                      query={query}
+                      onApplyFix={(sql) => updateEditorQuery(sql)}
+                    />
+                  </div>
+                )}
+
+                {/* Query Execution Walkthrough */}
+                {queryResult && !queryResult.error && queryResult.rows.length > 0 && (
+                  <div style={{ padding: "0 12px" }}>
+                    <QueryExecutionStudio
+                      queryResult={queryResult}
+                      query={query}
+                    />
+                  </div>
+                )}
+
                 <div
                   className="results-container"
                   style={{
