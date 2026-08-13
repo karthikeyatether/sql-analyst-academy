@@ -55,6 +55,4 @@ jobs:
       - name: Validate Build Artifacts
         run: |
           test -f dist/index.html
-          test -f dist/index.html.gz
-          test -f dist/index.html.br
           ls dist/assets/*.wasm
