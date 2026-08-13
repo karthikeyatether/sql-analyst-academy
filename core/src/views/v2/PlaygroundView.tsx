@@ -4887,7 +4887,13 @@ SELECT * FROM customers LIMIT 10;`;
             </div>
             <div className="custom-modal-body">
               <div className="concept-tab-container">
-                <LessonProse text={activeModule.lesson.conceptExplanation} />
+                <LessonProse
+                  text={activeModule.lesson.conceptExplanation}
+                  onRunCode={(sql) => {
+                    updateEditorQuery(sql);
+                    setLessonModalOpen(false);
+                  }}
+                />
 
                 {activeModule.lesson.realBusinessScenario && (
                   <div
@@ -4914,6 +4920,10 @@ SELECT * FROM customers LIMIT 10;`;
                     </h3>
                     <LessonProse
                       text={activeModule.lesson.realBusinessScenario}
+                      onRunCode={(sql) => {
+                        updateEditorQuery(sql);
+                        setLessonModalOpen(false);
+                      }}
                     />
                   </div>
                 )}
@@ -4941,7 +4951,13 @@ SELECT * FROM customers LIMIT 10;`;
                       />
                       Visual Representation
                     </h3>
-                    <LessonProse text={activeModule.lesson.visualExplanation} />
+                    <LessonProse
+                      text={activeModule.lesson.visualExplanation}
+                      onRunCode={(sql) => {
+                        updateEditorQuery(sql);
+                        setLessonModalOpen(false);
+                      }}
+                    />
                   </div>
                 )}
               </div>
