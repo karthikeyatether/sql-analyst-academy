@@ -78,7 +78,7 @@ interface QueryHistoryItem {
   durationMs?: number;
 }
 
-import type { TableSchema } from "../../data/datasets";
+import type { TableSchema, SchemaColumn } from "../../data/datasets";
 
 interface PlaygroundViewProps {
   progress: {
@@ -559,11 +559,11 @@ SELECT * FROM customers LIMIT 10;`;
   }
 
   // Database helper implementations
-  const copyTableSchemaMarkdown = (table: any) => {
+  const copyTableSchemaMarkdown = (table: TableSchema) => {
     let md = `### Table: ${table.name} (${table.domain})\n\n`;
     md += `| Column | Type | Key |\n`;
     md += `| :--- | :--- | :--- |\n`;
-    table.columns.forEach((c: any) => {
+    table.columns.forEach((c: SchemaColumn) => {
       const isPk = table.primaryKey === c.name ? "PK" : "";
       const rel = table.relationships?.find((r: string) =>
         r.endsWith("." + c.name),
@@ -600,7 +600,7 @@ SELECT * FROM customers LIMIT 10;`;
         liveSchema.length > 0 ? liveSchema : tableSchemas
       ).find((t) => t.name.toLowerCase() === tableName.toLowerCase());
       const colSchema = tableSchema?.columns.find(
-        (c: any) => c.name.toLowerCase() === columnName.toLowerCase(),
+        (c: {name: string}) => c.name.toLowerCase() === columnName.toLowerCase(),
       );
       const isNumeric =
         colSchema?.type.toLowerCase().includes("int") ||
@@ -629,7 +629,7 @@ SELECT * FROM customers LIMIT 10;`;
       );
       const topValues = freqRes.error
         ? []
-        : freqRes.rows.map((r: any) => ({
+        : freqRes.rows.map((r: Record<string, unknown>) => ({
             val: r.val,
             count: Number(r.count),
           }));
@@ -792,11 +792,11 @@ SELECT * FROM customers LIMIT 10;`;
 
   const exportResultAsCsv = (
     cols: string[],
-    rows: any[],
+    rows: Record<string, unknown>[],
     filename = "query-results.csv",
   ) => {
     if (!cols.length || !rows.length) return;
-    const escapeCsv = (val: any) => {
+    const escapeCsv = (val: unknown) => {
       if (val === null || val === undefined) return "";
       const str = String(val).replace(/"/g, '""');
       return `"${str}"`;
@@ -821,7 +821,7 @@ SELECT * FROM customers LIMIT 10;`;
 
   const exportResultAsJson = (
     cols: string[],
-    rows: any[],
+    rows: Record<string, unknown>[],
     filename = "query-results.json",
   ) => {
     if (!cols.length || !rows.length) return;
@@ -1229,7 +1229,7 @@ SELECT * FROM customers LIMIT 10;`;
   };
 
   // Database and utility helpers moved down from App
-  const copyTableSchemaMarkdownLocally = (table: any) =>
+  const copyTableSchemaMarkdownLocally = (table: TableSchema) =>
     copyTableSchemaMarkdown(table);
   const profileColumnLocally = (tableName: string, columnName: string) =>
     profileColumn(tableName, columnName);
@@ -3200,12 +3200,12 @@ SELECT * FROM customers LIMIT 10;`;
               const filteredActive = activeTables.filter(
                 (t) =>
                   t.name.toLowerCase().includes(s) ||
-                  t.columns.some((c: any) => c.name.toLowerCase().includes(s)),
+                  t.columns.some((c: SchemaColumn) => c.name.toLowerCase().includes(s)),
               );
               const filteredOther = otherTables.filter(
                 (t) =>
                   t.name.toLowerCase().includes(s) ||
-                  t.columns.some((c: any) => c.name.toLowerCase().includes(s)),
+                  t.columns.some((c: SchemaColumn) => c.name.toLowerCase().includes(s)),
               );
 
               return (
@@ -3325,7 +3325,7 @@ SELECT * FROM customers LIMIT 10;`;
                             {t.description}
                           </p>
                           <div className="column-list">
-                            {t.columns.map((c: any) => (
+                            {t.columns.map((c: SchemaColumn) => (
                               <div
                                 key={c.name}
                                 className="schema-insertable-col"
@@ -3723,7 +3723,7 @@ SELECT * FROM customers LIMIT 10;`;
                             {t.description}
                           </p>
                           <div className="column-list">
-                            {t.columns.map((c: any) => (
+                            {t.columns.map((c: SchemaColumn) => (
                               <div
                                 key={c.name}
                                 className="schema-insertable-col"
@@ -4086,7 +4086,7 @@ SELECT * FROM customers LIMIT 10;`;
                             marginTop: "4px",
                           }}
                         >
-                          {t.columns.map((col: any) => (
+                          {t.columns.map((col: SchemaColumn) => (
                             <span
                               key={col.name}
                               style={{
@@ -4155,7 +4155,7 @@ SELECT * FROM customers LIMIT 10;`;
                           <tbody>
                             {computedExpectedResult.rows
                               .slice(0, 10)
-                              .map((row: any, i: number) => (
+                              .map((row: Record<string, unknown>, i: number) => (
                                 <tr key={i}>
                                   {computedExpectedResult.columns.map(
                                     (c: string) => (
@@ -4394,7 +4394,7 @@ SELECT * FROM customers LIMIT 10;`;
                             marginTop: "4px",
                           }}
                         >
-                          {t.columns.map((col: any) => (
+                          {t.columns.map((col: SchemaColumn) => (
                             <span
                               key={col.name}
                               style={{
@@ -4464,7 +4464,7 @@ SELECT * FROM customers LIMIT 10;`;
                           <tbody>
                             {computedExpectedResult.rows
                               .slice(0, 10)
-                              .map((row: any, i: number) => (
+                              .map((row: Record<string, unknown>, i: number) => (
                                 <tr key={i}>
                                   {computedExpectedResult.columns.map(
                                     (c: string) => (

@@ -35,6 +35,7 @@ import React, {
   lazy,
 } from "react";
 import { useLocalStorage } from "./hooks/useLocalStorage";
+import { setStorageItem, getStorageItem } from "./utils/storage";
 import { buildCsvImportSql } from "./utils/csvParser";
 import { stripLineNumbersFromQuery } from "./utils/formatters";
 import {
@@ -217,7 +218,7 @@ export default function App() {
           mockScores: parsed.mockScores ?? {},
           completedChecklistItems: parsed.completedChecklistItems ?? [],
         };
-        localStorage.setItem("sql-aa-progress-v2-backup", v2Data);
+        setStorageItem("sql-aa-progress-v2-backup", v2Data);
       } catch (e) {
         console.warn("Failed to parse v2 progress data:", e);
       }
@@ -234,15 +235,15 @@ export default function App() {
           mockScores: {},
           completedChecklistItems: [],
         };
-        localStorage.setItem("sql-aa-progress-v1-backup", v1Data);
+        setStorageItem("sql-aa-progress-v1-backup", v1Data);
       } catch (e) {
         console.warn("Failed to parse v1 progress data:", e);
       }
     }
     if (migratedProgress) {
-      localStorage.setItem(
+      setStorageItem(
         currentProgressKey,
-        JSON.stringify(migratedProgress),
+        migratedProgress,
       );
     }
   }
