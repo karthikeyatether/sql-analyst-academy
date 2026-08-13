@@ -1,3 +1,4 @@
+import "./DashboardView.css";
 import { setStorageItem } from "../../utils/storage";
 import React, { useState, useEffect } from "react";
 import { formatStudyTime } from "../../utils/formatters";

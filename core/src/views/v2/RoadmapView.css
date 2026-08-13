@@ -1,0 +1,312 @@
+/* ROADMAP */
+.roadmap-grid-panel {
+  overflow-y: auto;
+  height: 100%;
+}
+.roadmap-band {
+  margin-bottom: 20px;
+}
+.band-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.band-label h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.band-label span {
+  font-size: 11px;
+  color: var(--faint);
+}
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+.module-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  text-align: left;
+  font-size: 12px;
+  cursor: pointer;
+  transition:
+    border-color 150ms,
+    background 150ms;
+}
+.module-tile:hover {
+  border-color: rgba(56, 217, 255, 0.3);
+  background: rgba(56, 217, 255, 0.04);
+}
+.module-tile.active {
+  border-color: var(--cyan);
+  background: rgba(56, 217, 255, 0.08);
+}
+.module-tile.done {
+  border-color: rgba(48, 230, 149, 0.25);
+  background: rgba(48, 230, 149, 0.05);
+}
+.module-tile .tile-num {
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+.module-tile.active .tile-num {
+  background: var(--cyan);
+  color: var(--hex-color-040d12);
+}
+.module-tile.done .tile-num {
+  background: var(--emerald);
+  color: var(--hex-color-040d12);
+}
+.module-tile strong {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.module-tile small {
+  font-size: 10.5px;
+  color: var(--faint);
+}
+
+/* lesson panel */
+.lesson-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+}
+.lesson-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.lesson-header h2 {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 4px 0;
+}
+.lesson-header-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.lesson-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.lesson-tabs button {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  transition:
+    background 150ms,
+    color 150ms;
+}
+.lesson-tabs button:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+.lesson-tabs button.active {
+  background: rgba(56, 217, 255, 0.14);
+  color: var(--cyan);
+}
+
+.lesson-body {
+  flex: 1;
+  overflow-y: auto;
+  padding-top: 16px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text);
+}
+
+/* Lesson prose renderer */
+.lesson-prose {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-width: 850px;
+}
+.lesson-prose p {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--hex-color-ebf4ff);
+  margin-bottom: 14px;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+.lesson-prose .lp-bullet {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--hex-color-c8daf0);
+}
+.lesson-prose .lp-bullet::before {
+  content: "▸";
+  color: var(--cyan);
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: 12px;
+}
+.lesson-prose .lp-bullet strong {
+  color: var(--text);
+}
+.lesson-prose .lp-code {
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 13px;
+  background: rgba(56, 217, 255, 0.05);
+  border: 1px solid rgba(56, 217, 255, 0.15);
+  color: var(--hex-color-a8d8ff);
+  padding: 10px 14px;
+  border-radius: 7px;
+  margin: 6px 0 10px;
+  overflow-x: auto;
+  line-height: 1.6;
+}
+.lesson-prose .lp-heading {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--cyan);
+  margin: 18px 0 6px;
+  border-bottom: 1px solid rgba(56, 217, 255, 0.15);
+  padding-bottom: 4px;
+}
+.lesson-prose .lp-blank {
+  height: 10px;
+}
+.example-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.example-block h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.example-block p {
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.example-actions {
+  display: flex;
+  gap: 8px;
+}
+.sql-pre {
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.65;
+  background: var(--hex-color-0a1219);
+  color: var(--hex-color-b8d4f5);
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow-x: auto;
+}
+.section-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(56, 217, 255, 0.15) 0%,
+    rgba(56, 217, 255, 0) 100%
+  );
+  margin: 28px 0;
+}
+.section-title-visual {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--cyan);
+  margin: 0 0 14px;
+}
+.concept-visual-section,
+.concept-scenario-section {
+  padding: 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.cheat-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 24px 0 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+.bullet-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bullet-list li {
+  padding: 10px 14px;
+  border-left: 3px solid var(--cyan);
+  background: rgba(56, 217, 255, 0.04);
+  border-radius: 0 7px 7px 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.practice-mini-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.problem-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--panel2);
+  border-radius: 7px;
+  border: 1px solid var(--border);
+}
+.problem-row-title {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+}

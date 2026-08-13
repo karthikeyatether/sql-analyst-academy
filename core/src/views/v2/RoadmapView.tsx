@@ -1,3 +1,4 @@
+import "./RoadmapView.css";
 import type { SqlPuzzle } from "../../types";
 import React from "react";
 import { BookOpen, Code2, CheckCircle2, Circle, Timer } from "lucide-react";

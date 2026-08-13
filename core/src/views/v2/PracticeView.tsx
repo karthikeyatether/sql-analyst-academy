@@ -1,3 +1,4 @@
+import "./PracticeView.css";
 import { setStorageItem } from "../../utils/storage";
 import React, { useState, useMemo } from "react";
 import {

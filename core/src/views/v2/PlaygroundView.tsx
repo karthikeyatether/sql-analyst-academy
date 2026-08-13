@@ -1,3 +1,4 @@
+import "./PlaygroundView.css";
 import { setStorageItem } from "../../utils/storage";
 import type { ViewId, PlaygroundMode } from "../../types";
 import type { LintError } from "../../types";
