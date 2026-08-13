@@ -44,7 +44,7 @@ test.describe('SQL Analyst Academy Comprehensive E2E Suite', () => {
     // Wait for the database schema to be loaded
     await page.locator('text=customers').first().waitFor({ state: 'visible', timeout: 20000 });
 
-    const runBtn = page.getByRole('button', { name: 'Execute', exact: true });
+    const runBtn = page.getByRole('button', { name: 'Run', exact: false });
     await runBtn.waitFor({ state: 'visible', timeout: 20000 });
 
     await runBtn.click({ force: true });

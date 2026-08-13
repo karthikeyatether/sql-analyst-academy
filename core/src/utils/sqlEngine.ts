@@ -130,11 +130,14 @@ export async function cancelActiveQuery(): Promise<void> {
 async function initializeDatabase(): Promise<void> {
   if (isWorkerSupported()) {
     if (!workerInstance) {
-      const workerUrl =
-        import.meta.env.VITE_BUILD_TOOL === "esbuild"
-          ? "/workers/sqlWorker.js"
-          : new URL("../workers/sqlWorker.ts", import.meta.url);
-      workerInstance = new Worker(workerUrl);
+      if (import.meta.env.VITE_BUILD_TOOL === "esbuild") {
+        workerInstance = new Worker("/workers/sqlWorker.js", { type: "module" });
+      } else {
+        workerInstance = new Worker(
+          new URL("../workers/sqlWorker.ts", import.meta.url),
+          { type: "module" }
+        );
+      }
 
       workerInstance.onmessage = (e: MessageEvent) => {
         const { id, status, result, snapshot, error } = e.data;
