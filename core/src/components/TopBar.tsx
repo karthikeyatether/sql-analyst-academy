@@ -154,6 +154,9 @@ export function TopBar({
             {theme === "ember" && (
               <Flame size={16} style={{ color: "#f97316" }} />
             )}
+            {!["dark", "light", "oled", "dracula", "onedark", "ember"].includes(theme) && (
+              <Moon size={16} style={{ color: "#38bdf8" }} />
+            )}
           </button>
 
           {themeMenuOpen && (
