@@ -1,3 +1,4 @@
+import { setStorageItem } from "../../utils/storage";
 import React, { useState, useMemo, useEffect } from "react";
 import { Bug, CheckCircle2, Lightbulb, Sparkles, Play } from "lucide-react";
 import type { Difficulty } from "../../data/curriculum";
@@ -48,7 +49,7 @@ function PuzzlesView({
   });
   const handlePuzzleSplitResize = (w: number) => {
     setPuzzleSplit(w);
-    localStorage.setItem("sql-aa-split-puzzle", JSON.stringify(w));
+    setStorageItem("sql-aa-split-puzzle", JSON.stringify(w));
   };
 
   const [puzzleCategoryFilter, setPuzzleCategoryFilter] = useState("All");

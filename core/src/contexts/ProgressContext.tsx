@@ -1,3 +1,4 @@
+import { setStorageItem } from "../utils/storage";
 import React, { createContext, useContext, useCallback } from "react";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 
@@ -53,7 +54,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
           mockScores: parsed.mockScores ?? {},
           completedChecklistItems: parsed.completedChecklistItems ?? [],
         };
-        localStorage.setItem("sql-aa-progress-v2-backup", v2Data);
+        setStorageItem("sql-aa-progress-v2-backup", v2Data);
       } catch (e) {}
     } else if (v1Data) {
       try {
@@ -68,11 +69,11 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
           mockScores: {},
           completedChecklistItems: [],
         };
-        localStorage.setItem("sql-aa-progress-v1-backup", v1Data);
+        setStorageItem("sql-aa-progress-v1-backup", v1Data);
       } catch (e) {}
     }
     if (migratedProgress) {
-      localStorage.setItem(
+      setStorageItem(
         currentProgressKey,
         JSON.stringify(migratedProgress),
       );

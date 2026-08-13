@@ -1,3 +1,4 @@
+import { setStorageItem } from "../../utils/storage";
 import React, { useState, useRef } from "react";
 import MockTestView from "./MockTestView";
 import { useProgress } from "../../contexts/ProgressContext";
@@ -157,7 +158,7 @@ export default function V2MockTestBridge() {
         failedMap[q.id] = (failedMap[q.id] || 0) + 1;
       }
     });
-    localStorage.setItem("sql-aa-failed-attempts", JSON.stringify(failedMap));
+    setStorageItem("sql-aa-failed-attempts", JSON.stringify(failedMap));
   };
 
   const submitMockAnswer = async (sql: string) => {

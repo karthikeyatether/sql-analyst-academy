@@ -1,3 +1,4 @@
+import { setStorageItem } from "../../utils/storage";
 import React, { useState, useMemo } from "react";
 import {
   Code2,
@@ -88,7 +89,7 @@ function PracticeView({
   });
   const handlePracticeSplitResize = (w: number) => {
     setPracticeSplit(w);
-    localStorage.setItem("sql-aa-split-practice", JSON.stringify(w));
+    setStorageItem("sql-aa-split-practice", JSON.stringify(w));
   };
 
   const [diffFilter, setDiffFilter] = useState<Difficulty | "All">("All");

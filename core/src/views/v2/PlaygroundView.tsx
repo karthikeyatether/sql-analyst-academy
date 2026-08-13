@@ -1,3 +1,4 @@
+import { setStorageItem } from "../../utils/storage";
 import type { ViewId, PlaygroundMode } from "../../types";
 import type { LintError } from "../../types";
 import React, {
@@ -325,7 +326,7 @@ const PlaygroundView = React.memo(function PlaygroundView({
   });
   const handleEditorHeightResize = (h: number) => {
     setEditorHeight(h);
-    localStorage.setItem("sql-aa-editor-h", JSON.stringify(h));
+    setStorageItem("sql-aa-editor-h", JSON.stringify(h));
   };
 
   const [internalRightOpen, setInternalRightOpen] = useState(true);
@@ -411,7 +412,7 @@ const PlaygroundView = React.memo(function PlaygroundView({
   });
   const handlePlaygroundSplitResize = (w: number) => {
     setPlaygroundSplit(w);
-    localStorage.setItem("sql-aa-split-playground", JSON.stringify(w));
+    setStorageItem("sql-aa-split-playground", JSON.stringify(w));
   };
 
   // Keep a one-click way to recover from an overly wide context pane without
@@ -446,7 +447,7 @@ const PlaygroundView = React.memo(function PlaygroundView({
   });
   const handleSetQueryB = (val: string) => {
     setQueryB(val);
-    localStorage.setItem("sql-aa-query-b-v2", JSON.stringify(val));
+    setStorageItem("sql-aa-query-b-v2", JSON.stringify(val));
   };
 
   const [resB, setResB] = useState<QueryResult | null>(null);
@@ -480,7 +481,7 @@ const PlaygroundView = React.memo(function PlaygroundView({
   ) => {
     setHistoryFavorites((prev) => {
       const next = typeof val === "function" ? val(prev) : val;
-      localStorage.setItem("sql-aa-history-favs-v4", JSON.stringify(next));
+      setStorageItem("sql-aa-history-favs-v4", JSON.stringify(next));
       return next;
     });
   };
@@ -769,29 +770,29 @@ SELECT * FROM customers LIMIT 10;`;
       try {
         const backup = JSON.parse(event.target?.result as string);
         if (backup.progress)
-          localStorage.setItem(
+          setStorageItem(
             "sql-aa-progress-v3",
             JSON.stringify(backup.progress),
           );
         if (backup.history)
-          localStorage.setItem(
+          setStorageItem(
             "sql-aa-history",
             JSON.stringify(backup.history),
           );
         if (backup.saved)
-          localStorage.setItem("sql-aa-saved", JSON.stringify(backup.saved));
+          setStorageItem("sql-aa-saved", JSON.stringify(backup.saved));
         if (backup.drafts)
-          localStorage.setItem(
+          setStorageItem(
             "sql-aa-problem-drafts",
             JSON.stringify(backup.drafts),
           );
         if (backup.puzzleDrafts)
-          localStorage.setItem(
+          setStorageItem(
             "sql-aa-puzzle-drafts",
             JSON.stringify(backup.puzzleDrafts),
           );
         if (backup.freeform)
-          localStorage.setItem(
+          setStorageItem(
             "sql-aa-freeform-query",
             JSON.stringify(backup.freeform),
           );
@@ -1518,7 +1519,7 @@ SELECT * FROM customers LIMIT 10;`;
           localStorage.getItem("sql-aa-problem-drafts") || "{}",
         );
         delete drafts[selectedProblem?.id];
-        localStorage.setItem("sql-aa-problem-drafts", JSON.stringify(drafts));
+        setStorageItem("sql-aa-problem-drafts", JSON.stringify(drafts));
         const saved = getSavedDraftQuery(p);
         updateEditorQuery(saved);
         setQueryResult(await runQuery(saved, true));
@@ -1533,7 +1534,7 @@ SELECT * FROM customers LIMIT 10;`;
           localStorage.getItem("sql-aa-puzzle-drafts") || "{}",
         );
         delete drafts[activePuzzle?.id];
-        localStorage.setItem("sql-aa-puzzle-drafts", JSON.stringify(drafts));
+        setStorageItem("sql-aa-puzzle-drafts", JSON.stringify(drafts));
         const saved = getSavedPuzzleQuery(p);
         updateEditorQuery(saved);
         setQueryResult(await runQuery(saved, true));

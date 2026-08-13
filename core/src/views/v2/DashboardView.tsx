@@ -1,3 +1,4 @@
+import { setStorageItem } from "../../utils/storage";
 import React, { useState, useEffect } from "react";
 import { formatStudyTime } from "../../utils/formatters";
 import {
@@ -202,19 +203,19 @@ function DashboardView({
   const toggleWidgetCollapse = (key: string) => {
     setCollapsed((prev) => {
       const next = { ...prev, [key]: !prev[key] };
-      localStorage.setItem("sql-aa-dash-collapsed", JSON.stringify(next));
+      setStorageItem("sql-aa-dash-collapsed", JSON.stringify(next));
       return next;
     });
   };
 
   const handleDensityChange = (newDensity: "compact" | "spacious") => {
     setDensity(newDensity);
-    localStorage.setItem("sql-aa-dash-density", newDensity);
+    setStorageItem("sql-aa-dash-density", newDensity);
   };
 
   const handleDailyGoalChange = (mins: number) => {
     setDailyGoalMinutes(mins);
-    localStorage.setItem("sql-aa-dash-daily-goal", String(mins));
+    setStorageItem("sql-aa-dash-daily-goal", String(mins));
     setShowGoalModal(false);
   };
 

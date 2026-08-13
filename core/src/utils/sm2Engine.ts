@@ -1,3 +1,4 @@
+import { setStorageItem } from "./storage";
 export interface SM2ProgressItem {
   id: string;
   interval: number;
@@ -57,7 +58,7 @@ export function loadSM2Progress(): SM2ProgressMap {
 
 export function saveSM2Progress(map: SM2ProgressMap): void {
   try {
-    localStorage.setItem("sql-aa-sm2-progress", JSON.stringify(map));
+    setStorageItem("sql-aa-sm2-progress", JSON.stringify(map));
   } catch {
     // ignore
   }

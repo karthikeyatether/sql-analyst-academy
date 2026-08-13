@@ -474,7 +474,7 @@ export default function App() {
   }, []);
 
   const completeOnboarding = () => {
-    localStorage.setItem("sql-aa-onboarded", "true");
+    setStorageItem("sql-aa-onboarded", "true");
     setShowOnboarding(false);
   };
 
@@ -650,9 +650,9 @@ export default function App() {
         currentStreak = 1;
       }
 
-      localStorage.setItem("sql-aa-streak", String(currentStreak));
-      localStorage.setItem("sql-aa-last-active-date", todayStr);
-      localStorage.setItem("sql-aa-active-days", JSON.stringify(activeDays));
+      setStorageItem("sql-aa-streak", String(currentStreak));
+      setStorageItem("sql-aa-last-active-date", todayStr);
+      setStorageItem("sql-aa-active-days", JSON.stringify(activeDays));
       setStreak(currentStreak);
     };
     checkStreak();
@@ -725,34 +725,34 @@ export default function App() {
 
         try {
           if (backup.progress && typeof backup.progress === "object") {
-            localStorage.setItem(
+            setStorageItem(
               "sql-aa-progress-v3",
               JSON.stringify(backup.progress),
             );
           }
           if (backup.history && Array.isArray(backup.history)) {
-            localStorage.setItem(
+            setStorageItem(
               "sql-aa-history",
               JSON.stringify(backup.history),
             );
           }
           if (backup.saved && Array.isArray(backup.saved)) {
-            localStorage.setItem("sql-aa-saved", JSON.stringify(backup.saved));
+            setStorageItem("sql-aa-saved", JSON.stringify(backup.saved));
           }
           if (backup.drafts && typeof backup.drafts === "object") {
-            localStorage.setItem(
+            setStorageItem(
               "sql-aa-problem-drafts",
               JSON.stringify(backup.drafts),
             );
           }
           if (backup.puzzleDrafts && typeof backup.puzzleDrafts === "object") {
-            localStorage.setItem(
+            setStorageItem(
               "sql-aa-puzzle-drafts",
               JSON.stringify(backup.puzzleDrafts),
             );
           }
           if (backup.freeform !== undefined) {
-            localStorage.setItem(
+            setStorageItem(
               "sql-aa-freeform-query",
               JSON.stringify(backup.freeform),
             );
@@ -767,7 +767,7 @@ export default function App() {
           // Rollback to last known good state
           backupKeys.forEach((key) => {
             if (lastKnownGood[key] !== null) {
-              localStorage.setItem(key, lastKnownGood[key]!);
+              setStorageItem(key, lastKnownGood[key]!);
             } else {
               localStorage.removeItem(key);
             }
@@ -1346,7 +1346,7 @@ export default function App() {
       try {
         setQuery(newVal);
         queryRef.current = newVal;
-        localStorage.setItem("sql-aa-active-query", JSON.stringify(newVal));
+        setStorageItem("sql-aa-active-query", JSON.stringify(newVal));
 
         const mode = pMode ?? playgroundMode;
         if (mode === "practice") {
@@ -1360,7 +1360,7 @@ export default function App() {
               query: newVal,
               starterQueryUsed: prob ? prob.starterQuery : "",
             };
-            localStorage.setItem(
+            setStorageItem(
               "sql-aa-problem-drafts",
               JSON.stringify(drafts),
             );
@@ -1376,7 +1376,7 @@ export default function App() {
               query: newVal,
               flawedQueryUsed: puzzle ? puzzle.flawedQuery : "",
             };
-            localStorage.setItem(
+            setStorageItem(
               "sql-aa-puzzle-drafts",
               JSON.stringify(drafts),
             );
@@ -1458,7 +1458,7 @@ export default function App() {
             const updatedValue = editor.getValue();
             setQuery(updatedValue);
             queryRef.current = updatedValue;
-            localStorage.setItem(
+            setStorageItem(
               "sql-aa-active-query",
               JSON.stringify(updatedValue),
             );
@@ -1514,7 +1514,7 @@ export default function App() {
           stopAutoTyping();
           isProgrammaticChangeRef.current = true;
           setQuery(fullText);
-          localStorage.setItem("sql-aa-active-query", JSON.stringify(fullText));
+          setStorageItem("sql-aa-active-query", JSON.stringify(fullText));
           setTimeout(() => {
             isProgrammaticChangeRef.current = false;
           }, 50);
@@ -1538,7 +1538,7 @@ export default function App() {
         if (debounceTimerRef.current)
           window.clearTimeout(debounceTimerRef.current);
         debounceTimerRef.current = window.setTimeout(() => {
-          localStorage.setItem("sql-aa-active-query", JSON.stringify(v));
+          setStorageItem("sql-aa-active-query", JSON.stringify(v));
 
           if (playgroundMode === "practice" && selectedProblemId) {
             const drafts = JSON.parse(
@@ -1549,7 +1549,7 @@ export default function App() {
               query: v,
               starterQueryUsed: prob ? prob.starterQuery : "",
             };
-            localStorage.setItem(
+            setStorageItem(
               "sql-aa-problem-drafts",
               JSON.stringify(drafts),
             );
@@ -1562,12 +1562,12 @@ export default function App() {
               query: v,
               flawedQueryUsed: puzzle ? puzzle.flawedQuery : "",
             };
-            localStorage.setItem(
+            setStorageItem(
               "sql-aa-puzzle-drafts",
               JSON.stringify(drafts),
             );
           } else {
-            localStorage.setItem("sql-aa-freeform-query", JSON.stringify(v));
+            setStorageItem("sql-aa-freeform-query", JSON.stringify(v));
           }
 
           const now = new Date();
@@ -2753,7 +2753,7 @@ export default function App() {
 
         setQuery(initialQuery);
         queryRef.current = initialQuery;
-        localStorage.setItem(
+        setStorageItem(
           "sql-aa-active-query",
           JSON.stringify(initialQuery),
         );
@@ -3554,7 +3554,7 @@ export default function App() {
           );
           attempts[selectedProblem.id] =
             (attempts[selectedProblem.id] || 0) + 1;
-          localStorage.setItem(
+          setStorageItem(
             "sql-aa-failed-attempts",
             JSON.stringify(attempts),
           );
@@ -3660,7 +3660,7 @@ export default function App() {
           localStorage.getItem("sql-aa-problem-drafts") || "{}",
         );
         delete drafts[selectedProblemId];
-        localStorage.setItem("sql-aa-problem-drafts", JSON.stringify(drafts));
+        setStorageItem("sql-aa-problem-drafts", JSON.stringify(drafts));
         const saved = getSavedDraftQuery(p);
         updateEditorQuery(saved);
         setQueryResult(await runQuery(saved, true));
@@ -3675,7 +3675,7 @@ export default function App() {
           localStorage.getItem("sql-aa-puzzle-drafts") || "{}",
         );
         delete drafts[activePuzzleId];
-        localStorage.setItem("sql-aa-puzzle-drafts", JSON.stringify(drafts));
+        setStorageItem("sql-aa-puzzle-drafts", JSON.stringify(drafts));
         const saved = getSavedPuzzleQuery(p);
         updateEditorQuery(saved);
         setQueryResult(await runQuery(saved, true));
