@@ -45,6 +45,12 @@ async function build() {
       target: "esnext",
       jsx: "automatic",
       outdir: assetsDir,
+      alias: {
+        "react": "preact/compat",
+        "react-dom/test-utils": "preact/test-utils",
+        "react-dom": "preact/compat",
+        "react/jsx-runtime": "preact/jsx-runtime"
+      },
       define: {
         "process.env.NODE_ENV": '"development"',
         "import.meta.env.PROD": "false",
