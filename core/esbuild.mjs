@@ -109,13 +109,14 @@ async function build() {
   // 4. Generate index.html
   let html = fs.readFileSync(path.resolve(__dirname, "index.html"), "utf-8");
   
-  // Inject script and css
+  const buildVersion = Date.now();
+  // Inject script and css with cache-busting version timestamp
   html = html.replace(
     '</head>',
-    `  <link rel="stylesheet" href="/assets/main.css">\n</head>`
+    `  <link rel="stylesheet" href="/assets/main.css?v=${buildVersion}">\n</head>`
   ).replace(
     '</body>',
-    `  <script type="module" src="/assets/main.js"></script>\n</body>`
+    `  <script type="module" src="/assets/main.js?v=${buildVersion}"></script>\n</body>`
   );
   
   // Strip Vite's module script
