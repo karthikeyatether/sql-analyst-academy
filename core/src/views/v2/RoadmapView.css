@@ -1,4 +1,161 @@
-/* ROADMAP */
+/* ROADMAP HERO BANNER */
+.roadmap-hero-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 1.75rem 2.5rem;
+  background: linear-gradient(135deg, rgba(16, 22, 34, 0.95) 0%, rgba(10, 14, 22, 0.98) 100%);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.roadmap-hero-banner::before {
+  content: "";
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(56, 217, 255, 0.09) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.rh-main {
+  max-width: 600px;
+}
+
+.rh-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(56, 217, 255, 0.08);
+  border: 1px solid rgba(56, 217, 255, 0.25);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cyan);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rh-title {
+  margin: 0 0 6px 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.rh-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.rh-card {
+  min-width: 300px;
+  max-width: 360px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+}
+
+.rh-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rh-card-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.rh-card-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--faint);
+}
+
+.rh-card-count {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 2px;
+}
+
+.rh-card-pct {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--cyan);
+}
+
+.rh-bar-bg {
+  width: 100%;
+  height: 7px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.rh-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan) 0%, #34d399 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.rh-action-btn {
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  background: rgba(56, 217, 255, 0.08);
+  border: 1px solid rgba(56, 217, 255, 0.25);
+  border-radius: 8px;
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.rh-action-btn:hover {
+  background: rgba(56, 217, 255, 0.18);
+  border-color: var(--cyan);
+  transform: translateY(-1px);
+}
+
+.rh-action-btn strong {
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .roadmap-hero-banner {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1.25rem;
+  }
+  .rh-card {
+    max-width: 100%;
+  }
+}
+
 .roadmap-grid-panel {
   overflow-y: auto;
   height: 100%;

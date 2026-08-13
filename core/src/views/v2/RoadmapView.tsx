@@ -1,7 +1,7 @@
 import "./RoadmapView.css";
 import type { SqlPuzzle } from "../../types";
 import React from "react";
-import { BookOpen, Code2, CheckCircle2, Circle, Timer } from "lucide-react";
+import { BookOpen, Code2, CheckCircle2, Circle, Timer, ArrowRight } from "lucide-react";
 import type {
   RoadmapModule,
   PracticeProblem,
@@ -58,54 +58,46 @@ function RoadmapView({
   const progressPct = Math.round(
     (totalCompleted / learningRoadmap.length) * 100,
   );
+  const nextDay =
+    learningRoadmap.find((d) => !days.includes(d.day)) || learningRoadmap[0];
 
   return (
     <div className="view-content roadmap-timeline-view">
-      <div
-        className="dash-hero roadmap-hero"
-        style={{
-          padding: "2rem 3rem",
-          background: "var(--brand-surface)",
-          borderBottom: "1px solid var(--border)",
-        }}
-      >
-        <h1 style={{ margin: "0 0 0.5rem 0", fontSize: "2rem" }}>
-          {learningRoadmap.length}-Day SQL Roadmap
-        </h1>
-        <p style={{ margin: 0, opacity: 0.8 }}>
-          Follow this step-by-step guide to become job-ready in{" "}
-          {learningRoadmap.length} days. You are free to move at your own pace.
-        </p>
-        <div
-          style={{
-            marginTop: "1rem",
-            display: "flex",
-            alignItems: "center",
-            gap: "1rem",
-          }}
-        >
-          <div
-            style={{
-              flex: 1,
-              background: "var(--bg)",
-              height: 8,
-              borderRadius: 4,
-              overflow: "hidden",
-              border: "1px solid var(--border)",
-            }}
-          >
-            <div
-              style={{
-                width: `${progressPct}%`,
-                background: "var(--primary)",
-                height: "100%",
-                transition: "width 0.3s ease",
-              }}
-            />
+      <div className="roadmap-hero-banner">
+        <div className="rh-main">
+          <div className="rh-badge">
+            <BookOpen size={13} />
+            <span>SQL Analyst Track</span>
           </div>
-          <span style={{ fontSize: "0.9rem", fontWeight: "bold" }}>
-            {progressPct}% Complete
-          </span>
+          <h1 className="rh-title">{learningRoadmap.length}-Day SQL Roadmap</h1>
+          <p className="rh-subtitle">
+            Follow this structured path to master SQL from fundamentals to advanced analytics at your own pace.
+          </p>
+        </div>
+
+        <div className="rh-card">
+          <div className="rh-card-top">
+            <div className="rh-card-meta">
+              <span className="rh-card-label">Roadmap Progress</span>
+              <span className="rh-card-count">{totalCompleted} / {learningRoadmap.length} Days Completed</span>
+            </div>
+            <span className="rh-card-pct">{progressPct}%</span>
+          </div>
+          <div className="rh-bar-bg">
+            <div className="rh-bar-fill" style={{ width: `${progressPct}%` }} />
+          </div>
+          {nextDay && (
+            <button
+              className="rh-action-btn"
+              onClick={() => {
+                setSelectedDayId(nextDay.day);
+                setActiveView("day-details");
+              }}
+            >
+              <span>Continue: <strong>Day {nextDay.day} - {nextDay.title}</strong></span>
+              <ArrowRight size={14} />
+            </button>
+          )}
         </div>
       </div>
 
