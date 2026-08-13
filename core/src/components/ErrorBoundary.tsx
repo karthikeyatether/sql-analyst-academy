@@ -1,4 +1,4 @@
-import { Component, ErrorInfo, ReactNode } from "react";
+import React, { Component, ErrorInfo, ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
@@ -23,28 +23,15 @@ export class ErrorBoundary extends Component<Props, State> {
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // If it's a Vite chunk load error (user is on an old cached version and we deployed an update),
     // automatically reload the page to fetch the new manifest and chunks.
-    const isChunkLoadError =
-      error?.message
-        ?.toLowerCase()
-        .includes("failed to fetch dynamically imported module") ||
+    const isChunkLoadError = 
+      error?.message?.toLowerCase().includes("failed to fetch dynamically imported module") ||
       error?.name === "ChunkLoadError";
-
+      
     if (isChunkLoadError) {
-      const reloadKey = "sql-aa-chunk-reload-at";
-      const now = Date.now();
-      const lastReload = Number(sessionStorage.getItem(reloadKey) || 0);
-      if (now - lastReload > 10_000) {
-        sessionStorage.setItem(reloadKey, String(now));
-        window.location.reload();
-      } else {
-        console.error(
-          "Chunk loading failed again after an automatic reload; stopping reload loop.",
-          error,
-        );
-      }
+      window.location.reload();
       return;
     }
-
+    
     console.error("Uncaught error in boundary:", error, errorInfo);
   }
 
@@ -87,12 +74,12 @@ export class ErrorBoundary extends Component<Props, State> {
                 style={{
                   marginTop: "12px",
                   padding: "8px",
-                  background: "var(--panel)",
+                  background: "rgba(0, 0, 0, 0.2)",
                   borderRadius: "4px",
                   fontSize: "10px",
                   overflowX: "auto",
                   color: "var(--muted)",
-                  border: "1px solid var(--panel)",
+                  border: "1px solid rgba(255, 255, 255, 0.05)",
                 }}
               >
                 {this.state.error.stack || this.state.error.message}
@@ -124,7 +111,7 @@ export class ErrorBoundary extends Component<Props, State> {
                     padding: "4px 10px",
                     fontSize: "11px",
                     borderRadius: "4px",
-                    background: "var(--panel)",
+                    background: "rgba(255, 255, 255, 0.05)",
                     border: "1px solid var(--border)",
                     color: "var(--text)",
                     cursor: "pointer",

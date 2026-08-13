@@ -23,7 +23,7 @@ async function build() {
     esbuild.build({
       entryPoints: ["src/main.tsx"],
       bundle: true,
-      external: ["monaco-editor", "react", "react-dom", "lucide-react"],
+      external: ["monaco-editor"],
       minify: false,
       format: "esm",
       target: "esnext",
@@ -95,16 +95,7 @@ async function build() {
   // Inject script and css
   html = html.replace(
     '</head>',
-    `  <link rel="stylesheet" href="/assets/main.css">\n  <script type="importmap">
-    {
-      "imports": {
-        "react": "https://esm.sh/preact@10.22.1/compat",
-        "react-dom/client": "https://esm.sh/preact@10.22.1/compat/client",
-        "react-dom": "https://esm.sh/preact@10.22.1/compat",
-        "lucide-react": "https://esm.sh/lucide-react@0.468.0"
-      }
-    }
-  </script>\n</head>`
+    `  <link rel="stylesheet" href="/assets/main.css">\n</head>`
   ).replace(
     '</body>',
     `  <script type="module" src="/assets/main.js"></script>\n</body>`

@@ -43,3 +43,16 @@ profile-work/
 .tsconfig.tsbuildinfo
 audit_*.txt
 *.log
+*.diff
+*.png
+*.cjs
+fix*.py
+test_*.cjs
+search_transcript*
+old_*
+themes_dump.js
+extracted_themes.txt
+ember_content.md
+ember_transcript.txt
+core-v2/
+core/*.txt

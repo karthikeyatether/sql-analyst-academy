@@ -15,7 +15,8 @@ export type ViewId =
   | "day-details"
   | "join-visualizer"
   | "missions"
-  | "modules";
+  | "modules"
+  | "interactive-lesson";
 
 export type PlaygroundMode = "practice" | "puzzle" | "free";
 
@@ -36,9 +37,14 @@ export interface MockTestResult {
 
 export type RightTab = "schema" | "hints" | "erd" | "linter";
 
-export interface BookmarkItem {
-  id: string;
-  title: string;
-  query: string;
-  timestamp: number;
+export interface UserProgressState {
+  completedModules: number[];
+  solvedProblems: string[];
+  solvedPuzzles: string[];
+  completedDays: number[];
+  queryRuns: number;
+  minutesStudied: number;
+  mockScores: Record<string, number>;
+  completedChecklistItems: string[];
 }
+

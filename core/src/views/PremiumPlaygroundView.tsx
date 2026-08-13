@@ -26,7 +26,7 @@ export function PremiumPlaygroundView() {
   useEffect(() => {
     getLiveSchema().then(setSchema).catch(console.error);
     if (activeProblem && query.includes("SELECT * FROM customers")) {
-      setQuery(activeProblem.starterSql || `-- Solve: ${activeProblem.title}\n\n`);
+      setQuery(activeProblem.starterQuery || `-- Solve: ${activeProblem.title}\n\n`);
     }
   }, [activeProblem]);
 
@@ -46,11 +46,11 @@ export function PremiumPlaygroundView() {
     const userRes = await runQuery(query);
     setResult(userRes);
     
-    const solRes = await runQuery(activeProblem.solutionSql);
+    const solRes = await runQuery(activeProblem.solution);
     
     const grade = gradeQuery({
       userQuery: query,
-      solutionSql: activeProblem.solutionSql,
+      solutionSql: activeProblem.solution,
       userResult: userRes,
       expectedResult: solRes,
       promptText: activeProblem.businessScenario,

@@ -10,40 +10,20 @@ export function PremiumLayout({ children, sidebar }: PremiumLayoutProps) {
   const state = useV3State();
 
   return (
-    <div
-      style={{
-        display: "flex",
-        width: "100%",
-        height: "100%",
-        background: "var(--bg-base)",
-      }}
-    >
+    <div className={`app-shell ${state.isSidebarOpen ? 'sb-open' : 'sb-closed'}`}>
       {state.isSidebarOpen && sidebar && (
-        <aside
-          className="glass-panel animate-fade"
-          style={{
-            width: "280px",
-            height: "100%",
-            borderRight: "1px solid var(--border-subtle)",
-            display: "flex",
-            flexDirection: "column",
-            zIndex: 10,
-          }}
-        >
+        <>
+          <div
+            className="sidebar-backdrop"
+            onClick={() => {}}
+          />
           {sidebar}
-        </aside>
+        </>
       )}
-      <main
-        style={{
-          flex: 1,
-          height: "100%",
-          position: "relative",
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        {children}
+      <main className="main-shell">
+        <div className="page-content scrollable-y" style={{ flex: 1, overflow: "auto", position: "relative" }}>
+          {children}
+        </div>
       </main>
     </div>
   );

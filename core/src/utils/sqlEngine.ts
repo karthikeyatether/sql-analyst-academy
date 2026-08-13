@@ -577,12 +577,13 @@ export function formatSql(sql: string): string {
       result += "FULL JOIN ";
       i++;
     } else if (curr === "CROSS" && next === "JOIN") {
+    } else if (curr === "UNION" && next === "ALL") {
       if (!result.endsWith("\n")) result += "\n";
-      result += "CROSS JOIN ";
+      result += "UNION ALL\n";
       i++;
-    } else if (curr === "JOIN") {
+    } else if (curr === "UNION") {
       if (!result.endsWith("\n")) result += "\n";
-      result += "JOIN ";
+      result += "UNION\n";
     } else if (curr === "AND" || curr === "OR") {
       if (!result.endsWith("\n")) result += "\n  ";
       result += curr + " ";

@@ -6,34 +6,38 @@ import { PremiumLayout } from "./components/layout/PremiumLayout";
 import { PremiumSidebar } from "./components/layout/PremiumSidebar";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 
-// Lazy-load premium views
-const InteractiveRoadmapView = lazy(
-  () => import("./views/InteractiveRoadmapView"),
-);
-const PremiumPlaygroundView = lazy(
-  () => import("./views/PremiumPlaygroundView"),
-);
-const PremiumPracticeView = lazy(() => import("./views/PremiumPracticeView"));
-const PremiumMockTestView = lazy(() => import("./views/PremiumMockTestView"));
-const PremiumPuzzlesView = lazy(() => import("./views/PremiumPuzzlesView"));
+const V2DashboardBridge = lazy(() => import("./views/v2/V2DashboardBridge"));
+const V2RoadmapBridge = lazy(() => import("./views/v2/V2RoadmapBridge"));
+const V2PlaygroundBridge = lazy(() => import("./views/v2/V2PlaygroundBridge"));
+const V2PracticeBridge = lazy(() => import("./views/v2/V2PracticeBridge"));
+const V2MockTestBridge = lazy(() => import("./views/v2/V2MockTestBridge"));
+const V2PuzzlesBridge = lazy(() => import("./views/v2/V2PuzzlesBridge"));
+const V2DayDetailsBridge = lazy(() => import("./views/v2/V2DayDetailsBridge"));
+const PremiumInteractiveLessonView = lazy(() => import("./views/PremiumInteractiveLessonView"));
 
 function Router() {
   const state = useV3State();
 
   const renderView = () => {
     switch (state.activeView) {
+      case "dashboard":
+        return <V2DashboardBridge />;
       case "roadmap":
-        return <InteractiveRoadmapView />;
+        return <V2RoadmapBridge />;
       case "playground":
-        return <PremiumPlaygroundView />;
+        return <V2PlaygroundBridge />;
       case "practice":
-        return <PremiumPracticeView />;
+        return <V2PracticeBridge />;
       case "puzzles":
-        return <PremiumPuzzlesView />;
+        return <V2PuzzlesBridge />;
       case "mocks":
-        return <PremiumMockTestView />;
+        return <V2MockTestBridge />;
+      case "day-details":
+        return <V2DayDetailsBridge />;
+      case "interactive-lesson":
+        return <PremiumInteractiveLessonView />;
       default:
-        return <InteractiveRoadmapView />;
+        return <V2DashboardBridge />;
     }
   };
 

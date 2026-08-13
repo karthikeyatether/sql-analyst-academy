@@ -9,9 +9,7 @@ import { VitePWA } from "vite-plugin-pwa";
 // Monaco is served from public/vs/ (pre-built AMD files) in ALL modes.
 // Rollup never bundles Monaco — this saves ~8s of build time.
 const isMonacoExternal = (id: string) =>
-  id.startsWith("monaco-editor") ||
-  id === "@monaco-editor/react" ||
-  id.startsWith("@monaco-editor/");
+  id === "monaco-editor" || id.startsWith("monaco-editor/");
 
 export default defineConfig(({ mode }) => {
   const isDev = mode === "development";

@@ -21,8 +21,11 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
-  void navigator.serviceWorker.register("/sw.js").catch(() => {
-    // The app remains fully usable when service-worker registration is unavailable.
+  // Unregister stale service workers so the browser never serves cached old assets like main.js
+  void navigator.serviceWorker.getRegistrations().then((registrations) => {
+    for (const registration of registrations) {
+      void registration.unregister();
+    }
   });
 }
 
