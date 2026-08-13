@@ -103,12 +103,7 @@ async function build() {
 
   const serviceWorkerPath = path.join(distDir, "sw.js");
   if (fs.existsSync(serviceWorkerPath)) {
-    const serviceWorker = fs.readFileSync(serviceWorkerPath, "utf-8");
-    fs.writeFileSync(
-      serviceWorkerPath,
-      serviceWorker.replace("__SW_VERSION__", `esbuild-${Date.now()}`),
-      "utf-8",
-    );
+    fs.rmSync(serviceWorkerPath, { force: true });
   }
 
   // 4. Generate index.html

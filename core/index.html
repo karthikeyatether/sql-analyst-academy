@@ -25,6 +25,13 @@
     <link rel="preload" href="/data/datasets.json" as="fetch" crossorigin="anonymous" />
     <link rel="preload" href="/data/puzzles.json" as="fetch" crossorigin="anonymous" />
     <title>SQL Academy</title>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          for (var i = 0; i < regs.length; i++) { regs[i].unregister(); }
+        });
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
