@@ -618,8 +618,13 @@ export function formatSql(sql: string): string {
   return result
     .split("\n")
     .map((line) => line.trimEnd())
+    .filter((line, idx, arr) => {
+      // Remove blank lines inside query body
+      if (!line.trim() && idx > 0 && idx < arr.length - 1) return false;
+      return true;
+    })
     .join("\n")
-    .replace(/\n{3,}/g, "\n\n")
+    .replace(/\n\s*\n+/g, "\n")
     .trim();
 }
 

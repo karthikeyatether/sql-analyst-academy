@@ -536,11 +536,14 @@ const PlaygroundView = React.memo(function PlaygroundView({
         e.preventDefault();
         const f = formatSql(queryRef.current);
         updateEditorQuery(f);
+      } else if (e.altKey && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        setRightOpen((prev) => !prev);
       }
     };
     window.addEventListener("keydown", handleFormatHotkey);
     return () => window.removeEventListener("keydown", handleFormatHotkey);
-  }, [updateEditorQuery]);
+  }, [updateEditorQuery, setRightOpen]);
 
   // Derived active module check
   const activeModule = useMemo(() => {
@@ -4847,10 +4850,26 @@ SELECT * FROM customers LIMIT 10;`;
       {!rightOpen && !editorMaximized && (
         <button
           className="pg-left-toggle"
-          title="Show Context Panel"
+          title="Open Task & Schema Panel (Alt+B)"
           onClick={() => setRightOpen(true)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            padding: "8px 14px",
+            borderRadius: "20px",
+            background: "var(--accent, #38d9ff)",
+            color: "#000",
+            fontWeight: 700,
+            fontSize: "12px",
+            boxShadow: "0 4px 14px rgba(56,217,255,0.3)",
+            cursor: "pointer",
+            border: "none",
+            zIndex: 100,
+          }}
         >
-          <Database size={16} />
+          <BookOpen size={14} />
+          <span>Task & Schema (Alt+B)</span>
         </button>
       )}
 
