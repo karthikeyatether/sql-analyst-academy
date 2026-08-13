@@ -11,19 +11,24 @@ export default function V2PracticeBridge() {
   const dispatch = useV3Dispatch();
 
   const activeModuleId = v3ModuleId || 1;
-  const activeModule = roadmapModules.find((m) => m.id === activeModuleId) || roadmapModules[0];
-  const selectedProblem = activeModule.problems.find((p) => p.id === activeProblemId) || activeModule.problems[0];
+  const activeModule =
+    roadmapModules.find((m) => m.id === activeModuleId) || roadmapModules[0];
+  const selectedProblem =
+    activeModule.problems.find((p) => p.id === activeProblemId) ||
+    activeModule.problems[0];
 
   const classForDiff = (d: string) => {
     const lower = (d || "").toLowerCase();
     if (lower.includes("expert")) return "expert";
     if (lower.includes("advanced") || lower.includes("hard")) return "hard";
-    if (lower.includes("intermediate") || lower.includes("medium")) return "medium";
+    if (lower.includes("intermediate") || lower.includes("medium"))
+      return "medium";
     return "easy";
   };
 
   return (
-    <PracticeView {...({} as any)}
+    <PracticeView
+      {...({} as any)}
       progress={progress}
       activeModuleId={activeModuleId}
       roadmapModules={roadmapModules}
@@ -49,8 +54,12 @@ export default function V2PracticeBridge() {
       selectModule={(m) => {
         dispatch({ type: "SET_DAY", payload: m.id });
       }}
-      setActiveView={(view) => dispatch({ type: "SET_VIEW", payload: view as any })}
-      setPlaygroundMode={(mode) => dispatch({ type: "SET_PLAYGROUND_MODE", payload: mode as any })}
+      setActiveView={(view) =>
+        dispatch({ type: "SET_VIEW", payload: view as any })
+      }
+      setPlaygroundMode={(mode) =>
+        dispatch({ type: "SET_PLAYGROUND_MODE", payload: mode as any })
+      }
     />
   );
 }

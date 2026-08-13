@@ -153,7 +153,13 @@ export const MissionCapstoneView: React.FC<MissionCapstoneViewProps> = ({
                 >
                   {m.title}
                 </div>
-                <div style={{ fontSize: "12px", color: "var(--muted)", lineHeight: "1.4" }}>
+                <div
+                  style={{
+                    fontSize: "12px",
+                    color: "var(--muted)",
+                    lineHeight: "1.4",
+                  }}
+                >
                   {m.subtitle}
                 </div>
               </button>
@@ -187,7 +193,14 @@ export const MissionCapstoneView: React.FC<MissionCapstoneViewProps> = ({
             >
               {activeMission.title}
             </h3>
-            <p style={{ fontSize: "13px", color: "var(--muted)", margin: 0, lineHeight: "1.5" }}>
+            <p
+              style={{
+                fontSize: "13px",
+                color: "var(--muted)",
+                margin: 0,
+                lineHeight: "1.5",
+              }}
+            >
               {activeMission.description}
             </p>
           </div>

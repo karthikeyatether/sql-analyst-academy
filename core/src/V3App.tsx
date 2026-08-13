@@ -13,7 +13,9 @@ const V2PracticeBridge = lazy(() => import("./views/v2/V2PracticeBridge"));
 const V2MockTestBridge = lazy(() => import("./views/v2/V2MockTestBridge"));
 const V2PuzzlesBridge = lazy(() => import("./views/v2/V2PuzzlesBridge"));
 const V2DayDetailsBridge = lazy(() => import("./views/v2/V2DayDetailsBridge"));
-const PremiumInteractiveLessonView = lazy(() => import("./views/PremiumInteractiveLessonView"));
+const PremiumInteractiveLessonView = lazy(
+  () => import("./views/PremiumInteractiveLessonView"),
+);
 
 function Router() {
   const state = useV3State();

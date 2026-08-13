@@ -14,26 +14,62 @@ export default function V2MockTestBridge() {
   const dispatch = useV3Dispatch();
 
   // Local state for mock test runner
-  const [activeSubView, setActiveSubView] = useState<"mocks" | "mock-runner" | "mock-results">("mocks");
+  const [activeSubView, setActiveSubView] = useState<
+    "mocks" | "mock-runner" | "mock-results"
+  >("mocks");
   const [mockTest, setMockTest] = useState<any | null>(null);
   const [mockReviewIndex, setMockReviewIndex] = useState(0);
-  const [mockHistory, setMockHistory] = useLocalStorage<any[]>("sql-aa-mock-history", []);
-  
+  const [mockHistory, setMockHistory] = useLocalStorage<any[]>(
+    "sql-aa-mock-history",
+    [],
+  );
+
   const [query, setQuery] = useState("");
   const queryRef = useRef("");
-  const [queryResult, setQueryResult] = useState<any>({ columns: [], rows: [], message: "" });
+  const [queryResult, setQueryResult] = useState<any>({
+    columns: [],
+    rows: [],
+    message: "",
+  });
   const [resultPage, setResultPage] = useState(1);
 
   // Editor settings via useLocalStorage
-  const [sqlUpperKeywords, setSqlUpperKeywords] = useLocalStorage("sql-aa-upper-keywords", true);
-  const [editorFontSize, setEditorFontSize] = useLocalStorage("sql-aa-font-size", 14);
-  const [editorWordWrap, setEditorWordWrap] = useLocalStorage("sql-aa-word-wrap", false);
-  const [editorMinimap, setEditorMinimap] = useLocalStorage("sql-aa-minimap", false);
-  const [editorFontFamily, setEditorFontFamily] = useLocalStorage("sql-aa-font-family", "Fira Code");
-  const [editorTabSize, setEditorTabSize] = useLocalStorage("sql-aa-tab-size", 2);
-  const [editorTheme, setEditorTheme] = useLocalStorage("sql-aa-theme", "vs-dark");
+  const [sqlUpperKeywords, setSqlUpperKeywords] = useLocalStorage(
+    "sql-aa-upper-keywords",
+    true,
+  );
+  const [editorFontSize, setEditorFontSize] = useLocalStorage(
+    "sql-aa-font-size",
+    14,
+  );
+  const [editorWordWrap, setEditorWordWrap] = useLocalStorage(
+    "sql-aa-word-wrap",
+    false,
+  );
+  const [editorMinimap, setEditorMinimap] = useLocalStorage(
+    "sql-aa-minimap",
+    false,
+  );
+  const [editorFontFamily, setEditorFontFamily] = useLocalStorage(
+    "sql-aa-font-family",
+    "Fira Code",
+  );
+  const [editorTabSize, setEditorTabSize] = useLocalStorage(
+    "sql-aa-tab-size",
+    2,
+  );
+  const [editorTheme, setEditorTheme] = useLocalStorage(
+    "sql-aa-theme",
+    "vs-dark",
+  );
 
-  const startMockTest = (company: string, minutes: number, diff: string, maxMod: number, qCount: number) => {
+  const startMockTest = (
+    company: string,
+    minutes: number,
+    diff: string,
+    maxMod: number,
+    qCount: number,
+  ) => {
     const diffMap: Record<string, string[]> = {
       Beginner: ["Easy"],
       "Beginner → Intermediate": ["Easy", "Medium"],
@@ -43,9 +79,11 @@ export default function V2MockTestBridge() {
     };
     const allowedDifficulties = diffMap[diff] || ["Easy", "Medium", "Hard"];
 
-    const failedMap = JSON.parse(localStorage.getItem("sql-aa-failed-attempts") || "{}");
+    const failedMap = JSON.parse(
+      localStorage.getItem("sql-aa-failed-attempts") || "{}",
+    );
     const candidates = allProblems.filter(
-      (p) => p.moduleId <= maxMod && allowedDifficulties.includes(p.difficulty)
+      (p) => p.moduleId <= maxMod && allowedDifficulties.includes(p.difficulty),
     );
 
     const problems = candidates
@@ -53,15 +91,17 @@ export default function V2MockTestBridge() {
         problem: p,
         weight:
           (failedMap[p.id] || 0) +
-          (progress.solvedProblems.includes(p.id) ? 0.1 : 1.0) * (Math.random() + 0.5),
+          (progress.solvedProblems.includes(p.id) ? 0.1 : 1.0) *
+            (Math.random() + 0.5),
       }))
       .sort((a, b) => b.weight - a.weight)
       .map((x) => x.problem)
       .slice(0, qCount);
 
-    const finalProblems = problems.length === qCount
-      ? problems
-      : candidates.sort(() => 0.5 - Math.random()).slice(0, qCount);
+    const finalProblems =
+      problems.length === qCount
+        ? problems
+        : candidates.sort(() => 0.5 - Math.random()).slice(0, qCount);
 
     setMockTest({
       company,
@@ -86,7 +126,7 @@ export default function V2MockTestBridge() {
     const score = Math.round(
       (finalState.answers.filter((a: any) => a.isCorrect).length /
         finalState.questions.length) *
-        100
+        100,
     );
 
     const histEntry = {
@@ -94,7 +134,7 @@ export default function V2MockTestBridge() {
       date: new Date().toISOString(),
       company: finalState.company,
       score,
-      timeSpent: finalState.timeRemaining // V2 logic assumed time remaining tracking was handled elsewhere, we'll store raw score
+      timeSpent: finalState.timeRemaining, // V2 logic assumed time remaining tracking was handled elsewhere, we'll store raw score
     };
     setMockHistory([histEntry, ...mockHistory]);
 
@@ -103,12 +143,14 @@ export default function V2MockTestBridge() {
       ...progress,
       mockScores: {
         ...progress.mockScores,
-        [histEntry.id]: score
-      }
+        [histEntry.id]: score,
+      },
     });
 
     // Update failed attempts
-    const failedMap = JSON.parse(localStorage.getItem("sql-aa-failed-attempts") || "{}");
+    const failedMap = JSON.parse(
+      localStorage.getItem("sql-aa-failed-attempts") || "{}",
+    );
     finalState.answers.forEach((ans: any, idx: number) => {
       const q = finalState.questions[idx];
       if (!ans.isCorrect) {
@@ -133,10 +175,13 @@ export default function V2MockTestBridge() {
         expectedResult: expectedRes,
         userSnapshot: null,
         expectedSnapshot: null,
-        playgroundMode: "practice"
+        playgroundMode: "practice",
       });
 
-      const newAnswers = [...mockTest.answers, { query: sql, isCorrect: graderRes.isCorrect }];
+      const newAnswers = [
+        ...mockTest.answers,
+        { query: sql, isCorrect: graderRes.isCorrect },
+      ];
 
       if (mockTest.currentIndex === mockTest.questions.length - 1) {
         finishMockTest({ ...mockTest, answers: newAnswers });
@@ -165,7 +210,7 @@ export default function V2MockTestBridge() {
       setQueryResult({
         columns: res.columns || [],
         rows: res.rows || [],
-        message: "Success"
+        message: "Success",
       });
     } catch (e: any) {
       setQueryResult({ columns: [], rows: [], message: "", error: e.message });
@@ -173,7 +218,8 @@ export default function V2MockTestBridge() {
   };
 
   return (
-    <MockTestView {...({} as any)}
+    <MockTestView
+      {...({} as any)}
       activeView={activeSubView}
       setActiveView={(v: any) => {
         if (v === "mocks" || v === "mock-runner" || v === "mock-results") {
@@ -198,7 +244,10 @@ export default function V2MockTestBridge() {
       resultPage={resultPage}
       setResultPage={setResultPage}
       RESULT_PAGE_SIZE={10}
-      updateEditorQuery={(sql) => { setQuery(sql); queryRef.current = sql; }}
+      updateEditorQuery={(sql) => {
+        setQuery(sql);
+        queryRef.current = sql;
+      }}
       editorTheme={editorTheme}
       theme="dark"
       query={query}

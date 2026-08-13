@@ -17,17 +17,44 @@ export default function V2PlaygroundBridge() {
 
   // Local state for the playground editor settings via useLocalStorage
   const [rowLimit, setRowLimit] = useLocalStorage("sql-aa-row-limit", "100");
-  const [sqlUpperKeywords, setSqlUpperKeywords] = useLocalStorage("sql-aa-upper-keywords", true);
-  const [editorFontSize, setEditorFontSize] = useLocalStorage("sql-aa-font-size", 14);
-  const [editorWordWrap, setEditorWordWrap] = useLocalStorage("sql-aa-word-wrap", false);
-  const [editorMinimap, setEditorMinimap] = useLocalStorage("sql-aa-minimap", false);
-  const [editorFontFamily, setEditorFontFamily] = useLocalStorage("sql-aa-font-family", "Fira Code");
-  const [editorTabSize, setEditorTabSize] = useLocalStorage("sql-aa-tab-size", 2);
-  const [editorTheme, setEditorTheme] = useLocalStorage("sql-aa-theme", "vs-dark");
+  const [sqlUpperKeywords, setSqlUpperKeywords] = useLocalStorage(
+    "sql-aa-upper-keywords",
+    true,
+  );
+  const [editorFontSize, setEditorFontSize] = useLocalStorage(
+    "sql-aa-font-size",
+    14,
+  );
+  const [editorWordWrap, setEditorWordWrap] = useLocalStorage(
+    "sql-aa-word-wrap",
+    false,
+  );
+  const [editorMinimap, setEditorMinimap] = useLocalStorage(
+    "sql-aa-minimap",
+    false,
+  );
+  const [editorFontFamily, setEditorFontFamily] = useLocalStorage(
+    "sql-aa-font-family",
+    "Fira Code",
+  );
+  const [editorTabSize, setEditorTabSize] = useLocalStorage(
+    "sql-aa-tab-size",
+    2,
+  );
+  const [editorTheme, setEditorTheme] = useLocalStorage(
+    "sql-aa-theme",
+    "vs-dark",
+  );
 
   const [query, setQuery] = useState("");
-  const [queryResult, setQueryResult] = useState<QueryResult>({ columns: [], rows: [], message: "" });
-  const [expectedResult, setExpectedResult] = useState<QueryResult | null>(null);
+  const [queryResult, setQueryResult] = useState<QueryResult>({
+    columns: [],
+    rows: [],
+    message: "",
+  });
+  const [expectedResult, setExpectedResult] = useState<QueryResult | null>(
+    null,
+  );
   const [graderFeedback, setGraderFeedback] = useState<any>(null);
 
   const activeProblem = useMemo(() => {
@@ -41,7 +68,11 @@ export default function V2PlaygroundBridge() {
 
   useEffect(() => {
     if (activeProblem && playgroundMode === "practice") {
-      setQuery((activeProblem as any).starterCode || (activeProblem as any).starterQuery || "");
+      setQuery(
+        (activeProblem as any).starterCode ||
+          (activeProblem as any).starterQuery ||
+          "",
+      );
     } else if (activeProblem && playgroundMode === "puzzle") {
       setQuery((activeProblem as any).flawedQuery || "");
     } else {
@@ -59,18 +90,24 @@ export default function V2PlaygroundBridge() {
       setExpectedResult(null);
       setGraderFeedback(null);
 
-      if (activeProblem && (playgroundMode === "practice" || playgroundMode === "puzzle")) {
-        const solutionSql = playgroundMode === "practice" 
-          ? (activeProblem as any).solution 
-          : (activeProblem as any).solutionQuery;
-          
+      if (
+        activeProblem &&
+        (playgroundMode === "practice" || playgroundMode === "puzzle")
+      ) {
+        const solutionSql =
+          playgroundMode === "practice"
+            ? (activeProblem as any).solution
+            : (activeProblem as any).solutionQuery;
+
         if (solutionSql) {
           const expectedRes = await runQuery(solutionSql);
           setExpectedResult(expectedRes);
 
-          const isFlawedQueryUnchanged = playgroundMode === "puzzle" 
-            ? query.trim().toLowerCase() === (activeProblem as any).flawedQuery?.trim().toLowerCase()
-            : false;
+          const isFlawedQueryUnchanged =
+            playgroundMode === "puzzle"
+              ? query.trim().toLowerCase() ===
+                (activeProblem as any).flawedQuery?.trim().toLowerCase()
+              : false;
 
           const graderRes = gradeQuery({
             userQuery: query,
@@ -80,7 +117,7 @@ export default function V2PlaygroundBridge() {
             userSnapshot: null,
             expectedSnapshot: null,
             playgroundMode: playgroundMode,
-            isFlawedQueryUnchanged
+            isFlawedQueryUnchanged,
           });
 
           setGraderFeedback(graderRes);
@@ -90,14 +127,20 @@ export default function V2PlaygroundBridge() {
               if (!progress.solvedProblems.includes(activeProblem.id)) {
                 setProgress({
                   ...progress,
-                  solvedProblems: [...progress.solvedProblems, activeProblem.id],
+                  solvedProblems: [
+                    ...progress.solvedProblems,
+                    activeProblem.id,
+                  ],
                 });
               }
             } else if (playgroundMode === "puzzle") {
               if (!progress.solvedPuzzles?.includes(activeProblem.id)) {
                 setProgress({
                   ...progress,
-                  solvedPuzzles: [...(progress.solvedPuzzles || []), activeProblem.id],
+                  solvedPuzzles: [
+                    ...(progress.solvedPuzzles || []),
+                    activeProblem.id,
+                  ],
                 });
               }
             }
@@ -105,7 +148,12 @@ export default function V2PlaygroundBridge() {
         }
       }
     } catch (e: any) {
-      setQueryResult({ columns: [], rows: [], message: "", error: e.message || "Error running query" });
+      setQueryResult({
+        columns: [],
+        rows: [],
+        message: "",
+        error: e.message || "Error running query",
+      });
     }
   };
 
@@ -114,11 +162,14 @@ export default function V2PlaygroundBridge() {
   };
 
   return (
-    <PlaygroundView {...({} as any)}
+    <PlaygroundView
+      {...({} as any)}
       progress={progress}
       selectedProblem={activeProblem as any}
       playgroundMode={playgroundMode as any}
-      setPlaygroundMode={(mode: "practice" | "puzzle" | "free") => dispatch({ type: "SET_PLAYGROUND_MODE", payload: mode })}
+      setPlaygroundMode={(mode: "practice" | "puzzle" | "free") =>
+        dispatch({ type: "SET_PLAYGROUND_MODE", payload: mode })
+      }
       roadmapModules={roadmapModules}
       tableSchemas={tableSchemas}
       datasetDomains={datasetDomains}
@@ -156,7 +207,9 @@ export default function V2PlaygroundBridge() {
       setSavedQueries={() => {}}
       debugPuzzles={debugPuzzles}
       activePuzzle={activeProblem as any}
-      setActivePuzzleId={(id: string) => dispatch({ type: "SET_PROBLEM", payload: id })}
+      setActivePuzzleId={(id: string) =>
+        dispatch({ type: "SET_PROBLEM", payload: id })
+      }
       getSavedPuzzleQuery={() => ""}
       getSavedDraftQuery={() => ""}
       updateEditorQuery={(val: string) => setQuery(val)}

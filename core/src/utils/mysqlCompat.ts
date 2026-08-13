@@ -6,7 +6,10 @@
  * students learn and submit.
  */
 export function registerMySqlFunctions(db: {
-  create_function: (name: string, fn: (...args: unknown[]) => unknown) => unknown;
+  create_function: (
+    name: string,
+    fn: (...args: unknown[]) => unknown,
+  ) => unknown;
 }) {
   db.create_function("CONCAT", (...args: unknown[]) =>
     args.some((value) => value === null || value === undefined)
@@ -46,18 +49,21 @@ export function registerMySqlFunctions(db: {
     (end: unknown, start: unknown) => dateOnly(end) - dateOnly(start),
   );
   db.create_function("TO_DAYS", (value: unknown) => dateOnly(value));
-  db.create_function("TIMESTAMPDIFF", (unit: unknown, start: unknown, end: unknown) => {
-    if (String(unit).toUpperCase() !== "MONTH") return null;
-    const startDate = new Date(String(start));
-    const endDate = new Date(String(end));
-    if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()))
-      return null;
-    return (
-      (endDate.getUTCFullYear() - startDate.getUTCFullYear()) * 12 +
-      endDate.getUTCMonth() -
-      startDate.getUTCMonth()
-    );
-  });
+  db.create_function(
+    "TIMESTAMPDIFF",
+    (unit: unknown, start: unknown, end: unknown) => {
+      if (String(unit).toUpperCase() !== "MONTH") return null;
+      const startDate = new Date(String(start));
+      const endDate = new Date(String(end));
+      if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()))
+        return null;
+      return (
+        (endDate.getUTCFullYear() - startDate.getUTCFullYear()) * 12 +
+        endDate.getUTCMonth() -
+        startDate.getUTCMonth()
+      );
+    },
+  );
   db.create_function("DATE_FORMAT", (value: unknown, format: unknown) =>
     formatDate(value, format),
   );
@@ -65,8 +71,10 @@ export function registerMySqlFunctions(db: {
   db.create_function("NOW", () =>
     new Date().toISOString().slice(0, 19).replace("T", " "),
   );
-  db.create_function("IF", (condition: unknown, whenTrue: unknown, whenFalse: unknown) =>
-    condition ? whenTrue : whenFalse,
+  db.create_function(
+    "IF",
+    (condition: unknown, whenTrue: unknown, whenFalse: unknown) =>
+      condition ? whenTrue : whenFalse,
   );
 }
 

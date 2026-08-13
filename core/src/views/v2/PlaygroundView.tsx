@@ -114,7 +114,18 @@ interface PlaygroundViewProps {
   editorTheme: string;
   setEditorTheme: (val: string | ((prev: string) => string)) => void;
   theme: "dark" | "light" | "oled" | "dracula" | "onedark" | "ember";
-  setTheme: (val: "dark" | "light" | "oled" | "dracula" | "onedark" | "ember" | ((prev: "dark" | "light" | "oled" | "dracula" | "onedark" | "ember") => "dark" | "light" | "oled" | "dracula" | "onedark" | "ember")) => void;
+  setTheme: (
+    val:
+      | "dark"
+      | "light"
+      | "oled"
+      | "dracula"
+      | "onedark"
+      | "ember"
+      | ((
+          prev: "dark" | "light" | "oled" | "dracula" | "onedark" | "ember",
+        ) => "dark" | "light" | "oled" | "dracula" | "onedark" | "ember"),
+  ) => void;
   query: string;
   setQuery: (val: string | ((prev: string) => string)) => void;
   queryResult: QueryResult;
@@ -600,7 +611,8 @@ SELECT * FROM customers LIMIT 10;`;
         liveSchema.length > 0 ? liveSchema : tableSchemas
       ).find((t) => t.name.toLowerCase() === tableName.toLowerCase());
       const colSchema = tableSchema?.columns.find(
-        (c: {name: string}) => c.name.toLowerCase() === columnName.toLowerCase(),
+        (c: { name: string }) =>
+          c.name.toLowerCase() === columnName.toLowerCase(),
       );
       const isNumeric =
         colSchema?.type.toLowerCase().includes("int") ||
@@ -666,20 +678,29 @@ SELECT * FROM customers LIMIT 10;`;
   };
 
   const handleExportCsv = () => {
-    if (!queryResult || queryResult.error || !queryResult.rows || queryResult.rows.length === 0) {
+    if (
+      !queryResult ||
+      queryResult.error ||
+      !queryResult.rows ||
+      queryResult.rows.length === 0
+    ) {
       showToast("No data to export", "error");
       return;
     }
     try {
       const header = queryResult.columns.join(",");
-      const csvRows = queryResult.rows.map(row => 
-        queryResult.columns.map(col => {
-          const val = row[col];
-          if (val === null || val === undefined) return "";
-          const str = String(val).replace(/"/g, '""');
-          return `"${str}"`;
-        }).join(",")
-      ).join("\n");
+      const csvRows = queryResult.rows
+        .map((row) =>
+          queryResult.columns
+            .map((col) => {
+              const val = row[col];
+              if (val === null || val === undefined) return "";
+              const str = String(val).replace(/"/g, '""');
+              return `"${str}"`;
+            })
+            .join(","),
+        )
+        .join("\n");
       const csvContent = header + "\n" + csvRows;
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
@@ -2625,18 +2646,23 @@ SELECT * FROM customers LIMIT 10;`;
                       </span>
                     )}
                 </div>
-                
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  {!queryResult.error && queryResult.rows && queryResult.rows.length > 0 && (
-                    <button
-                      className="secondary-button"
-                      style={{ fontSize: "11px", padding: "4px 8px" }}
-                      onClick={handleExportCsv}
-                      title="Export Results as CSV"
-                    >
-                      <Download size={12} style={{ marginRight: "4px" }} /> Export CSV
-                    </button>
-                  )}
+
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  {!queryResult.error &&
+                    queryResult.rows &&
+                    queryResult.rows.length > 0 && (
+                      <button
+                        className="secondary-button"
+                        style={{ fontSize: "11px", padding: "4px 8px" }}
+                        onClick={handleExportCsv}
+                        title="Export Results as CSV"
+                      >
+                        <Download size={12} style={{ marginRight: "4px" }} />{" "}
+                        Export CSV
+                      </button>
+                    )}
                 </div>
               </div>
 
@@ -2692,7 +2718,8 @@ SELECT * FROM customers LIMIT 10;`;
                             localStorage.getItem("sql-aa-failed-attempts") ||
                               "{}",
                           );
-                          const failedCount = attempts[selectedProblem?.id] || 0;
+                          const failedCount =
+                            attempts[selectedProblem?.id] || 0;
                           if (failedCount >= 3) {
                             return (
                               <div
@@ -2756,7 +2783,9 @@ SELECT * FROM customers LIMIT 10;`;
                                         }}
                                         onClick={() =>
                                           updateEditorQuery(
-                                            formatSql(selectedProblem?.solution),
+                                            formatSql(
+                                              selectedProblem?.solution,
+                                            ),
                                           )
                                         }
                                       >
@@ -3200,12 +3229,16 @@ SELECT * FROM customers LIMIT 10;`;
               const filteredActive = activeTables.filter(
                 (t) =>
                   t.name.toLowerCase().includes(s) ||
-                  t.columns.some((c: SchemaColumn) => c.name.toLowerCase().includes(s)),
+                  t.columns.some((c: SchemaColumn) =>
+                    c.name.toLowerCase().includes(s),
+                  ),
               );
               const filteredOther = otherTables.filter(
                 (t) =>
                   t.name.toLowerCase().includes(s) ||
-                  t.columns.some((c: SchemaColumn) => c.name.toLowerCase().includes(s)),
+                  t.columns.some((c: SchemaColumn) =>
+                    c.name.toLowerCase().includes(s),
+                  ),
               );
 
               return (
@@ -4155,17 +4188,19 @@ SELECT * FROM customers LIMIT 10;`;
                           <tbody>
                             {computedExpectedResult.rows
                               .slice(0, 10)
-                              .map((row: Record<string, unknown>, i: number) => (
-                                <tr key={i}>
-                                  {computedExpectedResult.columns.map(
-                                    (c: string) => (
-                                      <td key={c}>
-                                        {String(row[c] ?? "NULL")}
-                                      </td>
-                                    ),
-                                  )}
-                                </tr>
-                              ))}
+                              .map(
+                                (row: Record<string, unknown>, i: number) => (
+                                  <tr key={i}>
+                                    {computedExpectedResult.columns.map(
+                                      (c: string) => (
+                                        <td key={c}>
+                                          {String(row[c] ?? "NULL")}
+                                        </td>
+                                      ),
+                                    )}
+                                  </tr>
+                                ),
+                              )}
                           </tbody>
                         </table>
                       </div>
@@ -4464,17 +4499,19 @@ SELECT * FROM customers LIMIT 10;`;
                           <tbody>
                             {computedExpectedResult.rows
                               .slice(0, 10)
-                              .map((row: Record<string, unknown>, i: number) => (
-                                <tr key={i}>
-                                  {computedExpectedResult.columns.map(
-                                    (c: string) => (
-                                      <td key={c}>
-                                        {String(row[c] ?? "NULL")}
-                                      </td>
-                                    ),
-                                  )}
-                                </tr>
-                              ))}
+                              .map(
+                                (row: Record<string, unknown>, i: number) => (
+                                  <tr key={i}>
+                                    {computedExpectedResult.columns.map(
+                                      (c: string) => (
+                                        <td key={c}>
+                                          {String(row[c] ?? "NULL")}
+                                        </td>
+                                      ),
+                                    )}
+                                  </tr>
+                                ),
+                              )}
                           </tbody>
                         </table>
                       </div>
@@ -4609,7 +4646,11 @@ SELECT * FROM customers LIMIT 10;`;
                             transition: "all 0.2s ease",
                           }}
                         >
-                          <Lightbulb size={14} /> {visibleHints === 0 ? "Unlock Hint" : "Unlock Next Hint"} ({displayHints.length - visibleHints} remaining)
+                          <Lightbulb size={14} />{" "}
+                          {visibleHints === 0
+                            ? "Unlock Hint"
+                            : "Unlock Next Hint"}{" "}
+                          ({displayHints.length - visibleHints} remaining)
                         </button>
                       )}
                     </>

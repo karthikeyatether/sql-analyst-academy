@@ -12,7 +12,10 @@ export default function V2DashboardBridge() {
   const { progress, setProgress } = useProgress();
   const { learningRoadmap, roadmapModules } = useCurriculum();
   const totalModules = roadmapModules.length;
-  const totalProblems = roadmapModules.reduce((acc, m) => acc + (m.problems?.length || 0), 0);
+  const totalProblems = roadmapModules.reduce(
+    (acc, m) => acc + (m.problems?.length || 0),
+    0,
+  );
   const dispatch = useV3Dispatch();
 
   // V2 logic recreated
@@ -86,7 +89,9 @@ export default function V2DashboardBridge() {
   }, [progress]);
 
   const [qaItems] = useState(() =>
-    [...(interviewQuestionBank || [])].sort(() => 0.5 - Math.random()).slice(0, 4),
+    [...(interviewQuestionBank || [])]
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 4),
   );
 
   // V2 expected streak and readiness
@@ -104,14 +109,19 @@ export default function V2DashboardBridge() {
   const streak = 1; // Default stub
 
   return (
-    <DashboardView {...({} as any)}
+    <DashboardView
+      {...({} as any)}
       progress={progress}
       learningRoadmap={learningRoadmap}
       roadmapModules={roadmapModules}
       debugPuzzles={debugPuzzles}
       streak={streak}
-      setActiveView={(view: ViewId) => dispatch({ type: "SET_VIEW", payload: view })}
-      setSelectedDayId={(dayId: number) => dispatch({ type: "SET_DAY", payload: dayId })}
+      setActiveView={(view: ViewId) =>
+        dispatch({ type: "SET_VIEW", payload: view })
+      }
+      setSelectedDayId={(dayId: number) =>
+        dispatch({ type: "SET_DAY", payload: dayId })
+      }
       readiness={readiness}
       totalModules={totalModules}
       totalProblems={totalProblems}
@@ -121,7 +131,9 @@ export default function V2DashboardBridge() {
       xpRemaining={xpRemaining}
       earnedBadges={earnedBadges}
       qaItems={qaItems}
-      enterFreeformPlayground={() => dispatch({ type: "SET_VIEW", payload: "playground" })}
+      enterFreeformPlayground={() =>
+        dispatch({ type: "SET_VIEW", payload: "playground" })
+      }
       selectModule={(m) => {
         // Dispatch setting module (not natively supported in V3 Store, usually mapped via day)
         // V3 handles modules inside interactive lesson

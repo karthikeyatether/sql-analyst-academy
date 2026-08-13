@@ -12,18 +12,26 @@ export default function V2DayDetailsBridge() {
   const dispatch = useV3Dispatch();
 
   return (
-    <DayDetailsView {...({} as any)}
+    <DayDetailsView
+      {...({} as any)}
       selectedDayId={selectedDayId || 1}
       progress={progress as any}
       learningRoadmap={learningRoadmap}
       roadmapModules={roadmapModules}
       debugPuzzles={debugPuzzles}
-      setActiveView={(view: any) => dispatch({ type: "SET_VIEW", payload: view })}
-      setSelectedDayId={(id: number) => dispatch({ type: "SET_DAY", payload: id })}
+      setActiveView={(view: any) =>
+        dispatch({ type: "SET_VIEW", payload: view })
+      }
+      setSelectedDayId={(id: number) =>
+        dispatch({ type: "SET_DAY", payload: id })
+      }
       toggleDayComplete={(day: number) => {
         setProgress((prev) => {
           if (prev.completedDays.includes(day)) {
-            return { ...prev, completedDays: prev.completedDays.filter((d) => d !== day) };
+            return {
+              ...prev,
+              completedDays: prev.completedDays.filter((d) => d !== day),
+            };
           }
           return { ...prev, completedDays: [...prev.completedDays, day] };
         });
@@ -32,9 +40,17 @@ export default function V2DayDetailsBridge() {
         setProgress((prev) => {
           if (!prev.completedChecklistItems) prev.completedChecklistItems = [];
           if (prev.completedChecklistItems.includes(id)) {
-            return { ...prev, completedChecklistItems: prev.completedChecklistItems.filter((i) => i !== id) };
+            return {
+              ...prev,
+              completedChecklistItems: prev.completedChecklistItems.filter(
+                (i) => i !== id,
+              ),
+            };
           }
-          return { ...prev, completedChecklistItems: [...prev.completedChecklistItems, id] };
+          return {
+            ...prev,
+            completedChecklistItems: [...prev.completedChecklistItems, id],
+          };
         });
       }}
       selectModule={(m) => {

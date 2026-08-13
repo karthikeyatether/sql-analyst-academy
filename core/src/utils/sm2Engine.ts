@@ -11,7 +11,7 @@ export type SM2ProgressMap = Record<string, SM2ProgressItem>;
 export function calculateSM2(
   existing: SM2ProgressItem | undefined,
   id: string,
-  quality: number = 4
+  quality: number = 4,
 ): SM2ProgressItem {
   let interval = existing?.interval || 1;
   let repetition = existing?.repetition || 0;

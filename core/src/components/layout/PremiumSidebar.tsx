@@ -17,7 +17,7 @@ import {
   Bug,
   Timer,
   Target,
-  GitMerge
+  GitMerge,
 } from "lucide-react";
 import type { ViewId } from "../../types";
 
@@ -27,7 +27,10 @@ export function PremiumSidebar() {
   const { progress } = useProgress();
   const { learningRoadmap, roadmapModules } = useCurriculum();
   const totalModules = roadmapModules.length;
-  const totalProblems = roadmapModules.reduce((acc, m) => acc + (m.problems?.length || 0), 0);
+  const totalProblems = roadmapModules.reduce(
+    (acc, m) => acc + (m.problems?.length || 0),
+    0,
+  );
 
   const navItems: { id: ViewId; label: string; icon: React.ReactNode }[] = [
     { id: "dashboard", label: "Dashboard", icon: <BarChart3 size={17} /> },
@@ -40,7 +43,11 @@ export function PremiumSidebar() {
     { id: "playground", label: "Playground", icon: <Zap size={17} /> },
     { id: "puzzles", label: "SQL Puzzles", icon: <Bug size={17} /> },
     { id: "mocks", label: "Mock Tests", icon: <Timer size={17} /> },
-    { id: "interactive-lesson", label: "Document Learning", icon: <BookOpen size={17} /> },
+    {
+      id: "interactive-lesson",
+      label: "Document Learning",
+      icon: <BookOpen size={17} />,
+    },
   ];
 
   const totalXP =
@@ -54,7 +61,7 @@ export function PremiumSidebar() {
   const currentLevelXP = totalXP % 150;
   const xpProgressPercent = Math.min(
     100,
-    Math.round((currentLevelXP / xpForNextLevel) * 100)
+    Math.round((currentLevelXP / xpForNextLevel) * 100),
   );
 
   const readiness = Math.min(
@@ -63,8 +70,8 @@ export function PremiumSidebar() {
       (progress.completedModules.length / Math.max(totalModules, 1)) * 25 +
         (progress.solvedProblems.length / Math.max(totalProblems, 1)) * 40 +
         ((progress.solvedPuzzles?.length || 0) / 10) * 15 +
-        (Object.keys(progress.mockScores).length > 0 ? 20 : 0)
-    )
+        (Object.keys(progress.mockScores).length > 0 ? 20 : 0),
+    ),
   );
 
   return (
@@ -232,10 +239,12 @@ export function PremiumSidebar() {
           </div>
         </div>
 
-        <button className="" style={{ 
-            display: "flex", 
-            alignItems: "center", 
-            gap: "10px", 
+        <button
+          className=""
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
             background: "transparent",
             border: "none",
             color: "var(--muted)",
@@ -243,8 +252,9 @@ export function PremiumSidebar() {
             padding: "8px 12px",
             width: "100%",
             borderRadius: "6px",
-            marginTop: "16px"
-        }}>
+            marginTop: "16px",
+          }}
+        >
           <Settings size={17} />
           <span>Settings</span>
         </button>

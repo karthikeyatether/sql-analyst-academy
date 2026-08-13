@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Editor from "@monaco-editor/react";
 import { Play, Database, Table as TableIcon, Activity } from "lucide-react";
-import { runQuery, QueryResult, getLiveSchema, formatSql } from "../utils/sqlEngine";
+import {
+  runQuery,
+  QueryResult,
+  getLiveSchema,
+  formatSql,
+} from "../utils/sqlEngine";
 import { useV3State, useV3Dispatch } from "../contexts/V3Store";
 import { useCurriculum } from "../contexts/CurriculumContext";
 import { gradeQuery } from "../utils/graderService";
@@ -10,23 +15,29 @@ export function PremiumPlaygroundView() {
   const state = useV3State();
   const dispatch = useV3Dispatch();
   const { allProblems } = useCurriculum();
-  
+
   const [query, setQuery] = useState(
     "-- Write your SQL query here\nSELECT * FROM customers LIMIT 10;",
   );
   const [result, setResult] = useState<QueryResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [schema, setSchema] = useState<any>(null);
-  const [gradeMsg, setGradeMsg] = useState<{isCorrect: boolean, message: string, details?: string} | null>(null);
+  const [gradeMsg, setGradeMsg] = useState<{
+    isCorrect: boolean;
+    message: string;
+    details?: string;
+  } | null>(null);
 
   const activeProblem = useMemo(() => {
-    return allProblems.find(p => p.id === state.activeProblemId);
+    return allProblems.find((p) => p.id === state.activeProblemId);
   }, [allProblems, state.activeProblemId]);
 
   useEffect(() => {
     getLiveSchema().then(setSchema).catch(console.error);
     if (activeProblem && query.includes("SELECT * FROM customers")) {
-      setQuery(activeProblem.starterQuery || `-- Solve: ${activeProblem.title}\n\n`);
+      setQuery(
+        activeProblem.starterQuery || `-- Solve: ${activeProblem.title}\n\n`,
+      );
     }
   }, [activeProblem]);
 
@@ -42,21 +53,21 @@ export function PremiumPlaygroundView() {
     if (!activeProblem) return;
     setIsRunning(true);
     setGradeMsg(null);
-    
+
     const userRes = await runQuery(query);
     setResult(userRes);
-    
+
     const solRes = await runQuery(activeProblem.solution);
-    
+
     const grade = gradeQuery({
       userQuery: query,
       solutionSql: activeProblem.solution,
       userResult: userRes,
       expectedResult: solRes,
       promptText: activeProblem.businessScenario,
-      playgroundMode: state.playgroundMode
+      playgroundMode: state.playgroundMode,
     });
-    
+
     setGradeMsg(grade);
     setIsRunning(false);
   };
@@ -241,11 +252,33 @@ export function PremiumPlaygroundView() {
             )}
           </div>
         </div>
-        
+
         {activeProblem && (
-          <div style={{ padding: "16px 24px", background: "var(--bg-elevated)", borderBottom: "1px solid var(--border-subtle)" }}>
-            <h3 style={{ margin: "0 0 8px 0", fontSize: "16px", color: "var(--text-primary)" }}>{activeProblem.title}</h3>
-            <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "14px" }}>{activeProblem.businessScenario}</p>
+          <div
+            style={{
+              padding: "16px 24px",
+              background: "var(--bg-elevated)",
+              borderBottom: "1px solid var(--border-subtle)",
+            }}
+          >
+            <h3
+              style={{
+                margin: "0 0 8px 0",
+                fontSize: "16px",
+                color: "var(--text-primary)",
+              }}
+            >
+              {activeProblem.title}
+            </h3>
+            <p
+              style={{
+                margin: 0,
+                color: "var(--text-secondary)",
+                fontSize: "14px",
+              }}
+            >
+              {activeProblem.businessScenario}
+            </p>
           </div>
         )}
 
@@ -262,11 +295,11 @@ export function PremiumPlaygroundView() {
               fontSize: 16,
               fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
               padding: { top: 24, bottom: 24 },
-              scrollbar: { 
-                vertical: "auto", 
+              scrollbar: {
+                vertical: "auto",
                 horizontal: "auto",
                 verticalScrollbarSize: 10,
-                horizontalScrollbarSize: 10
+                horizontalScrollbarSize: 10,
               },
               overviewRulerBorder: false,
               hideCursorInOverviewRuler: true,
@@ -321,15 +354,32 @@ export function PremiumPlaygroundView() {
                   padding: "16px",
                   marginBottom: "16px",
                   borderRadius: "var(--radius-sm)",
-                  background: gradeMsg.isCorrect ? "hsla(150, 80%, 30%, 0.1)" : "hsla(0, 70%, 60%, 0.1)",
-                  border: gradeMsg.isCorrect ? "1px solid var(--success)" : "1px solid var(--error)",
+                  background: gradeMsg.isCorrect
+                    ? "hsla(150, 80%, 30%, 0.1)"
+                    : "hsla(0, 70%, 60%, 0.1)",
+                  border: gradeMsg.isCorrect
+                    ? "1px solid var(--success)"
+                    : "1px solid var(--error)",
                 }}
               >
-                <h4 style={{ margin: "0 0 8px 0", color: gradeMsg.isCorrect ? "var(--success)" : "var(--error)" }}>
+                <h4
+                  style={{
+                    margin: "0 0 8px 0",
+                    color: gradeMsg.isCorrect
+                      ? "var(--success)"
+                      : "var(--error)",
+                  }}
+                >
                   {gradeMsg.message}
                 </h4>
                 {gradeMsg.details && (
-                  <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "14px" }}>
+                  <p
+                    style={{
+                      margin: 0,
+                      color: "var(--text-secondary)",
+                      fontSize: "14px",
+                    }}
+                  >
                     {gradeMsg.details}
                   </p>
                 )}

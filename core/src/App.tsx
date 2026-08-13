@@ -46,7 +46,8 @@ import {
 } from "./utils/sm2Engine";
 const APP_BUILD_HASH_MARKER = "v2.0";
 
-export type AppTheme = "dark" | "light" | "oled" | "dracula" | "onedark" | "ember";
+export type AppTheme =
+  "dark" | "light" | "oled" | "dracula" | "onedark" | "ember";
 
 export const THEME_OPTIONS: Array<{
   id: AppTheme;
@@ -54,12 +55,42 @@ export const THEME_OPTIONS: Array<{
   desc: string;
   color: string;
 }> = [
-  { id: "dark", label: "Dark Studio", desc: "Classic Dark Theme", color: "#38bdf8" },
-  { id: "light", label: "Light Mode", desc: "Soft Daylight Contrast", color: "#0284c7" },
-  { id: "oled", label: "OLED Black", desc: "Pure Black High Contrast", color: "#a855f7" },
-  { id: "dracula", label: "Dracula", desc: "Neon Cyberpunk & Purple", color: "#ff79c6" },
-  { id: "onedark", label: "One Dark", desc: "Atom Slate & Cyan", color: "#61afef" },
-  { id: "ember", label: "Ember Warm", desc: "Anti-Blue Night Mode", color: "#f97316" },
+  {
+    id: "dark",
+    label: "Dark Studio",
+    desc: "Classic Dark Theme",
+    color: "#38bdf8",
+  },
+  {
+    id: "light",
+    label: "Light Mode",
+    desc: "Soft Daylight Contrast",
+    color: "#0284c7",
+  },
+  {
+    id: "oled",
+    label: "OLED Black",
+    desc: "Pure Black High Contrast",
+    color: "#a855f7",
+  },
+  {
+    id: "dracula",
+    label: "Dracula",
+    desc: "Neon Cyberpunk & Purple",
+    color: "#ff79c6",
+  },
+  {
+    id: "onedark",
+    label: "One Dark",
+    desc: "Atom Slate & Cyan",
+    color: "#61afef",
+  },
+  {
+    id: "ember",
+    label: "Ember Warm",
+    desc: "Anti-Blue Night Mode",
+    color: "#f97316",
+  },
 ];
 const DashboardView = lazy(() => import("./views/v2/DashboardView"));
 const RoadmapView = lazy(() => import("./views/v2/RoadmapView"));
@@ -69,7 +100,9 @@ const PlaygroundView = lazy(() => import("./views/v2/PlaygroundView"));
 const PuzzlesView = lazy(() => import("./views/v2/PuzzlesView"));
 const DayDetailsView = lazy(() => import("./views/v2/DayDetailsView"));
 const MockTestView = lazy(() => import("./views/v2/MockTestView"));
-const MissionCapstoneView = lazy(() => import("./features/curriculum/MissionCapstoneView"));
+const MissionCapstoneView = lazy(
+  () => import("./features/curriculum/MissionCapstoneView"),
+);
 import {
   interviewQuestionBank,
   mockInterviews,
@@ -100,11 +133,15 @@ import ShortcutsModal from "./components/ShortcutsModal";
 import ColumnProfileModal from "./components/ColumnProfileModal";
 import { downloadStatsReport } from "./utils/reportGenerator";
 import type { QueryResult, QueryPlanStep } from "./utils/sqlEngine";
-const SqlJoinVennDiagram = lazy(() => import("./components/SqlJoinVennDiagram"));
+const SqlJoinVennDiagram = lazy(
+  () => import("./components/SqlJoinVennDiagram"),
+);
 import SqlLinterAdvisor from "./components/SqlLinterAdvisor";
 import { lintSqlQuery } from "./utils/sqlLinter";
 import type { LintError } from "./utils/sqlLinter";
-const SqlPerformanceComparer = lazy(() => import("./components/SqlPerformanceComparer"));
+const SqlPerformanceComparer = lazy(
+  () => import("./components/SqlPerformanceComparer"),
+);
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import type {
   QAItem,
@@ -241,10 +278,7 @@ export default function App() {
       }
     }
     if (migratedProgress) {
-      setStorageItem(
-        currentProgressKey,
-        migratedProgress,
-      );
+      setStorageItem(currentProgressKey, migratedProgress);
     }
   }
 
@@ -261,7 +295,14 @@ export default function App() {
 
   const cycleTheme = useCallback(() => {
     setTheme((t) => {
-      const themes: AppTheme[] = ["dark", "light", "oled", "dracula", "onedark", "ember"];
+      const themes: AppTheme[] = [
+        "dark",
+        "light",
+        "oled",
+        "dracula",
+        "onedark",
+        "ember",
+      ];
       const idx = themes.indexOf(t as AppTheme);
       return themes[(idx + 1) % themes.length];
     });
@@ -3777,14 +3818,15 @@ export default function App() {
           );
         },
       );
-      const validCompletedDays = (prev.completedDays || []).filter((day: number) =>
-        isDayFullyComplete(
-          day,
-          prev.solvedProblems,
-          prev.solvedPuzzles || [],
-          prev.mockScores || {},
-          prev.completedModules || [],
-        ),
+      const validCompletedDays = (prev.completedDays || []).filter(
+        (day: number) =>
+          isDayFullyComplete(
+            day,
+            prev.solvedProblems,
+            prev.solvedPuzzles || [],
+            prev.mockScores || {},
+            prev.completedModules || [],
+          ),
       );
 
       const modulesChanged =
@@ -4557,12 +4599,24 @@ export default function App() {
                 title={`Theme: ${theme}. Click to select theme.`}
                 aria-label="Select visual theme"
               >
-                {theme === "dark" && <Moon size={16} style={{ color: "#38bdf8" }} />}
-                {theme === "light" && <Sun size={16} style={{ color: "#0284c7" }} />}
-                {theme === "oled" && <Zap size={16} style={{ color: "#a855f7" }} />}
-                {theme === "dracula" && <Palette size={16} style={{ color: "#ff79c6" }} />}
-                {theme === "onedark" && <Code2 size={16} style={{ color: "#61afef" }} />}
-                {theme === "ember" && <Flame size={16} style={{ color: "#f97316" }} />}
+                {theme === "dark" && (
+                  <Moon size={16} style={{ color: "#38bdf8" }} />
+                )}
+                {theme === "light" && (
+                  <Sun size={16} style={{ color: "#0284c7" }} />
+                )}
+                {theme === "oled" && (
+                  <Zap size={16} style={{ color: "#a855f7" }} />
+                )}
+                {theme === "dracula" && (
+                  <Palette size={16} style={{ color: "#ff79c6" }} />
+                )}
+                {theme === "onedark" && (
+                  <Code2 size={16} style={{ color: "#61afef" }} />
+                )}
+                {theme === "ember" && (
+                  <Flame size={16} style={{ color: "#f97316" }} />
+                )}
               </button>
 
               {themeMenuOpen && (
@@ -4617,8 +4671,16 @@ export default function App() {
                           setThemeMenuOpen(false);
                         }}
                       >
-                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                          <span style={{ color: opt.color, display: "inline-flex" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                          }}
+                        >
+                          <span
+                            style={{ color: opt.color, display: "inline-flex" }}
+                          >
                             {opt.id === "dark" && <Moon size={14} />}
                             {opt.id === "light" && <Sun size={14} />}
                             {opt.id === "oled" && <Zap size={14} />}
@@ -4627,11 +4689,22 @@ export default function App() {
                             {opt.id === "ember" && <Flame size={14} />}
                           </span>
                           <div style={{ textAlign: "left" }}>
-                            <div style={{ fontWeight: 600, fontSize: "12px" }}>{opt.label}</div>
-                            <div style={{ fontSize: "10px", color: "var(--muted)" }}>{opt.desc}</div>
+                            <div style={{ fontWeight: 600, fontSize: "12px" }}>
+                              {opt.label}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: "10px",
+                                color: "var(--muted)",
+                              }}
+                            >
+                              {opt.desc}
+                            </div>
                           </div>
                         </div>
-                        {theme === opt.id && <Check size={14} style={{ color: "var(--cyan)" }} />}
+                        {theme === opt.id && (
+                          <Check size={14} style={{ color: "var(--cyan)" }} />
+                        )}
                       </button>
                     ))}
                   </div>

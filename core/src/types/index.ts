@@ -47,4 +47,3 @@ export interface UserProgressState {
   mockScores: Record<string, number>;
   completedChecklistItems: string[];
 }
-

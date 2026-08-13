@@ -233,7 +233,9 @@ function DashboardView({
     ((progress.completedModules || []).length / totalModules) * 100,
   );
   const probPct =
-    Math.round(((progress.solvedProblems || []).length / totalProblems) * 100) || 0;
+    Math.round(
+      ((progress.solvedProblems || []).length / totalProblems) * 100,
+    ) || 0;
   const puzPct = Math.round(
     ((progress.solvedPuzzles || []).length / (debugPuzzles || []).length) * 100,
   );

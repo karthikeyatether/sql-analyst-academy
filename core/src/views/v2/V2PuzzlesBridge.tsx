@@ -9,18 +9,21 @@ export default function V2PuzzlesBridge() {
   const { activeProblemId } = useV3State();
   const dispatch = useV3Dispatch();
 
-  const activePuzzle = debugPuzzles.find((p) => p.id === activeProblemId) || debugPuzzles[0];
+  const activePuzzle =
+    debugPuzzles.find((p) => p.id === activeProblemId) || debugPuzzles[0];
 
   const classForDiff = (d: string) => {
     const lower = (d || "").toLowerCase();
     if (lower.includes("expert")) return "expert";
     if (lower.includes("advanced") || lower.includes("hard")) return "hard";
-    if (lower.includes("intermediate") || lower.includes("medium")) return "medium";
+    if (lower.includes("intermediate") || lower.includes("medium"))
+      return "medium";
     return "easy";
   };
 
   return (
-    <PuzzlesView {...({} as any)}
+    <PuzzlesView
+      {...({} as any)}
       progress={progress as any}
       debugPuzzles={debugPuzzles}
       activePuzzle={activePuzzle}

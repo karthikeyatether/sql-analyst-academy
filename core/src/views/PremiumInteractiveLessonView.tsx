@@ -43,23 +43,25 @@ The plan will change to \`SEARCH TABLE\` using the index!
 export default function PremiumInteractiveLessonView() {
   const dispatch = useV3Dispatch();
 
-  // Force the playground mode to 'free' so they can experiment, 
+  // Force the playground mode to 'free' so they can experiment,
   // or it could be 'practice' if there is an active problem.
   useEffect(() => {
     dispatch({ type: "SET_PLAYGROUND_MODE", payload: "free" });
   }, [dispatch]);
 
   return (
-    <div style={{ height: "100%", width: "100%", backgroundColor: "var(--bg-primary)" }}>
-      <SplitPane 
-        leftWidth={350} 
-        onResize={() => {}} 
-        left={
-          <></>
-        }
-        right={
-          <PremiumPlaygroundView />
-        }
+    <div
+      style={{
+        height: "100%",
+        width: "100%",
+        backgroundColor: "var(--bg-primary)",
+      }}
+    >
+      <SplitPane
+        leftWidth={350}
+        onResize={() => {}}
+        left={<></>}
+        right={<PremiumPlaygroundView />}
       />
     </div>
   );

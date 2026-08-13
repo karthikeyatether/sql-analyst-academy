@@ -12,16 +12,24 @@ export default function V2RoadmapBridge() {
   const dispatch = useV3Dispatch();
 
   return (
-    <RoadmapView {...({} as any)}
+    <RoadmapView
+      {...({} as any)}
       progress={progress}
       learningRoadmap={learningRoadmap}
       roadmapModules={roadmapModules}
-      setSelectedDayId={(dayId: number) => dispatch({ type: "SET_DAY", payload: dayId })}
-      setActiveView={(view: ViewId) => dispatch({ type: "SET_VIEW", payload: view })}
+      setSelectedDayId={(dayId: number) =>
+        dispatch({ type: "SET_DAY", payload: dayId })
+      }
+      setActiveView={(view: ViewId) =>
+        dispatch({ type: "SET_VIEW", payload: view })
+      }
       toggleDayComplete={(day: number) => {
         setProgress((prev) => {
           if (prev.completedDays.includes(day)) {
-            return { ...prev, completedDays: prev.completedDays.filter((d) => d !== day) };
+            return {
+              ...prev,
+              completedDays: prev.completedDays.filter((d) => d !== day),
+            };
           }
           return { ...prev, completedDays: [...prev.completedDays, day] };
         });
