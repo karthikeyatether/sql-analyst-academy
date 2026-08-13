@@ -1,3 +1,4 @@
+import { MainLayout } from "./components/MainLayout";
 import type { BeforeMount, OnMount } from "@monaco-editor/react";
 import {
   BarChart3,
@@ -4409,355 +4410,13 @@ export default function App() {
   /* SHELL */
 
   return (
-    <div className={`app-shell ${sidebarOpen ? "sb-open" : "sb-closed"}`}>
-      {sidebarOpen && (
-        <>
-          <div
-            className="sidebar-backdrop"
-            onClick={() => setSidebarOpen(false)}
-          />
-          {/* ── SIDEBAR ───────────────────────────────────── */}
-          <aside className="sidebar">
-            <div
-              className="brand-row"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                width: "100%",
-              }}
-            >
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "10px" }}
-              >
-                <div
-                  className="brand-mark"
-                  style={{
-                    background: "rgba(56, 217, 255, 0.12)",
-                    border: "1px solid rgba(56, 217, 255, 0.3)",
-                    borderRadius: "8px",
-                    width: "32px",
-                    height: "32px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "var(--cyan)",
-                  }}
-                >
-                  <Database size={17} />
-                </div>
-                <div>
-                  <strong>SQL</strong>
-                  <span>Academy</span>
-                </div>
-              </div>
-              <button
-                className="icon-button sidebar-toggle-btn"
-                onClick={() => setSidebarOpen((o) => !o)}
-                title="Toggle Sidebar"
-                aria-label="Toggle Sidebar"
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "var(--text-secondary)",
-                  cursor: "pointer",
-                  padding: "6px",
-                  borderRadius: "6px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Menu size={18} />
-              </button>
-            </div>
-
-            <nav
-              className="sidebar-nav"
-              role="tablist"
-              aria-label="Main Navigation"
-              onKeyDown={handleSidebarNavKeyDown}
-            >
-              {navItems.map(({ id, label, icon: Icon }) => (
-                <button
-                  key={id}
-                  className={activeView === id ? "active" : ""}
-                  onClick={() => {
-                    if (id === "playground") {
-                      enterFreeformPlayground();
-                    } else if (id === "roadmap" || id === "day-details") {
-                      setSelectedDayId(activeDayWhereLeftOff);
-                      setActiveView(id);
-                    } else {
-                      setActiveView(id);
-                    }
-                    setSidebarOpen(false); // always close sidebar after nav pick
-                  }}
-                  role="tab"
-                  aria-selected={activeView === id}
-                  tabIndex={activeView === id ? 0 : -1}
-                >
-                  <Icon size={17} aria-hidden="true" />
-                  <span>{label}</span>
-                </button>
-              ))}
-            </nav>
-
-            <div className="sidebar-footer">
-              <div
-                className="sidebar-user-xp"
-                style={{
-                  padding: "10px 12px",
-                  background: "rgba(255,255,255,0.02)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "6px",
-                  marginBottom: "10px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                }}
-              >
-                <div
-                  style={{
-                    width: "28px",
-                    height: "28px",
-                    background: "rgba(56, 217, 255, 0.1)",
-                    border: "1px solid rgba(56, 217, 255, 0.2)",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    color: "var(--cyan)",
-                  }}
-                >
-                  L{currentLevel}
-                </div>
-                <div
-                  style={{ display: "flex", flexDirection: "column", flex: 1 }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      fontSize: "10px",
-                      color: "var(--text-secondary)",
-                    }}
-                  >
-                    <span>SQL Apprentice</span>
-                    <span>{totalXP} XP</span>
-                  </div>
-                  <div
-                    style={{
-                      height: "4px",
-                      background: "var(--border)",
-                      borderRadius: "2px",
-                      overflow: "hidden",
-                      marginTop: "4px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: `${xpProgressPercent}%`,
-                        height: "100%",
-                        background: "var(--cyan)",
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="readiness-card">
-                <div className="rc-top">
-                  <span>Interview Readiness</span>
-                  <strong>{readiness}%</strong>
-                </div>
-                <div className="progress-track">
-                  <span style={{ width: `${readiness}%` }} />
-                </div>
-                <div className="rc-sub">
-                  <span>
-                    {progress.completedModules.length}/{totalModules} modules
-                  </span>
-                  <span>
-                    {progress.solvedProblems.length}/{totalProblems} problems
-                  </span>
-                </div>
-              </div>
-            </div>
-          </aside>
-        </>
-      )}
-
-      {/* ── MAIN ─────────────────────────────────────── */}
-      <main className="main-shell">
-        {/* topbar */}
-        <header className="topbar">
-          <button
-            className="icon-button tb-ham"
-            onClick={() => setSidebarOpen((o) => !o)}
-          >
-            {sidebarOpen ? <X size={17} /> : <Menu size={17} />}
-          </button>
-
-          <div className="topbar-search">
-            <div className="search-shell">
-              <Search size={15} />
-              <input
-                ref={searchRef}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search modules, problems… ( / )"
-              />
-              <Command size={13} />
-              {filteredSearch.length > 0 && (
-                <div className="search-popover">
-                  {filteredSearch.map((item) => (
-                    <button
-                      key={`${item.type}-${item.id}`}
-                      onClick={() => handleSearchPick(item)}
-                    >
-                      <span>{item.type}</span>
-                      <strong>{item.label}</strong>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="topbar-right">
-            <div style={{ position: "relative", display: "inline-block" }}>
-              <button
-                className={`icon-button theme-toggle-btn ${theme} ${themeMenuOpen ? "active" : ""}`}
-                onClick={() => setThemeMenuOpen(!themeMenuOpen)}
-                title={`Theme: ${theme}. Click to select theme.`}
-                aria-label="Select visual theme"
-              >
-                {theme === "dark" && (
-                  <Moon size={16} style={{ color: "#38bdf8" }} />
-                )}
-                {theme === "light" && (
-                  <Sun size={16} style={{ color: "#0284c7" }} />
-                )}
-                {theme === "oled" && (
-                  <Zap size={16} style={{ color: "#a855f7" }} />
-                )}
-                {theme === "dracula" && (
-                  <Palette size={16} style={{ color: "#ff79c6" }} />
-                )}
-                {theme === "onedark" && (
-                  <Code2 size={16} style={{ color: "#61afef" }} />
-                )}
-                {theme === "ember" && (
-                  <Flame size={16} style={{ color: "#f97316" }} />
-                )}
-              </button>
-
-              {themeMenuOpen && (
-                <>
-                  <div
-                    style={{ position: "fixed", inset: 0, zIndex: 9998 }}
-                    onClick={() => setThemeMenuOpen(false)}
-                  />
-                  <div className="theme-popover">
-                    <div
-                      style={{
-                        padding: "6px 8px 8px 8px",
-                        borderBottom: "1px solid var(--border)",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: "11px",
-                          fontWeight: "700",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.5px",
-                          color: "var(--muted)",
-                        }}
-                      >
-                        Color Themes
-                      </span>
-                      <button
-                        onClick={cycleTheme}
-                        style={{
-                          background: "none",
-                          border: "none",
-                          color: "var(--cyan)",
-                          fontSize: "11px",
-                          cursor: "pointer",
-                          fontWeight: "600",
-                        }}
-                        title="Cycle to next theme"
-                      >
-                        Next →
-                      </button>
-                    </div>
-
-                    {THEME_OPTIONS.map((opt) => (
-                      <button
-                        key={opt.id}
-                        className={`theme-option-item ${theme === opt.id ? "active" : ""}`}
-                        onClick={() => {
-                          setTheme(opt.id);
-                          setThemeMenuOpen(false);
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "10px",
-                          }}
-                        >
-                          <span
-                            style={{ color: opt.color, display: "inline-flex" }}
-                          >
-                            {opt.id === "dark" && <Moon size={14} />}
-                            {opt.id === "light" && <Sun size={14} />}
-                            {opt.id === "oled" && <Zap size={14} />}
-                            {opt.id === "dracula" && <Palette size={14} />}
-                            {opt.id === "onedark" && <Code2 size={14} />}
-                            {opt.id === "ember" && <Flame size={14} />}
-                          </span>
-                          <div style={{ textAlign: "left" }}>
-                            <div style={{ fontWeight: 600, fontSize: "12px" }}>
-                              {opt.label}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: "10px",
-                                color: "var(--muted)",
-                              }}
-                            >
-                              {opt.desc}
-                            </div>
-                          </div>
-                        </div>
-                        {theme === opt.id && (
-                          <Check size={14} style={{ color: "var(--cyan)" }} />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-
-            <span title="Readiness">
-              <Target size={14} />
-              {readiness}%
-            </span>
-          </div>
-        </header>
-
-        {/* content */}
-        <div
-          className={`page-content ${
+    <>
+      <MainLayout
+        sidebarOpen={sidebarOpen}
+        sideNavProps={{ sidebarOpen, setSidebarOpen, navItems, activeView, setActiveView, enterFreeformPlayground, setSelectedDayId, activeDayWhereLeftOff, handleSidebarNavKeyDown, currentLevel, totalXP, xpProgressPercent, readiness, progress, totalModules, totalProblems }}
+        topBarProps={{ sidebarOpen, setSidebarOpen, searchRef, searchTerm, setSearchTerm, filteredSearch, handleSearchPick, theme, themeMenuOpen, setThemeMenuOpen, cycleTheme, THEME_OPTIONS, setTheme, readiness }}
+        pageContentProps={{
+          className: `page-content ${
             [
               "dashboard",
               "roadmap",
@@ -4768,14 +4427,11 @@ export default function App() {
             ].includes(activeView)
               ? "scrollable-y"
               : ""
-          }`}
-          style={{
-            flex: 1,
-            overflow: "auto",
-            position: "relative",
-          }}
-          id="main-scroll-container"
-        >
+          }`,
+          style: { flex: 1, overflow: "auto", position: "relative" },
+          id: "main-scroll-container",
+        }}
+      >
           <Suspense
             fallback={
               <div
@@ -5052,8 +4708,7 @@ export default function App() {
               </div>
             )}
           </Suspense>
-        </div>
-      </main>
+      </MainLayout>
 
       {showOnboarding && (
         <OnboardingModal
@@ -5110,7 +4765,7 @@ export default function App() {
           <span>{toast.message}</span>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
