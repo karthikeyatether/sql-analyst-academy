@@ -5,7 +5,12 @@ const SQL_KEYWORDS =
 const BULLET_PREFIXES = /^\s*[-•✓✗→▸*]\s+/;
 const HEADING_RE = /^[A-Z][A-Z0-9 _/:&-]{3,}:?\s*$|^[A-Z].{0,60}:$/;
 
-export default function LessonProse({ text }: { text: string }) {
+interface LessonProseProps {
+  text: string;
+  onRunCode?: (sql: string) => void;
+}
+
+export default function LessonProse({ text, onRunCode }: LessonProseProps) {
   const lines = text.split("\n");
   const elements: JSX.Element[] = [];
   let codeBuffer: string[] = [];
@@ -13,10 +18,24 @@ export default function LessonProse({ text }: { text: string }) {
 
   function flushCode() {
     if (codeBuffer.length === 0) return;
+    const codeText = codeBuffer.join("\n");
     elements.push(
-      <pre key={`code-${elements.length}`} className="lp-code">
-        {codeBuffer.join("\n")}
-      </pre>,
+      <div key={`code-shell-${elements.length}`} className="lp-code-wrapper" style={{ position: "relative", margin: "10px 0" }}>
+        {onRunCode && (
+          <div style={{ display: "flex", justifyContent: "flex-end", padding: "4px 8px", background: "rgba(0,0,0,0.2)", borderTopLeftRadius: "7px", borderTopRightRadius: "7px", border: "1px solid rgba(56, 217, 255, 0.15)", borderBottom: "none" }}>
+            <button
+              onClick={() => onRunCode(codeText)}
+              style={{ background: "rgba(56, 217, 255, 0.1)", border: "1px solid rgba(56, 217, 255, 0.3)", color: "var(--cyan)", borderRadius: "4px", padding: "2px 8px", fontSize: "11px", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
+              title="Run this SQL code snippet in playground"
+            >
+              <span>⚡ Run in Editor</span>
+            </button>
+          </div>
+        )}
+        <pre className="lp-code" style={onRunCode ? { borderTopLeftRadius: 0, borderTopRightRadius: 0, marginTop: 0 } : undefined}>
+          {codeText}
+        </pre>
+      </div>,
     );
     codeBuffer = [];
   }

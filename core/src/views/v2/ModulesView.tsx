@@ -10,6 +10,7 @@ import {
   Clipboard,
   Brain,
   Sparkles,
+  AlertTriangle,
 } from "lucide-react";
 import type {
   RoadmapModule,
@@ -17,6 +18,7 @@ import type {
   Difficulty,
 } from "../../data/curriculum";
 import LessonProse from "../../components/LessonProse";
+import { DoVsDontCard } from "../../components/DoVsDontCard";
 import type { ViewId, PlaygroundMode } from "../../types";
 
 interface ModulesViewProps {
@@ -64,179 +66,125 @@ function ModulesView({
   copyToClipboard,
   classForDiff,
 }: ModulesViewProps) {
-  const [activeLessonTab, setActiveLessonTab] = useState("Concept");
-  const lessonTabs = ["Concept", "Mistakes", "Cheat Sheet", "Practice"];
   const l = activeModule.lesson;
 
   function renderLessonBody() {
-    switch (activeLessonTab) {
-      case "Concept":
-        return (
-          <div className="concept-tab-container">
-            <LessonProse text={l.conceptExplanation} />
+    const handleRunCode = (sql: string) => {
+      updateEditorQuery(sql);
+      setActiveView("playground");
+    };
 
-            {l.realBusinessScenario && (
-              <div
-                className="concept-scenario-section"
-                style={{ marginTop: "24px" }}
-              >
-                <h3 className="section-title-visual">
-                  <Lightbulb
-                    size={15}
-                    style={{ color: "var(--yellow)", marginRight: "6px" }}
-                  />
-                  Real-World Business Scenario
-                </h3>
-                <LessonProse text={l.realBusinessScenario} />
-              </div>
-            )}
+    return (
+      <div className="unified-master-storyboard" style={{ display: "flex", flexDirection: "column", gap: "32px", paddingBottom: "40px" }}>
+        {/* SECTION 1: CONCEPT & SCENARIO */}
+        <section id="section-concept" className="storyboard-section">
+          <div className="section-header-pill" style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "4px 10px", background: "rgba(56, 217, 255, 0.1)", border: "1px solid rgba(56, 217, 255, 0.25)", borderRadius: "20px", fontSize: "11px", fontWeight: 700, color: "var(--cyan)", textTransform: "uppercase", marginBottom: "12px" }}>
+            <Lightbulb size={13} />
+            <span>Core Concept & Business Story</span>
+          </div>
 
-            {l.visualExplanation && (
-              <div
-                className="concept-visual-section"
-                style={{ marginTop: "24px" }}
-              >
-                <h3 className="section-title-visual">
-                  <Eye
-                    size={15}
-                    style={{ color: "var(--cyan)", marginRight: "6px" }}
-                  />
-                  Visual Representation
-                </h3>
-                <LessonProse text={l.visualExplanation} />
-              </div>
-            )}
+          <LessonProse text={l.conceptExplanation} onRunCode={handleRunCode} />
 
-            {l.examples && l.examples.length > 0 && (
-              <div
-                className="concept-examples-section"
-                style={{ marginTop: "24px" }}
-              >
-                <h3 className="section-title-visual">
-                  <BookOpen
-                    size={15}
-                    style={{ color: "var(--green)", marginRight: "6px" }}
-                  />
-                  Practice Examples
-                </h3>
-                {l.examples.map((ex, idx) => (
-                  <div
-                    key={idx}
-                    className="example-block"
-                    style={{ marginTop: "16px" }}
-                  >
-                    <h3>
-                      Example {idx + 1}: {ex.title}
-                    </h3>
-                    <pre className="sql-pre">{ex.query}</pre>
-                    <p>{ex.explanation}</p>
-                    <div className="example-actions">
-                      <button
-                        className="primary-button compact"
-                        onClick={() => {
-                          updateEditorQuery(ex.query);
-                          setActiveView("playground");
-                        }}
-                      >
-                        <Play size={14} /> Open in Playground
-                      </button>
-                      <button
-                        className="icon-button labeled"
-                        onClick={() => copyToClipboard(ex.query)}
-                      >
-                        <Clipboard size={14} /> Copy
-                      </button>
+          {l.realBusinessScenario && (
+            <div className="concept-scenario-section" style={{ marginTop: "20px", background: "rgba(255, 190, 61, 0.04)", border: "1px solid rgba(255, 190, 61, 0.2)", borderRadius: "10px", padding: "16px" }}>
+              <h4 style={{ margin: "0 0 10px 0", color: "#fbbf24", display: "flex", alignItems: "center", gap: "6px", fontSize: "14px", fontWeight: 700 }}>
+                <Lightbulb size={16} /> Real-World Analytics Scenario
+              </h4>
+              <LessonProse text={l.realBusinessScenario} onRunCode={handleRunCode} />
+            </div>
+          )}
+
+          {l.visualExplanation && (
+            <div className="concept-visual-section" style={{ marginTop: "20px", background: "rgba(56, 217, 255, 0.04)", border: "1px solid rgba(56, 217, 255, 0.2)", borderRadius: "10px", padding: "16px" }}>
+              <h4 style={{ margin: "0 0 10px 0", color: "var(--cyan)", display: "flex", alignItems: "center", gap: "6px", fontSize: "14px", fontWeight: 700 }}>
+                <Eye size={16} /> Visual Representation
+              </h4>
+              <LessonProse text={l.visualExplanation} onRunCode={handleRunCode} />
+            </div>
+          )}
+        </section>
+
+        {/* SECTION 2: COMMON PITFALLS & DO VS DON'T */}
+        {l.commonMistakes && l.commonMistakes.length > 0 && (
+          <section id="section-pitfalls" className="storyboard-section" style={{ borderTop: "1px solid var(--border)", paddingTop: "24px" }}>
+            <div className="section-header-pill" style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "4px 10px", background: "rgba(244, 63, 94, 0.1)", border: "1px solid rgba(244, 63, 94, 0.25)", borderRadius: "20px", fontSize: "11px", fontWeight: 700, color: "#f43f5e", textTransform: "uppercase", marginBottom: "12px" }}>
+              <AlertTriangle size={13} />
+              <span>Common Pitfalls & Mistakes</span>
+            </div>
+
+            <DoVsDontCard
+              dontCode={{
+                sql: "WHERE city = Mumbai",
+                explanation: "Unquoted strings cause SQL syntax errors because SQL treats unquoted words as column names.",
+              }}
+              doCode={{
+                sql: "WHERE city = 'Mumbai'",
+                explanation: "Text literals must always be enclosed in single quotes. Numbers do not need quotes.",
+              }}
+              onRunCode={handleRunCode}
+            />
+
+            <BulletList items={l.commonMistakes} />
+          </section>
+        )}
+
+        {/* SECTION 3: CHEAT SHEET & SYNTAX REFERENCE */}
+        <section id="section-cheatsheet" className="storyboard-section" style={{ borderTop: "1px solid var(--border)", paddingTop: "24px" }}>
+          <div className="section-header-pill" style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "4px 10px", background: "rgba(155, 124, 255, 0.1)", border: "1px solid rgba(155, 124, 255, 0.25)", borderRadius: "20px", fontSize: "11px", fontWeight: 700, color: "var(--violet)", textTransform: "uppercase", marginBottom: "12px" }}>
+            <Sparkles size={13} />
+            <span>Syntax Quick Reference</span>
+          </div>
+
+          <BulletList items={l.cheatSheet} />
+
+          {l.revisionNotes && l.revisionNotes.length > 0 && (
+            <div style={{ marginTop: "16px" }}>
+              <h4 style={{ color: "var(--text)", fontSize: "13px", fontWeight: 700, margin: "0 0 10px 0" }}>Key Takeaways</h4>
+              <BulletList items={l.revisionNotes} />
+            </div>
+          )}
+        </section>
+
+        {/* SECTION 4: PRACTICE EXERCISES */}
+        <section id="section-practice" className="storyboard-section" style={{ borderTop: "1px solid var(--border)", paddingTop: "24px" }}>
+          <div className="section-header-pill" style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "4px 10px", background: "rgba(52, 211, 153, 0.1)", border: "1px solid rgba(52, 211, 153, 0.25)", borderRadius: "20px", fontSize: "11px", fontWeight: 700, color: "#34d399", textTransform: "uppercase", marginBottom: "12px" }}>
+            <Brain size={13} />
+            <span>Practice Challenges ({activeModule.problems.length})</span>
+          </div>
+
+          <div className="problems-list" style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "10px" }}>
+            {activeModule.problems.map((p) => {
+              const solved = progress.solvedProblems.includes(p.id);
+              return (
+                <div
+                  key={p.id}
+                  className={`problem-card ${solved ? "solved" : ""}`}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: "var(--panel)", border: "1px solid var(--border)", borderRadius: "8px" }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    {solved ? (
+                      <CheckCircle2 size={16} style={{ color: "#34d399" }} />
+                    ) : (
+                      <Zap size={16} style={{ color: "var(--muted)" }} />
+                    )}
+                    <div>
+                      <strong style={{ fontSize: "13px", display: "block" }}>{p.title}</strong>
+                      <span className={`difficulty-pill ${p.difficulty}`} style={{ fontSize: "10px", marginTop: "2px" }}>{p.difficulty}</span>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
+                  <button
+                    className="primary-button compact"
+                    onClick={() => openInPlayground(p)}
+                  >
+                    <Play size={13} /> Solve Problem
+                  </button>
+                </div>
+              );
+            })}
           </div>
-        );
-      case "Mistakes":
-        return <BulletList items={l.commonMistakes} />;
-      case "Cheat Sheet":
-        return (
-          <div className="cheat-sheet-tab-container">
-            <h4 className="cheat-section-title" style={{ marginTop: 0 }}>
-              <Sparkles
-                size={15}
-                style={{ color: "var(--cyan)", marginRight: "6px" }}
-              />
-              Syntax Quick Reference
-            </h4>
-            <BulletList items={l.cheatSheet} />
-
-            {l.revisionNotes && l.revisionNotes.length > 0 && (
-              <>
-                <h4 className="cheat-section-title">
-                  <CheckCircle2
-                    size={15}
-                    style={{ color: "var(--green)", marginRight: "6px" }}
-                  />
-                  Key Takeaways
-                </h4>
-                <BulletList items={l.revisionNotes} />
-              </>
-            )}
-
-            {l.interviewQuestions && l.interviewQuestions.length > 0 && (
-              <>
-                <h4 className="cheat-section-title">
-                  <Brain
-                    size={15}
-                    style={{ color: "var(--yellow)", marginRight: "6px" }}
-                  />
-                  Sample Interview Questions
-                </h4>
-                <BulletList items={l.interviewQuestions} />
-              </>
-            )}
-          </div>
-        );
-      case "Practice":
-        return (
-          <div className="practice-mini-list">
-            {activeModule.problems.slice(0, 5).map((p) => (
-              <div key={p.id} className="problem-row">
-                <span
-                  className={`difficulty-pill ${classForDiff(p.difficulty)}`}
-                >
-                  {p.difficulty}
-                </span>
-                <span className="problem-row-title">{p.title}</span>
-                <button
-                  className="icon-button"
-                  title="Open in Playground"
-                  onClick={() => openInPlayground(p)}
-                >
-                  <Zap size={14} />
-                </button>
-                <span
-                  className={`status-icon ${progress.solvedProblems.includes(p.id) ? "solved" : ""}`}
-                  title={
-                    progress.solvedProblems.includes(p.id)
-                      ? "Solved"
-                      : "Unsolved"
-                  }
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: progress.solvedProblems.includes(p.id)
-                      ? "var(--emerald)"
-                      : "var(--muted)",
-                  }}
-                >
-                  <CheckCircle2 size={14} />
-                </span>
-              </div>
-            ))}
-          </div>
-        );
-      default:
-        return null;
-    }
+        </section>
+      </div>
+    );
   }
 
   return (
@@ -357,16 +305,21 @@ function ModulesView({
         </div>
       </div>
 
-      <div className="lesson-tabs">
-        {lessonTabs.map((t) => (
-          <button
-            key={t}
-            className={activeLessonTab === t ? "active" : ""}
-            onClick={() => setActiveLessonTab(t)}
-          >
-            {t}
-          </button>
-        ))}
+      <div className="storyboard-sticky-nav" style={{ position: "sticky", top: 0, zIndex: 10, background: "var(--bg)", backdropFilter: "blur(8px)", padding: "10px 0", borderBottom: "1px solid var(--border)", display: "flex", gap: "8px", overflowX: "auto", marginBottom: "24px" }}>
+        <a href="#section-concept" className="storyboard-nav-pill" style={{ textDecoration: "none", padding: "6px 14px", borderRadius: "20px", background: "rgba(56, 217, 255, 0.08)", border: "1px solid rgba(56, 217, 255, 0.2)", color: "var(--cyan)", fontSize: "12px", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
+          <Lightbulb size={13} /> Concept & Story
+        </a>
+        {l.commonMistakes && l.commonMistakes.length > 0 && (
+          <a href="#section-pitfalls" className="storyboard-nav-pill" style={{ textDecoration: "none", padding: "6px 14px", borderRadius: "20px", background: "rgba(244, 63, 94, 0.08)", border: "1px solid rgba(244, 63, 94, 0.2)", color: "#f43f5e", fontSize: "12px", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
+            <AlertTriangle size={13} /> Common Pitfalls
+          </a>
+        )}
+        <a href="#section-cheatsheet" className="storyboard-nav-pill" style={{ textDecoration: "none", padding: "6px 14px", borderRadius: "20px", background: "rgba(155, 124, 255, 0.08)", border: "1px solid rgba(155, 124, 255, 0.2)", color: "var(--violet)", fontSize: "12px", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
+          <Sparkles size={13} /> Cheat Sheet
+        </a>
+        <a href="#section-practice" className="storyboard-nav-pill" style={{ textDecoration: "none", padding: "6px 14px", borderRadius: "20px", background: "rgba(52, 211, 153, 0.08)", border: "1px solid rgba(52, 211, 153, 0.2)", color: "#34d399", fontSize: "12px", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
+          <Brain size={13} /> Practice ({activeModule.problems.length})
+        </a>
       </div>
 
       <div className="lesson-body">{renderLessonBody()}</div>
