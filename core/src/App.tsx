@@ -236,9 +236,7 @@ export default function App() {
     "sql-aa-active-view",
     "roadmap",
   );
-  const [sidebarOpen, setSidebarOpen] = useState(
-    () => typeof window !== "undefined" && window.innerWidth > 768,
-  );
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   /* ── theme ──────────────────────────────────────────────── */
   const [theme, setTheme] = useLocalStorage<"dark" | "light" | "oled" | "dracula" | "onedark" | "ember">(
