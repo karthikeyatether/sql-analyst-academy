@@ -13,10 +13,7 @@ interface ReportParams {
   progress: StudyProgress;
   totalModules: number;
   totalProblems: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   debugPuzzles: any[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   roadmapModules: any[];
 }
 

@@ -23,17 +23,15 @@ export class ErrorBoundary extends Component<Props, State> {
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // If it's a Vite chunk load error (user is on an old cached version and we deployed an update),
     // automatically reload the page to fetch the new manifest and chunks.
-    const isChunkLoadError =
-      error?.message
-        ?.toLowerCase()
-        .includes("failed to fetch dynamically imported module") ||
+    const isChunkLoadError = 
+      error?.message?.toLowerCase().includes("failed to fetch dynamically imported module") ||
       error?.name === "ChunkLoadError";
-
+      
     if (isChunkLoadError) {
       window.location.reload();
       return;
     }
-
+    
     console.error("Uncaught error in boundary:", error, errorInfo);
   }
 

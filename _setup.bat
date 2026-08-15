@@ -1,38 +1,48 @@
 @echo off
-setlocal
+setlocal EnableDelayedExpansion
 cd /d "%~dp0"
 
 echo ========================================================
-echo   Installing SQL Analyst Academy Shortcut...
+echo   SQL Analyst Academy - Complete Setup & Installation
 echo ========================================================
 echo.
 
-REM Check if icon exists
-if not exist "%~dp0core\public\app_icon.ico" (
-  echo Warning: app_icon.ico not found in the installation directory!
+echo [1/3] Checking environment...
+where node >nul 2>nul
+if errorlevel 1 (
+  echo Error: Node.js is not installed or not in PATH!
+  echo Please download and install Node.js (LTS) from https://nodejs.org/
+  pause
+  exit /b 1
 )
 
-echo Installing dependencies...
+echo [2/3] Installing application dependencies...
 cd /d "%~dp0core"
 call npm install
 if %errorlevel% neq 0 (
-  echo Failed to install dependencies. Please ensure Node.js is installed.
+  echo Failed to install dependencies. Please check your internet connection.
   pause
   exit /b 1
 )
-cd /d "%~dp0"
 
-REM Use PowerShell to automatically create a clean shortcut on the User's Desktop
-powershell -Command "$wshell = New-Object -ComObject WScript.Shell; $shortcut = $wshell.CreateShortcut([Environment]::GetFolderPath('Desktop') + '\SQL Analyst Academy.lnk'); $shortcut.TargetPath = '%~dp0_launch.bat'; $shortcut.IconLocation = '%~dp0core\public\app_icon.ico'; $shortcut.WorkingDirectory = '%~dp0'; $shortcut.Save()"
-
+echo [3/3] Building production assets...
+call npm run build
 if %errorlevel% neq 0 (
-  echo Failed to create Desktop Shortcut.
-  pause
-  exit /b 1
+  echo Build encountered warnings/errors.
 )
 
-echo Success! A shortcut named "SQL Analyst Academy" has been placed on your Desktop.
+cd /d "%~dp0"
 echo.
-echo You can now close this window and launch the app from your Desktop.
+echo Creating Desktop Shortcut with custom grey icon...
+if exist "%~dp0create_shortcut.vbs" (
+  cscript //nologo "%~dp0create_shortcut.vbs" "%~dp0"
+)
+
+echo.
 echo ========================================================
+echo   Installation Completed Successfully!
+echo   Desktop Shortcut: "SQL Analyst Academy"
+echo ========================================================
+echo.
+echo You can now launch the app directly from your Desktop!
 pause

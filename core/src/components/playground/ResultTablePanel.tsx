@@ -121,9 +121,11 @@ export const ResultTablePanel: React.FC<ResultTablePanelProps> = ({
           <thead>
             <tr
               style={{
-                background: "var(--border)",
+                background: "var(--panel2)",
+                borderBottom: "1px solid var(--border)",
                 position: "sticky",
                 top: 0,
+                zIndex: 2,
               }}
             >
               {result.columns.map((c, idx) => (
@@ -131,7 +133,11 @@ export const ResultTablePanel: React.FC<ResultTablePanelProps> = ({
                   key={idx}
                   style={{
                     padding: "8px 12px",
-                    color: "var(--text-secondary)",
+                    color: "var(--muted)",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.04em",
                   }}
                 >
                   {c}
@@ -148,11 +154,20 @@ export const ResultTablePanel: React.FC<ResultTablePanelProps> = ({
                 {result.columns.map((c, cIdx) => (
                   <td
                     key={cIdx}
-                    style={{ padding: "6px 12px", color: "var(--text)" }}
+                    style={{
+                      padding: "7px 12px",
+                      color: "var(--text)",
+                      fontFamily: typeof row[c] === 'number' ? "var(--font-mono, monospace)" : "inherit",
+                    }}
                   >
                     {row[c] === null ? (
                       <span
-                        style={{ color: "var(--muted)", fontStyle: "italic" }}
+                        style={{
+                          color: "var(--faint)",
+                          fontStyle: "italic",
+                          fontSize: "11px",
+                          opacity: 0.7,
+                        }}
                       >
                         NULL
                       </span>

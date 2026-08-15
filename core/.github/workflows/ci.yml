@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Type-check, Format, Test, Build & E2E
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Security audit
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Check code formatting
+        run: npm run format:check
+
+      - name: Run ESLint quality gate
+        run: npm run lint
+
+      - name: Run SQL validation tests
+        run: npm test
+
+      - name: Type-check & production build
+        run: npm run build
+
+      - name: Pre-compress assets (Gzip & Brotli)
+        run: node precompress.cjs
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright E2E tests against fresh production build
+        run: npm run test:e2e
+
+      - name: Validate build artifacts
+        run: |
+          test -f dist/index.html
+          test -f dist/index.html.gz
+          test -f dist/index.html.br
+          ls dist/assets/*.wasm

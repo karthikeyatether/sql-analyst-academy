@@ -1,5 +1,3 @@
-import { MainLayout } from "./components/MainLayout";
-import LessonProse from "./components/LessonProse";
 import type { BeforeMount, OnMount } from "@monaco-editor/react";
 import {
   BarChart3,
@@ -19,12 +17,11 @@ import {
   Bug,
   Sun,
   Moon,
-  Flame,
-  Palette,
-  Check,
   AlertTriangle,
   GitMerge,
   Edit3,
+  Palette,
+  Flame,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import React, {
@@ -37,7 +34,9 @@ import React, {
   lazy,
 } from "react";
 import { useLocalStorage } from "./hooks/useLocalStorage";
-import { setStorageItem, getStorageItem } from "./utils/storage";
+import CommandPalette from "./components/CommandPalette";
+import type { CommandItem } from "./components/CommandPalette";
+import GamifiedHud from "./components/GamifiedHud";
 import { buildCsvImportSql } from "./utils/csvParser";
 import { stripLineNumbersFromQuery } from "./utils/formatters";
 import {
@@ -46,65 +45,17 @@ import {
   saveSM2Progress,
   SM2ProgressMap,
 } from "./utils/sm2Engine";
+// Build hash test update v2
 const APP_BUILD_HASH_MARKER = "v2.0";
-
-export type AppTheme =
-  "dark" | "light" | "oled" | "dracula" | "onedark" | "ember";
-
-export const THEME_OPTIONS: Array<{
-  id: AppTheme;
-  label: string;
-  desc: string;
-  color: string;
-}> = [
-  {
-    id: "dark",
-    label: "Dark Studio",
-    desc: "Classic Dark Theme",
-    color: "#38bdf8",
-  },
-  {
-    id: "light",
-    label: "Light Mode",
-    desc: "Soft Daylight Contrast",
-    color: "#0284c7",
-  },
-  {
-    id: "oled",
-    label: "OLED Black",
-    desc: "Pure Black High Contrast",
-    color: "#a855f7",
-  },
-  {
-    id: "dracula",
-    label: "Dracula",
-    desc: "Neon Cyberpunk & Purple",
-    color: "#ff79c6",
-  },
-  {
-    id: "onedark",
-    label: "One Dark",
-    desc: "Atom Slate & Cyan",
-    color: "#61afef",
-  },
-  {
-    id: "ember",
-    label: "Ember Warm",
-    desc: "Anti-Blue Night Mode",
-    color: "#f97316",
-  },
-];
-const DashboardView = lazy(() => import("./views/v2/DashboardView"));
-const RoadmapView = lazy(() => import("./views/v2/RoadmapView"));
-const ModulesView = lazy(() => import("./views/v2/ModulesView"));
-const PracticeView = lazy(() => import("./views/v2/PracticeView"));
-const PlaygroundView = lazy(() => import("./views/v2/PlaygroundView"));
-const PuzzlesView = lazy(() => import("./views/v2/PuzzlesView"));
-const DayDetailsView = lazy(() => import("./views/v2/DayDetailsView"));
-const MockTestView = lazy(() => import("./views/v2/MockTestView"));
-const MissionCapstoneView = lazy(
-  () => import("./features/curriculum/MissionCapstoneView"),
-);
+const DashboardView = lazy(() => import("./views/DashboardView"));
+const RoadmapView = lazy(() => import("./views/RoadmapView"));
+const ModulesView = lazy(() => import("./views/ModulesView"));
+const PracticeView = lazy(() => import("./views/PracticeView"));
+const PlaygroundView = lazy(() => import("./views/PlaygroundView"));
+const PuzzlesView = lazy(() => import("./views/PuzzlesView"));
+const DayDetailsView = lazy(() => import("./views/DayDetailsView"));
+const MockTestView = lazy(() => import("./views/MockTestView"));
+const MissionCapstoneView = lazy(() => import("./views/MissionCapstoneView"));
 import {
   interviewQuestionBank,
   mockInterviews,
@@ -129,24 +80,15 @@ import {
   getLiveSchema,
   formatSql,
 } from "./utils/sqlEngine";
-import QueryPlanFlowchart from "./components/QueryPlanFlowchart";
 import OnboardingModal from "./components/OnboardingModal";
 import ShortcutsModal from "./components/ShortcutsModal";
 import ColumnProfileModal from "./components/ColumnProfileModal";
 import { downloadStatsReport } from "./utils/reportGenerator";
-import CommandPalette from "./components/CommandPalette";
-import type { CommandItem } from "./components/CommandPalette";
-import GamifiedHud from "./components/GamifiedHud";
 import type { QueryResult, QueryPlanStep } from "./utils/sqlEngine";
-const SqlJoinVennDiagram = lazy(
-  () => import("./components/SqlJoinVennDiagram"),
-);
 import SqlLinterAdvisor from "./components/SqlLinterAdvisor";
 import { lintSqlQuery } from "./utils/sqlLinter";
 import type { LintError } from "./utils/sqlLinter";
-const SqlPerformanceComparer = lazy(
-  () => import("./components/SqlPerformanceComparer"),
-);
+const SqlPerformanceComparer = lazy(() => import("./components/SqlPerformanceComparer"));
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import type {
   QAItem,
@@ -197,7 +139,6 @@ const navItems: { id: ViewId; label: string; icon: LucideIcon }[] = [
   { id: "puzzles", label: "SQL Puzzles", icon: Bug },
   { id: "mocks", label: "Mock Tests", icon: Timer },
   { id: "missions", label: "Capstones", icon: Target },
-  { id: "join-visualizer", label: "Join Visualizer", icon: GitMerge },
 ];
 
 const initialProgress: ProgressState = {
@@ -260,7 +201,7 @@ export default function App() {
           mockScores: parsed.mockScores ?? {},
           completedChecklistItems: parsed.completedChecklistItems ?? [],
         };
-        setStorageItem("sql-aa-progress-v2-backup", v2Data);
+        localStorage.setItem("sql-aa-progress-v2-backup", v2Data);
       } catch (e) {
         console.warn("Failed to parse v2 progress data:", e);
       }
@@ -277,13 +218,16 @@ export default function App() {
           mockScores: {},
           completedChecklistItems: [],
         };
-        setStorageItem("sql-aa-progress-v1-backup", v1Data);
+        localStorage.setItem("sql-aa-progress-v1-backup", v1Data);
       } catch (e) {
         console.warn("Failed to parse v1 progress data:", e);
       }
     }
     if (migratedProgress) {
-      setStorageItem(currentProgressKey, migratedProgress);
+      localStorage.setItem(
+        currentProgressKey,
+        JSON.stringify(migratedProgress),
+      );
     }
   }
 
@@ -292,27 +236,15 @@ export default function App() {
     "sql-aa-active-view",
     "roadmap",
   );
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(
+    () => typeof window !== "undefined" && window.innerWidth > 768,
+  );
 
   /* ── theme ──────────────────────────────────────────────── */
-  const [theme, setTheme] = useLocalStorage<AppTheme>("sql-aa-theme", "dark");
-  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
-
-  const cycleTheme = useCallback(() => {
-    setTheme((t) => {
-      const themes: AppTheme[] = [
-        "dark",
-        "light",
-        "oled",
-        "dracula",
-        "onedark",
-        "ember",
-      ];
-      const idx = themes.indexOf(t as AppTheme);
-      return themes[(idx + 1) % themes.length];
-    });
-  }, [setTheme]);
-
+  const [theme, setTheme] = useLocalStorage<"dark" | "light" | "oled" | "dracula" | "onedark" | "ember">(
+    "sql-aa-theme",
+    "dark",
+  );
   useEffect(() => {
     const root = document.documentElement;
     root.classList.remove("light", "oled", "dracula", "onedark", "ember");
@@ -479,7 +411,7 @@ export default function App() {
   }, []);
 
   const completeOnboarding = () => {
-    setStorageItem("sql-aa-onboarded", "true");
+    localStorage.setItem("sql-aa-onboarded", "true");
     setShowOnboarding(false);
   };
 
@@ -655,9 +587,9 @@ export default function App() {
         currentStreak = 1;
       }
 
-      setStorageItem("sql-aa-streak", String(currentStreak));
-      setStorageItem("sql-aa-last-active-date", todayStr);
-      setStorageItem("sql-aa-active-days", JSON.stringify(activeDays));
+      localStorage.setItem("sql-aa-streak", String(currentStreak));
+      localStorage.setItem("sql-aa-last-active-date", todayStr);
+      localStorage.setItem("sql-aa-active-days", JSON.stringify(activeDays));
       setStreak(currentStreak);
     };
     checkStreak();
@@ -730,31 +662,34 @@ export default function App() {
 
         try {
           if (backup.progress && typeof backup.progress === "object") {
-            setStorageItem(
+            localStorage.setItem(
               "sql-aa-progress-v3",
               JSON.stringify(backup.progress),
             );
           }
           if (backup.history && Array.isArray(backup.history)) {
-            setStorageItem("sql-aa-history", JSON.stringify(backup.history));
+            localStorage.setItem(
+              "sql-aa-history",
+              JSON.stringify(backup.history),
+            );
           }
           if (backup.saved && Array.isArray(backup.saved)) {
-            setStorageItem("sql-aa-saved", JSON.stringify(backup.saved));
+            localStorage.setItem("sql-aa-saved", JSON.stringify(backup.saved));
           }
           if (backup.drafts && typeof backup.drafts === "object") {
-            setStorageItem(
+            localStorage.setItem(
               "sql-aa-problem-drafts",
               JSON.stringify(backup.drafts),
             );
           }
           if (backup.puzzleDrafts && typeof backup.puzzleDrafts === "object") {
-            setStorageItem(
+            localStorage.setItem(
               "sql-aa-puzzle-drafts",
               JSON.stringify(backup.puzzleDrafts),
             );
           }
           if (backup.freeform !== undefined) {
-            setStorageItem(
+            localStorage.setItem(
               "sql-aa-freeform-query",
               JSON.stringify(backup.freeform),
             );
@@ -769,7 +704,7 @@ export default function App() {
           // Rollback to last known good state
           backupKeys.forEach((key) => {
             if (lastKnownGood[key] !== null) {
-              setStorageItem(key, lastKnownGood[key]!);
+              localStorage.setItem(key, lastKnownGood[key]!);
             } else {
               localStorage.removeItem(key);
             }
@@ -1146,12 +1081,8 @@ export default function App() {
       if (monacoRef.current) {
         const monaco = monacoRef.current;
         const models = monaco.editor.getModels();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         models.forEach((model: any) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           if (model.getLanguageId() === "sql" && model.getValue() === query) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const markers: any[] = [];
             const bracketStack: { char: string; line: number; col: number }[] =
               [];
@@ -1234,10 +1165,8 @@ export default function App() {
   const [activeConsoleTab, setActiveConsoleTab] = useState<
     "results" | "plan" | "history" | "saved" | "benchmark"
   >("results");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [queryPlanSteps, setQueryPlanSteps] = useState<QueryPlanStep[]>([]);
   const [resetStatus, setResetStatus] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const resetTimeoutRef = useRef<any>(null);
   const triggerResetStatus = useCallback(() => {
     setResetStatus(true);
@@ -1354,7 +1283,7 @@ export default function App() {
       try {
         setQuery(newVal);
         queryRef.current = newVal;
-        setStorageItem("sql-aa-active-query", JSON.stringify(newVal));
+        localStorage.setItem("sql-aa-active-query", JSON.stringify(newVal));
 
         const mode = pMode ?? playgroundMode;
         if (mode === "practice") {
@@ -1368,7 +1297,10 @@ export default function App() {
               query: newVal,
               starterQueryUsed: prob ? prob.starterQuery : "",
             };
-            setStorageItem("sql-aa-problem-drafts", JSON.stringify(drafts));
+            localStorage.setItem(
+              "sql-aa-problem-drafts",
+              JSON.stringify(drafts),
+            );
           }
         } else if (mode === "puzzle") {
           const id = targetId ?? activePuzzleId;
@@ -1381,15 +1313,15 @@ export default function App() {
               query: newVal,
               flawedQueryUsed: puzzle ? puzzle.flawedQuery : "",
             };
-            setStorageItem("sql-aa-puzzle-drafts", JSON.stringify(drafts));
+            localStorage.setItem(
+              "sql-aa-puzzle-drafts",
+              JSON.stringify(drafts),
+            );
           }
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-
         if (editorRef.current) {
           try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const editor = editorRef.current as any;
             const model = editor.getModel();
             if (model) {
@@ -1425,15 +1357,11 @@ export default function App() {
   );
 
   const insertTextAtCursor = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (text: string) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       isProgrammaticChangeRef.current = true;
       try {
         if (editorRef.current && monacoRef.current) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const editor = editorRef.current as any;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const monaco = monacoRef.current as any;
           const selection = editor.getSelection();
           const model = editor.getModel();
@@ -1467,7 +1395,10 @@ export default function App() {
             const updatedValue = editor.getValue();
             setQuery(updatedValue);
             queryRef.current = updatedValue;
-            setStorageItem("sql-aa-active-query", JSON.stringify(updatedValue));
+            localStorage.setItem(
+              "sql-aa-active-query",
+              JSON.stringify(updatedValue),
+            );
           } else {
             setQuery((q) => q + text);
           }
@@ -1497,19 +1428,15 @@ export default function App() {
       stopAutoTyping();
       setIsAutoTyping(true);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-
       let index = 0;
       const step = Math.max(2, Math.floor(fullText.length / 35));
 
       isProgrammaticChangeRef.current = true;
       if (editorRef.current) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (editorRef.current as any).setValue("");
       }
       queryRef.current = "";
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       typingIntervalRef.current = window.setInterval(() => {
         index = Math.min(fullText.length, index + step);
         const nextText = fullText.slice(0, index);
@@ -1517,7 +1444,6 @@ export default function App() {
         isProgrammaticChangeRef.current = true;
         queryRef.current = nextText;
         if (editorRef.current) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (editorRef.current as any).setValue(nextText);
         }
 
@@ -1525,7 +1451,7 @@ export default function App() {
           stopAutoTyping();
           isProgrammaticChangeRef.current = true;
           setQuery(fullText);
-          setStorageItem("sql-aa-active-query", JSON.stringify(fullText));
+          localStorage.setItem("sql-aa-active-query", JSON.stringify(fullText));
           setTimeout(() => {
             isProgrammaticChangeRef.current = false;
           }, 50);
@@ -1549,7 +1475,7 @@ export default function App() {
         if (debounceTimerRef.current)
           window.clearTimeout(debounceTimerRef.current);
         debounceTimerRef.current = window.setTimeout(() => {
-          setStorageItem("sql-aa-active-query", JSON.stringify(v));
+          localStorage.setItem("sql-aa-active-query", JSON.stringify(v));
 
           if (playgroundMode === "practice" && selectedProblemId) {
             const drafts = JSON.parse(
@@ -1560,7 +1486,10 @@ export default function App() {
               query: v,
               starterQueryUsed: prob ? prob.starterQuery : "",
             };
-            setStorageItem("sql-aa-problem-drafts", JSON.stringify(drafts));
+            localStorage.setItem(
+              "sql-aa-problem-drafts",
+              JSON.stringify(drafts),
+            );
           } else if (playgroundMode === "puzzle" && activePuzzleId) {
             const drafts = JSON.parse(
               localStorage.getItem("sql-aa-puzzle-drafts") || "{}",
@@ -1570,9 +1499,12 @@ export default function App() {
               query: v,
               flawedQueryUsed: puzzle ? puzzle.flawedQuery : "",
             };
-            setStorageItem("sql-aa-puzzle-drafts", JSON.stringify(drafts));
+            localStorage.setItem(
+              "sql-aa-puzzle-drafts",
+              JSON.stringify(drafts),
+            );
           } else {
-            setStorageItem("sql-aa-freeform-query", JSON.stringify(v));
+            localStorage.setItem("sql-aa-freeform-query", JSON.stringify(v));
           }
 
           const now = new Date();
@@ -1723,9 +1655,7 @@ export default function App() {
   );
   const [resultHeight, setResultHeight] = useLocalStorage(
     "sql-aa-result-h",
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     250,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   );
 
   /* ── UI state ────────────────────────────────────────────── */
@@ -1734,9 +1664,7 @@ export default function App() {
   const [rightOpen, setRightOpen] = useState(true);
   const searchRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<unknown>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monacoRef = useRef<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const completionProviderRef = useRef<any>(null);
 
   // Monaco Resource Garbage Collection on View Shifts
@@ -1950,9 +1878,7 @@ export default function App() {
   }
 
   // Robust Grader Function
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   interface GraderResult {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     isCorrect: boolean;
     message: string;
     details?: string;
@@ -1962,9 +1888,7 @@ export default function App() {
   function verifyAnswer(
     userRes: QueryResult,
     expRes: QueryResult,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     userSnapshot: Record<string, any[]> | null,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expSnapshot: Record<string, any[]> | null,
     solutionSql: string,
   ): GraderResult {
@@ -2812,7 +2736,10 @@ export default function App() {
 
         setQuery(initialQuery);
         queryRef.current = initialQuery;
-        setStorageItem("sql-aa-active-query", JSON.stringify(initialQuery));
+        localStorage.setItem(
+          "sql-aa-active-query",
+          JSON.stringify(initialQuery),
+        );
 
         setQueryResult(await runQuery(initialQuery));
         setLiveSchema(await getLiveSchema());
@@ -2843,7 +2770,7 @@ export default function App() {
         tag === "INPUT" ||
         tag === "TEXTAREA" ||
         (e.target as HTMLElement).getAttribute("contenteditable") === "true";
-      if (e.key === "/" && !typing) {
+      if ((e.key === "/" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k")) && !typing) {
         e.preventDefault();
         searchRef.current?.focus();
       }
@@ -2907,104 +2834,6 @@ export default function App() {
         "editorBracketHighlight.foreground5": "#c084fc",
         "editorBracketHighlight.foreground6": "#fb923c",
         "editorBracketHighlight.unexpectedBracket.foreground": "#ef4444",
-      },
-    });
-
-    monaco.editor.defineTheme("dracula", {
-      base: "vs-dark",
-      inherit: true,
-      rules: [
-        { token: "keyword", foreground: "ff79c6", fontStyle: "bold" },
-        { token: "keyword.sql", foreground: "ff79c6", fontStyle: "bold" },
-        { token: "predefined", foreground: "8be9fd", fontStyle: "italic" },
-        { token: "predefined.sql", foreground: "8be9fd", fontStyle: "italic" },
-        { token: "type", foreground: "8be9fd" },
-        { token: "type.sql", foreground: "8be9fd" },
-        { token: "string", foreground: "f1fa8c" },
-        { token: "string.sql", foreground: "f1fa8c" },
-        { token: "number", foreground: "bd93f9" },
-        { token: "number.sql", foreground: "bd93f9" },
-        { token: "comment", foreground: "6272a4" },
-        { token: "comment.sql", foreground: "6272a4" },
-        { token: "operator", foreground: "ff79c6" },
-        { token: "operator.sql", foreground: "ff79c6" },
-        { token: "delimiter", foreground: "f8f8f2" },
-        { token: "identifier", foreground: "f8f8f2" },
-        { token: "identifier.sql", foreground: "f8f8f2" },
-      ],
-      colors: {
-        "editor.background": "#282a36",
-        "editorGutter.background": "#282a36",
-        "editor.lineHighlightBackground": "#44475a",
-        "editorLineNumber.foreground": "#6272a4",
-        "editorLineNumber.activeForeground": "#f8f8f2",
-        "editorBracketMatch.background": "#44475a",
-        "editorBracketMatch.border": "#bd93f9",
-      },
-    });
-
-    monaco.editor.defineTheme("one-dark", {
-      base: "vs-dark",
-      inherit: true,
-      rules: [
-        { token: "keyword", foreground: "c678dd", fontStyle: "bold" },
-        { token: "keyword.sql", foreground: "c678dd", fontStyle: "bold" },
-        { token: "predefined", foreground: "56b6c2", fontStyle: "italic" },
-        { token: "predefined.sql", foreground: "56b6c2", fontStyle: "italic" },
-        { token: "type", foreground: "e5c07b" },
-        { token: "type.sql", foreground: "e5c07b" },
-        { token: "string", foreground: "98c379" },
-        { token: "string.sql", foreground: "98c379" },
-        { token: "number", foreground: "d19a66" },
-        { token: "number.sql", foreground: "d19a66" },
-        { token: "comment", foreground: "5c6370", fontStyle: "italic" },
-        { token: "comment.sql", foreground: "5c6370", fontStyle: "italic" },
-        { token: "operator", foreground: "56b6c2" },
-        { token: "operator.sql", foreground: "56b6c2" },
-        { token: "identifier", foreground: "abb2bf" },
-        { token: "identifier.sql", foreground: "abb2bf" },
-      ],
-      colors: {
-        "editor.background": "#282c34",
-        "editorGutter.background": "#282c34",
-        "editor.lineHighlightBackground": "#2c313a",
-        "editorLineNumber.foreground": "#4b5263",
-        "editorLineNumber.activeForeground": "#abb2bf",
-        "editorBracketMatch.background": "#515a6b",
-        "editorBracketMatch.border": "#c678dd",
-      },
-    });
-
-    monaco.editor.defineTheme("ember", {
-      base: "vs-dark",
-      inherit: true,
-      rules: [
-        { token: "keyword", foreground: "f97316", fontStyle: "bold" },
-        { token: "keyword.sql", foreground: "f97316", fontStyle: "bold" },
-        { token: "predefined", foreground: "eab308", fontStyle: "italic" },
-        { token: "predefined.sql", foreground: "eab308", fontStyle: "italic" },
-        { token: "type", foreground: "f59e0b" },
-        { token: "type.sql", foreground: "f59e0b" },
-        { token: "string", foreground: "84cc16" },
-        { token: "string.sql", foreground: "84cc16" },
-        { token: "number", foreground: "ef4444" },
-        { token: "number.sql", foreground: "ef4444" },
-        { token: "comment", foreground: "78716c", fontStyle: "italic" },
-        { token: "comment.sql", foreground: "78716c", fontStyle: "italic" },
-        { token: "operator", foreground: "f59e0b" },
-        { token: "operator.sql", foreground: "f59e0b" },
-        { token: "delimiter", foreground: "f5f5f4" },
-        { token: "identifier", foreground: "f5f5f4" },
-        { token: "identifier.sql", foreground: "f5f5f4" },
-      ],
-      colors: {
-        "editor.background": "#1c1917",
-        "editorGutter.background": "#1c1917",
-        "editor.lineHighlightBackground": "#292524",
-        "editorLineNumber.foreground": "#78716c",
-        "editorLineNumber.activeForeground": "#f5f5f4",
-        "editorBracketMatch.background": "#44403c",
-        "editorBracketMatch.border": "#44403c",
       },
     });
 
@@ -3261,7 +3090,6 @@ export default function App() {
           })),
         );
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         // 4. Aliases
         const aliasItems = Object.entries(globalAliases).map(
           ([alias, targetTable]) => ({
@@ -3274,7 +3102,6 @@ export default function App() {
         );
 
         // Deduplicate suggestions by label
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const suggestionsMap = new Map<string, any>();
         [...aliasItems, ...tableItems, ...columnItems, ...keywordItems].forEach(
           (item) => {
@@ -3431,7 +3258,6 @@ export default function App() {
         monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.KeyF,
       ],
       run: (ed) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const val = ed.getValue();
         if (val) {
           const formatted = formatSql(val);
@@ -3445,7 +3271,6 @@ export default function App() {
       },
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     editor.onMouseDown((e: any) => {
       if (
         e.target &&
@@ -3512,7 +3337,6 @@ export default function App() {
     if (isMockMode) {
       await resetDatabase();
       const result = await runQuery(sql, true, needsSnapshot);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setQueryResult(result);
       setLiveSchema(await getLiveSchema());
       return;
@@ -3527,7 +3351,6 @@ export default function App() {
 
     // 1. Evaluate Expected Result on current DB state FIRST
     let expected: QueryResult | null = null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let expectedSnapshot: Record<string, any[]> | null = null;
     let solutionSql = "";
 
@@ -3616,7 +3439,10 @@ export default function App() {
           );
           attempts[selectedProblem.id] =
             (attempts[selectedProblem.id] || 0) + 1;
-          setStorageItem("sql-aa-failed-attempts", JSON.stringify(attempts));
+          localStorage.setItem(
+            "sql-aa-failed-attempts",
+            JSON.stringify(attempts),
+          );
         }
       }
     } else {
@@ -3719,7 +3545,7 @@ export default function App() {
           localStorage.getItem("sql-aa-problem-drafts") || "{}",
         );
         delete drafts[selectedProblemId];
-        setStorageItem("sql-aa-problem-drafts", JSON.stringify(drafts));
+        localStorage.setItem("sql-aa-problem-drafts", JSON.stringify(drafts));
         const saved = getSavedDraftQuery(p);
         updateEditorQuery(saved);
         setQueryResult(await runQuery(saved, true));
@@ -3734,7 +3560,7 @@ export default function App() {
           localStorage.getItem("sql-aa-puzzle-drafts") || "{}",
         );
         delete drafts[activePuzzleId];
-        setStorageItem("sql-aa-puzzle-drafts", JSON.stringify(drafts));
+        localStorage.setItem("sql-aa-puzzle-drafts", JSON.stringify(drafts));
         const saved = getSavedPuzzleQuery(p);
         updateEditorQuery(saved);
         setQueryResult(await runQuery(saved, true));
@@ -3849,7 +3675,6 @@ export default function App() {
     const allPuzzlesSolved =
       dayPuzzles.length === 0 ||
       dayPuzzles.every((pz) => solvedPuzs.includes(pz.id));
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!allPuzzlesSolved) return false;
 
     // 4. If day features a mock interview, mock score must be > 0
@@ -3865,10 +3690,9 @@ export default function App() {
   // actual learning requirements are complete; opening a lesson or revealing
   // its answer must never mark it as finished.
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setProgress((prev: any) => {
+    setProgress((prev) => {
       const validCompletedModules = (prev.completedModules || []).filter(
-        (moduleId: number) => {
+        (moduleId) => {
           const module = roadmapModules.find((m) => m.id === moduleId);
           return Boolean(
             module &&
@@ -3879,15 +3703,14 @@ export default function App() {
           );
         },
       );
-      const validCompletedDays = (prev.completedDays || []).filter(
-        (day: number) =>
-          isDayFullyComplete(
-            day,
-            prev.solvedProblems,
-            prev.solvedPuzzles || [],
-            prev.mockScores || {},
-            prev.completedModules || [],
-          ),
+      const validCompletedDays = (prev.completedDays || []).filter((day) =>
+        isDayFullyComplete(
+          day,
+          prev.solvedProblems,
+          prev.solvedPuzzles || [],
+          prev.mockScores || {},
+          prev.completedModules || [],
+        ),
       );
 
       const modulesChanged =
@@ -3987,7 +3810,6 @@ export default function App() {
           : [...items, itemId],
       };
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }
 
   const [sm2Progress, setSm2Progress] = useState<SM2ProgressMap>(() =>
@@ -4004,8 +3826,7 @@ export default function App() {
       saveSM2Progress(next);
       return next;
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setProgress((prev: any) => {
+    setProgress((prev) => {
       const alreadySolved = prev.solvedProblems.includes(p.id);
       const nextSolved = alreadySolved
         ? prev.solvedProblems
@@ -4040,7 +3861,6 @@ export default function App() {
           !nextCompletedDays.includes(parentDay.day)
         ) {
           nextCompletedDays.push(parentDay.day);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }
       }
 
@@ -4058,8 +3878,7 @@ export default function App() {
     if (!sp.includes(p.id)) {
       triggerConfetti();
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setProgress((prev: any) => {
+    setProgress((prev) => {
       const sp = prev.solvedPuzzles || [];
       const nextSolvedPuzzles = sp.includes(p.id) ? sp : [...sp, p.id];
 
@@ -4442,7 +4261,7 @@ export default function App() {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        setCommandPaletteOpen(o => !o);
+        setCommandPaletteOpen((o) => !o);
       }
     };
     window.addEventListener("keydown", handler);
@@ -4456,51 +4275,279 @@ export default function App() {
         onClose={() => setCommandPaletteOpen(false)}
         items={commandItems}
       />
-      <MainLayout
-        sidebarOpen={sidebarOpen}
-        sideNavProps={{
-          sidebarOpen,
-          setSidebarOpen,
-          navItems,
-          activeView,
-          setActiveView,
-          enterFreeformPlayground,
-          setSelectedDayId,
-          activeDayWhereLeftOff,
-          handleSidebarNavKeyDown,
-          currentLevel,
-          totalXP,
-          xpProgressPercent,
-          readiness,
-          progress,
-          totalModules,
-          totalProblems,
-        }}
-        topBarProps={{
-          sidebarOpen,
-          setSidebarOpen,
-          searchRef,
-          searchTerm,
-          setSearchTerm,
-          filteredSearch,
-          handleSearchPick,
-          theme,
-          themeMenuOpen,
-          setThemeMenuOpen,
-          cycleTheme,
-          THEME_OPTIONS,
-          setTheme,
-          readiness,
-          onOpenCommandPalette: () => setCommandPaletteOpen(true),
-          // Gamified HUD props
-          solvedProblems: progress.solvedProblems,
-          solvedPuzzles: progress.solvedPuzzles,
-          streak,
-          queryRuns: progress.queryRuns,
-          minutesStudied: progress.minutesStudied,
-        }}
-        pageContentProps={{
-          className: `page-content ${
+      <div className={`app-shell ${sidebarOpen ? "sb-open" : "sb-closed"}`}>
+      {sidebarOpen && (
+        <>
+          <div
+            className="sidebar-backdrop"
+            onClick={() => setSidebarOpen(false)}
+          />
+          {/* ── SIDEBAR ───────────────────────────────────── */}
+          <aside className="sidebar">
+            <div
+              className="brand-row"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                width: "100%",
+              }}
+            >
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "10px" }}
+              >
+                <div
+                  className="brand-mark"
+                  style={{
+                    background: "rgba(56, 217, 255, 0.12)",
+                    border: "1px solid rgba(56, 217, 255, 0.3)",
+                    borderRadius: "8px",
+                    width: "32px",
+                    height: "32px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "var(--cyan)",
+                  }}
+                >
+                  <Database size={17} />
+                </div>
+                <div>
+                  <strong>SQL</strong>
+                  <span>Academy</span>
+                </div>
+              </div>
+              <button
+                className="icon-button sidebar-toggle-btn"
+                onClick={() => setSidebarOpen((o) => !o)}
+                title="Toggle Sidebar"
+                aria-label="Toggle Sidebar"
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--text-secondary)",
+                  cursor: "pointer",
+                  padding: "6px",
+                  borderRadius: "6px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Menu size={18} />
+              </button>
+            </div>
+
+            <nav
+              className="sidebar-nav"
+              role="tablist"
+              aria-label="Main Navigation"
+              onKeyDown={handleSidebarNavKeyDown}
+            >
+              {navItems.map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  className={activeView === id ? "active" : ""}
+                  onClick={() => {
+                    if (id === "playground") {
+                      enterFreeformPlayground();
+                    } else if (id === "roadmap" || id === "day-details") {
+                      setSelectedDayId(activeDayWhereLeftOff);
+                      setActiveView(id);
+                    } else {
+                      setActiveView(id);
+                    }
+                    setSidebarOpen(false); // always close sidebar after nav pick
+                  }}
+                  role="tab"
+                  aria-selected={activeView === id}
+                  tabIndex={activeView === id ? 0 : -1}
+                >
+                  <Icon size={17} aria-hidden="true" />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </nav>
+
+            <div className="sidebar-footer">
+              <div
+                className="sidebar-user-xp"
+                style={{
+                  padding: "10px 12px",
+                  background: "rgba(255,255,255,0.02)",
+                  border: "1px solid var(--border)",
+                  borderRadius: "6px",
+                  marginBottom: "10px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "28px",
+                    height: "28px",
+                    background: "rgba(56, 217, 255, 0.1)",
+                    border: "1px solid rgba(56, 217, 255, 0.2)",
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    color: "var(--cyan)",
+                  }}
+                >
+                  L{currentLevel}
+                </div>
+                <div
+                  style={{ display: "flex", flexDirection: "column", flex: 1 }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      fontSize: "10px",
+                      color: "var(--text-secondary)",
+                    }}
+                  >
+                    <span>SQL Apprentice</span>
+                    <span>{totalXP} XP</span>
+                  </div>
+                  <div
+                    style={{
+                      height: "4px",
+                      background: "var(--border)",
+                      borderRadius: "2px",
+                      overflow: "hidden",
+                      marginTop: "4px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${xpProgressPercent}%`,
+                        height: "100%",
+                        background: "var(--cyan)",
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="readiness-card">
+                <div className="rc-top">
+                  <span>Interview Readiness</span>
+                  <strong>{readiness}%</strong>
+                </div>
+                <div className="progress-track">
+                  <span style={{ width: `${readiness}%` }} />
+                </div>
+                <div className="rc-sub">
+                  <span>
+                    {progress.completedModules.length}/{totalModules} modules
+                  </span>
+                  <span>
+                    {progress.solvedProblems.length}/{totalProblems} problems
+                  </span>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </>
+      )}
+
+      {/* ── MAIN ─────────────────────────────────────── */}
+      <main className="main-shell">
+        {/* topbar */}
+        <header className="topbar">
+          <button
+            className="icon-button tb-ham"
+            onClick={() => setSidebarOpen((o) => !o)}
+          >
+            {sidebarOpen ? <X size={17} /> : <Menu size={17} />}
+          </button>
+
+          <div className="topbar-search">
+            <div className="search-shell" onClick={() => searchRef.current?.focus()}>
+              <Search size={14} />
+              <input
+                ref={searchRef}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search modules, problems…"
+              />
+              <kbd className="search-kbd-shortcut">Ctrl + K</kbd>
+              {filteredSearch.length > 0 && (
+                <div className="search-popover">
+                  {filteredSearch.map((item) => (
+                    <button
+                      key={`${item.type}-${item.id}`}
+                      onClick={() => handleSearchPick(item)}
+                    >
+                      <span>{item.type}</span>
+                      <strong>{item.label}</strong>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="topbar-right">
+            <GamifiedHud
+              solvedProblems={progress.solvedProblems}
+              solvedPuzzles={progress.solvedPuzzles}
+              streak={streak}
+              queryRuns={progress.queryRuns}
+              minutesStudied={progress.minutesStudied}
+            />
+            <button
+              className={`icon-button theme-toggle-btn ${theme}`}
+              onClick={() =>
+                setTheme((t) => {
+                  if (t === "dark") return "light";
+                  if (t === "light") return "oled";
+                  if (t === "oled") return "dracula";
+                  if (t === "dracula") return "onedark";
+                  if (t === "onedark") return "ember";
+                  return "dark"; // fallback to dark
+                })
+              }
+              title={`Theme: ${theme}. Click to switch theme.`}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              aria-label="Toggle visual theme"
+            >
+              {theme === "light" && <Sun size={16} style={{ color: "var(--amber)" }} />}
+              {theme === "oled" && (
+                <Zap size={16} style={{ color: "var(--violet)" }} />
+              )}
+              {theme === "dracula" && (
+                <Palette size={16} style={{ color: "var(--rose)" }} />
+              )}
+              {theme === "onedark" && (
+                <Code2 size={16} style={{ color: "var(--cyan)" }} />
+              )}
+              {theme === "ember" && (
+                <Flame size={16} style={{ color: "var(--amber)" }} />
+              )}
+              {!["light", "oled", "dracula", "onedark", "ember"].includes(theme) && (
+                <Moon size={16} style={{ color: "var(--cyan)" }} />
+              )}
+            </button>
+            <span title="Readiness">
+              <Target size={14} />
+              {readiness}%
+            </span>
+          </div>
+        </header>
+
+        {/* content */}
+        <div
+          className={`page-content ${
             [
               "dashboard",
               "roadmap",
@@ -4511,288 +4558,275 @@ export default function App() {
             ].includes(activeView)
               ? "scrollable-y"
               : ""
-          }`,
-          style: { flex: 1, overflow: "auto", position: "relative" },
-          id: "main-scroll-container",
-        }}
-      >
-        <Suspense
-          fallback={
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "100%",
-                width: "100%",
-                flexDirection: "column",
-                gap: "1rem",
-                color: "var(--muted)",
-              }}
-            >
-              <div className="spinner"></div>
-              <p>Loading module...</p>
-            </div>
-          }
+          }`}
+          style={{
+            flex: 1,
+            overflow: "auto",
+            position: "relative",
+          }}
+          id="main-scroll-container"
         >
-          {activeView === "dashboard" && (
-            <DashboardView
-              progress={progress}
-              learningRoadmap={learningRoadmap}
-              roadmapModules={roadmapModules}
-              debugPuzzles={debugPuzzles}
-              streak={streak}
-              setActiveView={setActiveView}
-              setSelectedDayId={setSelectedDayId}
-              readiness={readiness}
-              totalModules={totalModules}
-              totalProblems={totalProblems}
-              totalXP={totalXP}
-              currentLevel={currentLevel}
-              xpProgressPercent={xpProgressPercent}
-              xpRemaining={xpRemaining}
-              earnedBadges={earnedBadges}
-              qaItems={qaItems}
-              enterFreeformPlayground={enterFreeformPlayground}
-              selectModule={selectModule}
-              updateEditorQuery={updateEditorQuery}
-              toggleChecklistItem={toggleChecklistItem}
-              next={next}
-            />
-          )}
-          {activeView === "roadmap" && (
-            <RoadmapView
-              progress={progress}
-              learningRoadmap={learningRoadmap}
-              roadmapModules={roadmapModules}
-              setSelectedDayId={setSelectedDayId}
-              setActiveView={setActiveView}
-              toggleDayComplete={toggleDayComplete}
-              selectModule={selectModule}
-              openInPlayground={openInPlayground}
-              debugPuzzles={debugPuzzles}
-              setActivePuzzleId={setActivePuzzleId}
-              setPlaygroundMode={setPlaygroundMode}
-              getSavedPuzzleQuery={getSavedPuzzleQuery}
-              updateEditorQuery={updateEditorQuery}
-              stopAutoTyping={stopAutoTyping}
-            />
-          )}
-          {activeView === "modules" && (
-            <ModulesView
-              activeModule={activeModule}
-              roadmapModules={roadmapModules}
-              progress={progress}
-              selectModule={selectModule}
-              setActiveView={setActiveView}
-              openInPlayground={openInPlayground}
-              markModuleDone={markModuleDone}
-              markProblemSolved={markProblemSolved}
-              updateEditorQuery={updateEditorQuery}
-              copyToClipboard={copyToClipboard}
-              classForDiff={classForDiff}
-            />
-          )}
-          {activeView === "practice" && (
-            <PracticeView
-              progress={progress}
-              activeModuleId={activeModuleId}
-              roadmapModules={roadmapModules}
-              selectedProblem={selectedProblem}
-              selectProblem={selectProblem}
-              openInPlayground={openInPlayground}
-              markProblemSolved={markProblemSolved}
-              updateEditorQuery={updateEditorQuery}
-              copyToClipboard={copyToClipboard}
-              classForDiff={classForDiff}
-              selectModule={selectModule}
-              setActiveView={setActiveView}
-              setPlaygroundMode={setPlaygroundMode}
-            />
-          )}
-          {activeView === "playground" && (
-            <PlaygroundView
-              progress={progress}
-              selectedProblem={selectedProblem}
-              playgroundMode={playgroundMode}
-              setPlaygroundMode={setPlaygroundMode}
-              roadmapModules={roadmapModules}
-              tableSchemas={tableSchemas}
-              datasetDomains={datasetDomains}
-              rowLimit={rowLimit}
-              setRowLimit={setRowLimit}
-              sqlUpperKeywords={sqlUpperKeywords}
-              setSqlUpperKeywords={setSqlUpperKeywords}
-              editorFontSize={editorFontSize}
-              setEditorFontSize={setEditorFontSize}
-              editorWordWrap={editorWordWrap}
-              setEditorWordWrap={setEditorWordWrap}
-              editorMinimap={editorMinimap}
-              setEditorMinimap={setEditorMinimap}
-              editorFontFamily={editorFontFamily}
-              setEditorFontFamily={setEditorFontFamily}
-              editorTabSize={editorTabSize}
-              setEditorTabSize={setEditorTabSize}
-              editorTheme={editorTheme}
-              setEditorTheme={setEditorTheme}
-              theme={theme}
-              setTheme={setTheme}
-              rightOpen={rightOpen}
-              setRightOpen={setRightOpen}
-              query={query}
-              setQuery={setQuery}
-              queryResult={queryResult}
-              setQueryResult={setQueryResult}
-              expectedResult={expectedResult}
-              setExpectedResult={setExpectedResult}
-              graderFeedback={graderFeedback}
-              setGraderFeedback={setGraderFeedback}
-              runCurrentQuery={runCurrentQuery}
-              copyToClipboard={copyToClipboard}
-              openInPlayground={openInPlayground}
-              markProblemSolved={markProblemSolved}
-              handleRightNavKeyDown={handleRightNavKeyDown}
-              classForDiff={classForDiff}
-              editorRef={editorRef}
-              queryRef={queryRef}
-              handleBeforeMount={handleBeforeMount}
-              handleMount={handleMount}
-              handleEditorChange={handleEditorChange}
-              dbReady={dbReady}
-              streak={streak}
-              showToast={showToast}
-              liveSchema={liveSchema}
-              setLiveSchema={setLiveSchema}
-              savedQueries={savedQueries}
-              setSavedQueries={setSavedQueries}
-              showConfirm={showConfirm}
-              showPrompt={showPrompt}
-              graderStrict={graderStrict}
-              setGraderStrict={setGraderStrict}
-              activePuzzle={activePuzzle}
-              setActivePuzzleId={setActivePuzzleId}
-              debugPuzzles={debugPuzzles}
-              getSavedPuzzleQuery={getSavedPuzzleQuery}
-              getSavedDraftQuery={getSavedDraftQuery}
-              updateEditorQuery={updateEditorQuery}
-              stopAutoTyping={stopAutoTyping}
-              allProblems={allProblems}
-              monacoRef={monacoRef}
-              insertTextAtCursor={insertTextAtCursor}
-              lintErrors={lintErrors}
-              isAutoTyping={isAutoTyping}
-              autoTypeQuery={autoTypeQuery}
-              queryHistory={queryHistory}
-              setQueryHistory={setQueryHistory}
-              setSelectedDayId={setSelectedDayId}
-              setActiveView={setActiveView}
-              learningRoadmap={learningRoadmap}
-              readiness={readiness}
-              totalModules={totalModules}
-              totalProblems={totalProblems}
-            />
-          )}
-          {activeView === "puzzles" && (
-            <PuzzlesView
-              progress={progress}
-              debugPuzzles={debugPuzzles}
-              activePuzzle={activePuzzle}
-              setActivePuzzleId={setActivePuzzleId}
-              openPuzzleInPlayground={openPuzzleInPlayground}
-              markPuzzleSolved={markPuzzleSolved}
-              updateEditorQuery={updateEditorQuery}
-              setActiveView={setActiveView}
-              setPlaygroundMode={setPlaygroundMode}
-              classForDiff={classForDiff}
-            />
-          )}
-          {(activeView === "mocks" ||
-            activeView === "mock-runner" ||
-            activeView === "mock-results") && (
-            <MockTestView
-              activeView={activeView}
-              setActiveView={setActiveView}
-              progress={progress}
-              mockInterviews={mockInterviews}
-              mockHistory={mockHistory}
-              interviewQuestionBank={interviewQuestionBank}
-              mockTest={mockTest}
-              setMockTest={setMockTest}
-              mockReviewIndex={mockReviewIndex}
-              setMockReviewIndex={setMockReviewIndex}
-              startMockTest={startMockTest}
-              submitMockAnswer={submitMockAnswer}
-              runCurrentQuery={runCurrentQuery}
-              queryRef={queryRef}
-              queryResult={queryResult}
-              resultPage={resultPage}
-              setResultPage={setResultPage}
-              RESULT_PAGE_SIZE={15}
-              updateEditorQuery={updateEditorQuery}
-              editorTheme={editorTheme}
-              theme={theme}
-              query={query}
-              handleBeforeMount={handleBeforeMount}
-              handleMount={handleMount}
-              handleEditorChange={handleEditorChange}
-              editorMinimap={editorMinimap}
-              editorFontSize={editorFontSize}
-              editorFontFamily={editorFontFamily}
-              editorTabSize={editorTabSize}
-              editorWordWrap={editorWordWrap}
-            />
-          )}
-          {activeView === "day-details" && (
-            <DayDetailsView
-              selectedDayId={selectedDayId}
-              progress={progress}
-              learningRoadmap={learningRoadmap}
-              roadmapModules={roadmapModules}
-              debugPuzzles={debugPuzzles}
-              setActiveView={setActiveView}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              setSelectedDayId={setSelectedDayId}
-              toggleDayComplete={toggleDayComplete}
-              toggleChecklistItem={toggleChecklistItem}
-              selectModule={selectModule}
-              openInPlayground={openInPlayground}
-              markProblemSolved={markProblemSolved}
-              markPuzzleSolved={markPuzzleSolved}
-              setActivePuzzleId={setActivePuzzleId}
-              setPlaygroundMode={setPlaygroundMode}
-              getSavedPuzzleQuery={getSavedPuzzleQuery}
-              updateEditorQuery={updateEditorQuery}
-              stopAutoTyping={stopAutoTyping}
-              setQueryResult={setQueryResult}
-              setExpectedResult={setExpectedResult}
-            />
-          )}
-          {activeView === "missions" && (
-            <MissionCapstoneView
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onOpenStepInPlayground={(sql: any) => {
-                updateEditorQuery(sql, "free");
-                setActiveView("playground");
-              }}
-              onBackToRoadmap={() => setActiveView("roadmap")}
-            />
-          )}
-          {activeView === "join-visualizer" && (
-            <div
-              style={{
-                padding: "2rem 3rem",
-                maxWidth: "900px",
-                margin: "0 auto",
-                width: "100%",
-              }}
-            >
-              <ErrorBoundary fallbackTitle="SQL Join Venn Sandbox Panel">
-                <SqlJoinVennDiagram />
-              </ErrorBoundary>
-            </div>
-          )}
-        </Suspense>
-      </MainLayout>
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: "100%",
+                  width: "100%",
+                  flexDirection: "column",
+                  gap: "1rem",
+                  color: "var(--muted)",
+                }}
+              >
+                <div className="spinner"></div>
+                <p>Loading module...</p>
+              </div>
+            }
+          >
+            {activeView === "dashboard" && (
+              <DashboardView
+                progress={progress}
+                learningRoadmap={learningRoadmap}
+                roadmapModules={roadmapModules}
+                debugPuzzles={debugPuzzles}
+                streak={streak}
+                setActiveView={setActiveView}
+                setSelectedDayId={setSelectedDayId}
+                readiness={readiness}
+                totalModules={totalModules}
+                totalProblems={totalProblems}
+                totalXP={totalXP}
+                currentLevel={currentLevel}
+                xpProgressPercent={xpProgressPercent}
+                xpRemaining={xpRemaining}
+                earnedBadges={earnedBadges}
+                qaItems={qaItems}
+                enterFreeformPlayground={enterFreeformPlayground}
+                selectModule={selectModule}
+                updateEditorQuery={updateEditorQuery}
+                toggleChecklistItem={toggleChecklistItem}
+                next={next}
+              />
+            )}
+            {activeView === "roadmap" && (
+              <RoadmapView
+                progress={progress}
+                learningRoadmap={learningRoadmap}
+                roadmapModules={roadmapModules}
+                setSelectedDayId={setSelectedDayId}
+                setActiveView={setActiveView}
+                toggleDayComplete={toggleDayComplete}
+                selectModule={selectModule}
+                openInPlayground={openInPlayground}
+                debugPuzzles={debugPuzzles}
+                setActivePuzzleId={setActivePuzzleId}
+                setPlaygroundMode={setPlaygroundMode}
+                getSavedPuzzleQuery={getSavedPuzzleQuery}
+                updateEditorQuery={updateEditorQuery}
+                stopAutoTyping={stopAutoTyping}
+              />
+            )}
+            {activeView === "modules" && (
+              <ModulesView
+                activeModule={activeModule}
+                roadmapModules={roadmapModules}
+                progress={progress}
+                selectModule={selectModule}
+                setActiveView={setActiveView}
+                openInPlayground={openInPlayground}
+                markModuleDone={markModuleDone}
+                markProblemSolved={markProblemSolved}
+                updateEditorQuery={updateEditorQuery}
+                copyToClipboard={copyToClipboard}
+                classForDiff={classForDiff}
+              />
+            )}
+            {activeView === "practice" && (
+              <PracticeView
+                progress={progress}
+                activeModuleId={activeModuleId}
+                roadmapModules={roadmapModules}
+                selectedProblem={selectedProblem}
+                selectProblem={selectProblem}
+                openInPlayground={openInPlayground}
+                markProblemSolved={markProblemSolved}
+                updateEditorQuery={updateEditorQuery}
+                copyToClipboard={copyToClipboard}
+                classForDiff={classForDiff}
+                selectModule={selectModule}
+                setActiveView={setActiveView}
+                setPlaygroundMode={setPlaygroundMode}
+              />
+            )}
+            {activeView === "playground" && (
+              <PlaygroundView
+                progress={progress}
+                selectedProblem={selectedProblem}
+                playgroundMode={playgroundMode}
+                setPlaygroundMode={setPlaygroundMode}
+                roadmapModules={roadmapModules}
+                tableSchemas={tableSchemas}
+                datasetDomains={datasetDomains}
+                rowLimit={rowLimit}
+                setRowLimit={setRowLimit}
+                sqlUpperKeywords={sqlUpperKeywords}
+                setSqlUpperKeywords={setSqlUpperKeywords}
+                editorFontSize={editorFontSize}
+                setEditorFontSize={setEditorFontSize}
+                editorWordWrap={editorWordWrap}
+                setEditorWordWrap={setEditorWordWrap}
+                editorMinimap={editorMinimap}
+                setEditorMinimap={setEditorMinimap}
+                editorFontFamily={editorFontFamily}
+                setEditorFontFamily={setEditorFontFamily}
+                editorTabSize={editorTabSize}
+                setEditorTabSize={setEditorTabSize}
+                editorTheme={editorTheme}
+                setEditorTheme={setEditorTheme}
+                theme={theme}
+                rightOpen={rightOpen}
+                setRightOpen={setRightOpen}
+                query={query}
+                setQuery={setQuery}
+                queryResult={queryResult}
+                setQueryResult={setQueryResult}
+                expectedResult={expectedResult}
+                setExpectedResult={setExpectedResult}
+                graderFeedback={graderFeedback}
+                setGraderFeedback={setGraderFeedback}
+                runCurrentQuery={runCurrentQuery}
+                copyToClipboard={copyToClipboard}
+                openInPlayground={openInPlayground}
+                markProblemSolved={markProblemSolved}
+                handleRightNavKeyDown={handleRightNavKeyDown}
+                classForDiff={classForDiff}
+                editorRef={editorRef}
+                queryRef={queryRef}
+                handleBeforeMount={handleBeforeMount}
+                handleMount={handleMount}
+                handleEditorChange={handleEditorChange}
+                dbReady={dbReady}
+                streak={streak}
+                showToast={showToast}
+                liveSchema={liveSchema}
+                setLiveSchema={setLiveSchema}
+                savedQueries={savedQueries}
+                setSavedQueries={setSavedQueries}
+                showConfirm={showConfirm}
+                showPrompt={showPrompt}
+                graderStrict={graderStrict}
+                setGraderStrict={setGraderStrict}
+                activePuzzle={activePuzzle}
+                setActivePuzzleId={setActivePuzzleId}
+                debugPuzzles={debugPuzzles}
+                getSavedPuzzleQuery={getSavedPuzzleQuery}
+                getSavedDraftQuery={getSavedDraftQuery}
+                updateEditorQuery={updateEditorQuery}
+                stopAutoTyping={stopAutoTyping}
+                allProblems={allProblems}
+                monacoRef={monacoRef}
+                insertTextAtCursor={insertTextAtCursor}
+                lintErrors={lintErrors}
+                isAutoTyping={isAutoTyping}
+                autoTypeQuery={autoTypeQuery}
+                queryHistory={queryHistory}
+                setQueryHistory={setQueryHistory}
+                setSelectedDayId={setSelectedDayId}
+                setActiveView={setActiveView}
+                learningRoadmap={learningRoadmap}
+                readiness={readiness}
+                totalModules={totalModules}
+                totalProblems={totalProblems}
+              />
+            )}
+            {activeView === "puzzles" && (
+              <PuzzlesView
+                progress={progress}
+                debugPuzzles={debugPuzzles}
+                activePuzzle={activePuzzle}
+                setActivePuzzleId={setActivePuzzleId}
+                openPuzzleInPlayground={openPuzzleInPlayground}
+                markPuzzleSolved={markPuzzleSolved}
+                updateEditorQuery={updateEditorQuery}
+                setActiveView={setActiveView}
+                setPlaygroundMode={setPlaygroundMode}
+                classForDiff={classForDiff}
+              />
+            )}
+            {(activeView === "mocks" ||
+              activeView === "mock-runner" ||
+              activeView === "mock-results") && (
+              <MockTestView
+                activeView={activeView}
+                setActiveView={setActiveView}
+                progress={progress}
+                mockInterviews={mockInterviews}
+                mockHistory={mockHistory}
+                interviewQuestionBank={interviewQuestionBank}
+                mockTest={mockTest}
+                setMockTest={setMockTest}
+                mockReviewIndex={mockReviewIndex}
+                setMockReviewIndex={setMockReviewIndex}
+                startMockTest={startMockTest}
+                submitMockAnswer={submitMockAnswer}
+                runCurrentQuery={runCurrentQuery}
+                queryRef={queryRef}
+                queryResult={queryResult}
+                resultPage={resultPage}
+                setResultPage={setResultPage}
+                RESULT_PAGE_SIZE={15}
+                updateEditorQuery={updateEditorQuery}
+                editorTheme={editorTheme}
+                theme={theme}
+                query={query}
+                handleBeforeMount={handleBeforeMount}
+                handleMount={handleMount}
+                handleEditorChange={handleEditorChange}
+                editorMinimap={editorMinimap}
+                editorFontSize={editorFontSize}
+                editorFontFamily={editorFontFamily}
+                editorTabSize={editorTabSize}
+                editorWordWrap={editorWordWrap}
+              />
+            )}
+            {activeView === "day-details" && (
+              <DayDetailsView
+                selectedDayId={selectedDayId}
+                progress={progress}
+                learningRoadmap={learningRoadmap}
+                roadmapModules={roadmapModules}
+                debugPuzzles={debugPuzzles}
+                setActiveView={setActiveView}
+                setSelectedDayId={setSelectedDayId}
+                toggleDayComplete={toggleDayComplete}
+                toggleChecklistItem={toggleChecklistItem}
+                selectModule={selectModule}
+                openInPlayground={openInPlayground}
+                markProblemSolved={markProblemSolved}
+                markPuzzleSolved={markPuzzleSolved}
+                setActivePuzzleId={setActivePuzzleId}
+                setPlaygroundMode={setPlaygroundMode}
+                getSavedPuzzleQuery={getSavedPuzzleQuery}
+                updateEditorQuery={updateEditorQuery}
+                stopAutoTyping={stopAutoTyping}
+                setQueryResult={setQueryResult}
+                setExpectedResult={setExpectedResult}
+              />
+            )}
+            {activeView === "missions" && (
+              <MissionCapstoneView
+                onOpenStepInPlayground={(sql: string) => {
+                  updateEditorQuery(sql, "free");
+                  setActiveView("playground");
+                }}
+                onBackToRoadmap={() => setActiveView("roadmap")}
+              />
+            )}
+          </Suspense>
+        </div>
+      </main>
 
       {showOnboarding && (
         <OnboardingModal
@@ -4849,6 +4883,7 @@ export default function App() {
           <span>{toast.message}</span>
         </div>
       )}
+    </div>
     </>
   );
 }
@@ -4960,7 +4995,107 @@ function QACard({
   );
 }
 
+/* LESSON PROSE RENDERER 
+   Turns raw text content into readable, styled prose.
+   Detects bullets, SQL code blocks, headings, and paragraphs. */
+const SQL_KEYWORDS =
+  /^\s*(SELECT|FROM|WHERE|GROUP BY|ORDER BY|HAVING|JOIN|LEFT|INNER|WITH|INSERT|UPDATE|DELETE|CREATE|DROP|EXPLAIN|--)/i;
+const BULLET_PREFIXES = /^\s*[-•✓✗→▸*]\s+/;
+const HEADING_RE = /^[A-Z][A-Z0-9 _/:&-]{3,}:?\s*$|^[A-Z].{0,60}:$/;
 
+function LessonProse({ text }: { text: string }) {
+  const lines = text.split("\n");
+  const elements: JSX.Element[] = [];
+  let codeBuffer: string[] = [];
+  let paraBuffer: string[] = [];
+
+  function flushCode() {
+    if (codeBuffer.length === 0) return;
+    elements.push(
+      <pre key={`code-${elements.length}`} className="lp-code">
+        {codeBuffer.join("\n")}
+      </pre>,
+    );
+    codeBuffer = [];
+  }
+
+  function flushPara() {
+    if (paraBuffer.length === 0) return;
+    const joined = paraBuffer.join(" ").trim();
+    if (joined) {
+      elements.push(<p key={`para-${elements.length}`}>{joined}</p>);
+    }
+    paraBuffer = [];
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
+    const trimmed = raw.trim();
+
+    // blank line
+    if (!trimmed) {
+      flushCode();
+      flushPara();
+      continue;
+    }
+
+    // SQL code line
+    if (SQL_KEYWORDS.test(trimmed) || trimmed.startsWith("`")) {
+      flushPara();
+      codeBuffer.push(raw.trimStart());
+      continue;
+    }
+
+    // flush code if we're no longer in a SQL block
+    flushCode();
+
+    // bullet line
+    if (BULLET_PREFIXES.test(raw)) {
+      flushPara();
+      const content = trimmed.replace(BULLET_PREFIXES, "");
+      // Bold the part before first colon if any
+      const colonIdx = content.indexOf(":");
+      if (colonIdx > 0 && colonIdx < 50) {
+        const label = content.slice(0, colonIdx);
+        const rest = content.slice(colonIdx + 1);
+        elements.push(
+          <div key={`b-${elements.length}`} className="lp-bullet">
+            <span>
+              <strong>{label}</strong>
+              {rest}
+            </span>
+          </div>,
+        );
+      } else {
+        elements.push(
+          <div key={`b-${elements.length}`} className="lp-bullet">
+            {content}
+          </div>,
+        );
+      }
+      continue;
+    }
+
+    // heading-like line (short, all caps or ends with colon)
+    if (HEADING_RE.test(trimmed) && trimmed.length < 80) {
+      flushPara();
+      elements.push(
+        <div key={`h-${elements.length}`} className="lp-heading">
+          {trimmed.replace(/:$/, "")}
+        </div>,
+      );
+      continue;
+    }
+
+    // regular prose — accumulate into paragraph
+    paraBuffer.push(trimmed);
+  }
+
+  flushCode();
+  flushPara();
+
+  return <div className="lesson-prose">{elements}</div>;
+}
 
 function QueryList({
   title,

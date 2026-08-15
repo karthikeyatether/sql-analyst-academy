@@ -4,37 +4,6 @@ import { tableSchemas } from "../data/datasets";
 import { translateSqlError } from "./sqlErrorTranslator";
 import { seedDatabaseInstance } from "./dbSeeder";
 import { prepareMySqlForSqlite, registerMySqlFunctions } from "./mysqlCompat";
-import { isModifyingQuery } from "./graderService";
-
-// Simple LRU Cache for read-only queries to prevent web-worker serialization overhead
-const QUERY_CACHE = new Map<
-  string,
-  QueryResult & { snapshot?: Record<string, unknown[]> | null }
->();
-const CACHE_MAX_SIZE = 5;
-
-function getCachedQuery(sql: string) {
-  if (QUERY_CACHE.has(sql)) {
-    const res = QUERY_CACHE.get(sql)!;
-    QUERY_CACHE.delete(sql);
-    QUERY_CACHE.set(sql, res); // LRU bump
-    return res;
-  }
-  return null;
-}
-
-function setCachedQuery(
-  sql: string,
-  result: QueryResult & { snapshot?: Record<string, unknown[]> | null },
-) {
-  if (QUERY_CACHE.has(sql)) {
-    QUERY_CACHE.delete(sql);
-  } else if (QUERY_CACHE.size >= CACHE_MAX_SIZE) {
-    const firstKey = QUERY_CACHE.keys().next().value;
-    if (firstKey) QUERY_CACHE.delete(firstKey);
-  }
-  QUERY_CACHE.set(sql, result);
-}
 
 export type QueryResult = {
   columns: string[];
@@ -50,7 +19,7 @@ export type QueryPlanStep = {
   detail: string;
 };
 
-type WorkerResponse = {
+export type WorkerResponse = {
   result?:
     | QueryResult
     | QueryPlanStep[]
@@ -69,21 +38,8 @@ let nodeDbInstance: initSqlJs.Database | null = null;
 let initPromise: Promise<void> | null = null;
 const pendingWorkerRequests = new Map<
   string,
-  {
-    resolve: (val: WorkerResponse) => void;
-    reject: (err: Error) => void;
-    timer: ReturnType<typeof setTimeout>;
-  }
+  { resolve: (val: WorkerResponse) => void; reject: (err: Error) => void }
 >();
-let workerLifecycle: Promise<void> = Promise.resolve();
-
-function rejectPendingWorkerRequests(error: Error): void {
-  for (const [id, request] of pendingWorkerRequests) {
-    clearTimeout(request.timer);
-    pendingWorkerRequests.delete(id);
-    request.reject(error);
-  }
-}
 
 function isWorkerSupported(): boolean {
   return typeof window !== "undefined" && typeof window.Worker !== "undefined";
@@ -92,144 +48,84 @@ function isWorkerSupported(): boolean {
 export async function initDatabase(): Promise<void> {
   if (initPromise) return initPromise;
 
-  initPromise = workerLifecycle.then(async () => {
+  initPromise = (async () => {
     try {
       initError = null;
-      await initializeDatabase();
+      if (isWorkerSupported()) {
+        if (!workerInstance) {
+          workerInstance = new Worker(
+            new URL("../workers/sqlWorker.ts", import.meta.url),
+            { type: "module" },
+          );
+
+          workerInstance.onmessage = (e: MessageEvent) => {
+            const { id, status, result, snapshot, error } = e.data;
+            const handler = pendingWorkerRequests.get(id);
+            if (handler) {
+              pendingWorkerRequests.delete(id);
+              if (status === "ERROR") {
+                handler.reject(new Error(error || "Worker error"));
+              } else {
+                handler.resolve({ result, snapshot, status });
+              }
+            }
+          };
+
+          workerInstance.onerror = (err) => {
+            console.error("SQL Worker Runtime Error:", err);
+          };
+        }
+
+        const reqId = `init_${Date.now()}_${Math.random()}`;
+        await new Promise<WorkerResponse>((resolve, reject) => {
+          pendingWorkerRequests.set(reqId, { resolve, reject });
+          workerInstance!.postMessage({ id: reqId, type: "INIT" });
+        });
+      } else {
+        // Node.js CLI fallback
+        const SQL = await initSqlJs({
+          locateFile: () => sqlWasmUrl,
+        });
+        nodeDbInstance = new SQL.Database();
+        registerMySqlFunctions(nodeDbInstance);
+        nodeDbInstance.run("PRAGMA foreign_keys = ON;");
+        nodeDbInstance.run("PRAGMA synchronous = OFF;");
+        nodeDbInstance.run("PRAGMA journal_mode = MEMORY;");
+        nodeDbInstance.run("PRAGMA temp_store = MEMORY;");
+        seedDatabaseInstance(nodeDbInstance);
+      }
     } catch (err: unknown) {
       console.error("Failed to initialize SQL engine:", err);
       initError = (err as Error)?.message || String(err);
       initPromise = null;
       throw err;
     }
-  });
+  })();
 
   return initPromise;
 }
 
 export async function cancelActiveQuery(): Promise<void> {
-  const restart = workerLifecycle.then(async () => {
-    const worker = workerInstance;
-    if (!worker) return;
-
-    rejectPendingWorkerRequests(
-      new Error("SQL worker operation was cancelled."),
-    );
-    worker.terminate();
+  if (workerInstance) {
+    workerInstance.terminate();
     workerInstance = null;
+    pendingWorkerRequests.clear();
     initPromise = null;
-
-    // Initialize directly while holding the lifecycle barrier. Calling the
-    // public initDatabase here would wait on this same promise.
-    await initializeDatabase();
-  });
-  workerLifecycle = restart.catch(() => {});
-  await restart;
-}
-
-async function initializeDatabase(): Promise<void> {
-  if (isWorkerSupported()) {
-    if (!workerInstance) {
-      if (import.meta.env.VITE_BUILD_TOOL === "esbuild") {
-        workerInstance = new Worker("/workers/sqlWorker.js", {
-          type: "module",
-        });
-      } else {
-        workerInstance = new Worker(
-          new URL("../workers/sqlWorker.ts", import.meta.url),
-          { type: "module" },
-        );
-      }
-
-      workerInstance.onmessage = (e: MessageEvent) => {
-        const { id, status, result, snapshot, error } = e.data;
-        const handler = pendingWorkerRequests.get(id);
-        if (!handler) return;
-        pendingWorkerRequests.delete(id);
-        clearTimeout(handler.timer);
-        if (status === "ERROR")
-          handler.reject(new Error(error || "Worker error"));
-        else handler.resolve({ result, snapshot, status });
-      };
-      workerInstance.onerror = () => {
-        rejectPendingWorkerRequests(
-          new Error("SQL worker failed while processing a request."),
-        );
-        if (workerInstance) {
-          try {
-            workerInstance.terminate();
-          } catch (_) {}
-          workerInstance = null;
-        }
-        initPromise = null;
-      };
-    }
-    await requestWorker("INIT", {}, 15000);
-    return;
+    await initDatabase();
   }
-
-  const SQL = await initSqlJs({ locateFile: () => sqlWasmUrl });
-  if (nodeDbInstance) {
-    try {
-      nodeDbInstance.close();
-    } catch (_) {}
-  }
-  nodeDbInstance = new SQL.Database();
-  registerMySqlFunctions(nodeDbInstance);
-  nodeDbInstance.run("PRAGMA foreign_keys = ON;");
-  nodeDbInstance.run("PRAGMA synchronous = OFF;");
-  nodeDbInstance.run("PRAGMA journal_mode = MEMORY;");
-  nodeDbInstance.run("PRAGMA temp_store = MEMORY;");
-  seedDatabaseInstance(nodeDbInstance);
-}
-
-function requestWorker(
-  type: string,
-  payload: Record<string, unknown>,
-  timeoutMs: number,
-): Promise<WorkerResponse> {
-  const worker = workerInstance;
-  if (!worker) return Promise.reject(new Error("SQL worker is unavailable."));
-  const reqId = `${type.toLowerCase()}_${Date.now()}_${Math.random()}`;
-  return new Promise<WorkerResponse>((resolve, reject) => {
-    const timer = setTimeout(() => {
-      pendingWorkerRequests.delete(reqId);
-      const message =
-        type === "EXECUTE"
-          ? `Query execution timed out after ${timeoutMs}ms and was safely cancelled.`
-          : `SQL worker request timed out after ${timeoutMs}ms.`;
-      reject(new Error(message));
-      if (type === "EXECUTE") void cancelActiveQuery();
-    }, timeoutMs);
-    pendingWorkerRequests.set(reqId, { resolve, reject, timer });
-    try {
-      worker.postMessage({ id: reqId, type, ...payload });
-    } catch (error: unknown) {
-      clearTimeout(timer);
-      pendingWorkerRequests.delete(reqId);
-      reject(error instanceof Error ? error : new Error(String(error)));
-    }
-  });
 }
 
 export async function resetDatabase(force: boolean = false): Promise<void> {
   await initDatabase();
   if (workerInstance) {
-    await requestWorker("RESET", { force }, 15000);
+    const reqId = `reset_${Date.now()}_${Math.random()}`;
+    await new Promise<WorkerResponse>((resolve, reject) => {
+      pendingWorkerRequests.set(reqId, { resolve, reject });
+      workerInstance!.postMessage({ id: reqId, type: "RESET", force });
+    });
   } else if (nodeDbInstance) {
-    try {
-      nodeDbInstance.close();
-    } catch (_) {}
-    const SQL = await initSqlJs({ locateFile: () => sqlWasmUrl });
-    nodeDbInstance = new SQL.Database();
-    registerMySqlFunctions(nodeDbInstance);
-    nodeDbInstance.run("PRAGMA foreign_keys = ON;");
-    nodeDbInstance.run("PRAGMA synchronous = OFF;");
-    nodeDbInstance.run("PRAGMA journal_mode = MEMORY;");
-    nodeDbInstance.run("PRAGMA temp_store = MEMORY;");
     seedDatabaseInstance(nodeDbInstance);
   }
-  clearQueryCache();
 }
 
 export async function runQuery(
@@ -244,44 +140,38 @@ export async function runQuery(
     return { columns: [], rows: [], message: "Write a query and press Run." };
   }
 
-  const isModifying = isModifyingQuery(trimmed);
-  if (isModifying) {
-    clearQueryCache(); // Invalidate cache if mutating data
-  } else if (!sandbox) {
-    // Only use cache for non-sandbox (standard playground) read queries
-    const cached = getCachedQuery(trimmed);
-    if (cached) return cached;
-  }
-
   if (workerInstance) {
+    const reqId = `exec_${Date.now()}_${Math.random()}`;
+    let timerId: ReturnType<typeof setTimeout> | null = null;
+
     try {
-      let response: WorkerResponse;
-      try {
-        response = await requestWorker(
-          "EXECUTE",
-          { sql: trimmed, sandbox, takeSnapshot: captureSnapshot },
-          timeoutMs,
-        );
-      } catch (firstErr: unknown) {
-        // On worker crash, re-initialize database worker once and retry in-flight query
-        if (!workerInstance) {
-          initPromise = null;
-          await initDatabase();
-          response = await requestWorker(
-            "EXECUTE",
-            { sql: trimmed, sandbox, takeSnapshot: captureSnapshot },
-            timeoutMs,
+      const queryPromise = new Promise<WorkerResponse>((resolve, reject) => {
+        pendingWorkerRequests.set(reqId, { resolve, reject });
+        workerInstance!.postMessage({
+          id: reqId,
+          type: "EXECUTE",
+          sql: trimmed,
+          sandbox,
+          takeSnapshot: captureSnapshot,
+        });
+      });
+
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timerId = setTimeout(() => {
+          cancelActiveQuery().catch(() => {});
+          reject(
+            new Error(
+              `Query execution timed out after ${timeoutMs}ms and was safely cancelled.`,
+            ),
           );
-        } else {
-          throw firstErr;
-        }
-      }
-      const res = response.result as QueryResult;
-      if (!isModifying && !sandbox && !res.error) {
-        setCachedQuery(trimmed, res);
-      }
-      return res;
+        }, timeoutMs);
+      });
+
+      const response = await Promise.race([queryPromise, timeoutPromise]);
+      if (timerId) clearTimeout(timerId);
+      return response.result as QueryResult;
     } catch (err: unknown) {
+      if (timerId) clearTimeout(timerId);
       const sqlToRun = prepareMySqlForSqlite(trimmed);
       const rawError = (err as Error)?.message || String(err);
       return {
@@ -371,20 +261,17 @@ export async function runQuery(
   }
 }
 
-export async function runQueryAsync(
-  sql: string,
-  sandbox: boolean = false,
-  captureSnapshot: boolean = false,
-  timeoutMs: number = 5000,
-): Promise<QueryResult & { snapshot?: Record<string, unknown[]> | null }> {
-  return runQuery(sql, sandbox, captureSnapshot, timeoutMs);
-}
+
 
 export async function getQueryPlan(sql: string): Promise<QueryPlanStep[]> {
   await initDatabase();
   if (workerInstance) {
+    const reqId = `plan_${Date.now()}_${Math.random()}`;
     try {
-      const res = await requestWorker("GET_PLAN", { sql }, 10000);
+      const res = await new Promise<WorkerResponse>((resolve, reject) => {
+        pendingWorkerRequests.set(reqId, { resolve, reject });
+        workerInstance!.postMessage({ id: reqId, type: "GET_PLAN", sql });
+      });
       return (res.result as QueryPlanStep[]) || [];
     } catch (_) {
       return [];
@@ -409,8 +296,12 @@ export async function getQueryPlan(sql: string): Promise<QueryPlanStep[]> {
 export async function exportDatabaseState(): Promise<Uint8Array | null> {
   await initDatabase();
   if (workerInstance) {
+    const reqId = `export_${Date.now()}_${Math.random()}`;
     try {
-      const res = await requestWorker("EXPORT", {}, 10000);
+      const res = await new Promise<WorkerResponse>((resolve, reject) => {
+        pendingWorkerRequests.set(reqId, { resolve, reject });
+        workerInstance!.postMessage({ id: reqId, type: "EXPORT" });
+      });
       return res.snapshot ? new Uint8Array(res.snapshot as ArrayBuffer) : null;
     } catch (_) {
       return null;
@@ -582,13 +473,12 @@ export function formatSql(sql: string): string {
       result += "FULL JOIN ";
       i++;
     } else if (curr === "CROSS" && next === "JOIN") {
-    } else if (curr === "UNION" && next === "ALL") {
       if (!result.endsWith("\n")) result += "\n";
-      result += "UNION ALL\n";
+      result += "CROSS JOIN ";
       i++;
-    } else if (curr === "UNION") {
+    } else if (curr === "JOIN") {
       if (!result.endsWith("\n")) result += "\n";
-      result += "UNION\n";
+      result += "JOIN ";
     } else if (curr === "AND" || curr === "OR") {
       if (!result.endsWith("\n")) result += "\n  ";
       result += curr + " ";
@@ -618,92 +508,8 @@ export function formatSql(sql: string): string {
   return result
     .split("\n")
     .map((line) => line.trimEnd())
-    .filter((line, idx, arr) => {
-      // Remove blank lines inside query body
-      if (!line.trim() && idx > 0 && idx < arr.length - 1) return false;
-      return true;
-    })
-    .join("\n")
-    .replace(/\n\s*\n+/g, "\n")
-    .trim();
-}
-
-export function buildExecutionPlan(sql: string): string[] {
-  const plans: string[] = ["0: SCAN TABLE (In-Memory SQLite Virtual Engine)"];
-  const upper = sql.toUpperCase();
-  if (upper.includes("WHERE")) plans.push("1: FILTER ROWS BY PREDICATE");
-  if (upper.includes("GROUP BY")) plans.push("2: HASH AGGREGATION / GROUP BY");
-  if (upper.includes("ORDER BY"))
-    plans.push("3: SORT (USING B-TREE / IN-MEMORY)");
-  if (upper.includes("LIMIT")) plans.push("4: TRUNCATE RESULT TO LIMIT");
-  return plans;
-}
-
-export function explainQueryForTutor(sql: string): string {
-  if (!sql.trim()) return "Enter a query to get step-by-step SQL explanation.";
-  const upper = sql.toUpperCase();
-  const parts: string[] = [];
-  if (upper.includes("SELECT"))
-    parts.push("• Projection: Picks specific target columns or expressions.");
-  if (upper.includes("FROM"))
-    parts.push("• Source: Reads record sets from the underlying table(s).");
-  if (upper.includes("WHERE"))
-    parts.push(
-      "• Filtering: Evaluates condition predicates to exclude non-matching rows.",
-    );
-  if (upper.includes("GROUP BY"))
-    parts.push(
-      "• Aggregation: Groups matching rows to compute summary metrics.",
-    );
-  if (upper.includes("ORDER BY"))
-    parts.push("• Sorting: Sorts final results by specified key expressions.");
-  return parts.join("\n") || "Valid SQL query ready for execution.";
-}
-
-export function getSqlCompletions(): string[] {
-  return [
-    "SELECT",
-    "FROM",
-    "WHERE",
-    "GROUP BY",
-    "HAVING",
-    "ORDER BY",
-    "LIMIT",
-    "OFFSET",
-    "JOIN",
-    "LEFT JOIN",
-    "RIGHT JOIN",
-    "INNER JOIN",
-    "ON",
-    "AS",
-    "COUNT()",
-    "SUM()",
-    "AVG()",
-    "MIN()",
-    "MAX()",
-    "COALESCE()",
-    "CASE",
-    "WHEN",
-    "THEN",
-    "ELSE",
-    "END",
-    "OVER()",
-    "PARTITION BY",
-    "ROW_NUMBER()",
-    "RANK()",
-    "DENSE_RANK()",
-    "WITH",
-    "RECURSIVE",
-    "EXISTS",
-    "IN",
-    "LIKE",
-    "BETWEEN",
-    "customers",
-    "orders",
-    "order_items",
-    "products",
-    "reviews",
-  ];
+    .filter((line) => line.trim() !== "")
+    .join("\n");
 }
 
 export async function getDatabaseSnapshot(): Promise<Record<
@@ -735,32 +541,15 @@ export async function getDatabaseSnapshot(): Promise<Record<
   return snapshotData;
 }
 
-export function generateDynamicHint(
-  userSql: string,
-  solutionSql: string,
-): string {
-  if (!userSql.trim()) return "Start by writing a SELECT query.";
-  const userUpper = userSql.toUpperCase();
-  const solUpper = solutionSql.toUpperCase();
-  if (solUpper.includes("GROUP BY") && !userUpper.includes("GROUP BY")) {
-    return "Tip: The target result requires aggregate grouping (`GROUP BY`).";
-  }
-  if (solUpper.includes("JOIN") && !userUpper.includes("JOIN")) {
-    return "Tip: You need to combine datasets using a `JOIN` clause.";
-  }
-  if (solUpper.includes("ORDER BY") && !userUpper.includes("ORDER BY")) {
-    return "Tip: Make sure to sort your output rows using `ORDER BY`.";
-  }
-  return "Review your column selections, filters, and join conditions.";
-}
-
 export async function getLiveSchema(): Promise<typeof tableSchemas> {
-  if (cachedSchema) return cachedSchema;
-
   await initDatabase();
   if (workerInstance) {
+    const reqId = `schema_${Date.now()}_${Math.random()}`;
     try {
-      const res = await requestWorker("GET_SCHEMA", {}, 10000);
+      const res = await new Promise<WorkerResponse>((resolve, reject) => {
+        pendingWorkerRequests.set(reqId, { resolve, reject });
+        workerInstance!.postMessage({ id: reqId, type: "GET_SCHEMA" });
+      });
       const schemas: Record<
         string,
         { columns: Array<{ name: string; type: string }>; rowCount: number }
@@ -778,8 +567,7 @@ export async function getLiveSchema(): Promise<typeof tableSchemas> {
           };
         }
       }
-      cachedSchema = schemas as unknown as typeof tableSchemas;
-      return cachedSchema;
+      return schemas as unknown as typeof tableSchemas;
     } catch (_) {
       return tableSchemas;
     }
@@ -793,33 +581,3 @@ export function exportDatabaseAsSql(
   return "-- SQL Database Export\n";
 }
 
-export function getOptimizationAdvice(sql: string): OptimizationAdvice {
-  const advice: string[] = [];
-  const upper = sql.toUpperCase();
-  if (upper.includes("SELECT *")) {
-    advice.push(
-      "Avoid `SELECT *`. Specify explicit column names to optimize memory and network bandwidth.",
-    );
-  }
-  if (upper.includes("LIKE '%")) {
-    advice.push(
-      "Leading wildcards in `LIKE '%...'` force full table scans and bypass B-tree indexes.",
-    );
-  }
-  return {
-    score: advice.length === 0 ? 100 : Math.max(50, 100 - advice.length * 25),
-    advice,
-  };
-}
-
-type OptimizationAdvice = {
-  score: number;
-  advice: string[];
-};
-
-let cachedSchema: typeof tableSchemas | null = null;
-
-export function clearQueryCache(): void {
-  QUERY_CACHE.clear();
-  cachedSchema = null;
-}

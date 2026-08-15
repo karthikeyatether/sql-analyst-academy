@@ -8,6 +8,72 @@ interface TooltipDefinition {
 }
 
 const DICTIONARY: Record<string, TooltipDefinition> = {
+  coalesce: {
+    title: "COALESCE function",
+    description: "Returns the first non-NULL value among its arguments.",
+    order: "Expression evaluation",
+    tip: "Tip: Great for fallback values (e.g. COALESCE(discount, 0))."
+  },
+  nullif: {
+    title: "NULLIF function",
+    description: "Returns NULL if both arguments are equal, otherwise returns the first argument.",
+    order: "Expression evaluation",
+    tip: "Tip: Use NULLIF(val, 0) in division to safely avoid division-by-zero errors!"
+  },
+  over: {
+    title: "OVER clause",
+    description: "Defines the window partitioning and ordering for window analytical functions.",
+    order: "Evaluated after WHERE/GROUP BY/HAVING",
+    tip: "Tip: An empty OVER() computes aggregates across the entire result set."
+  },
+  "partition by": {
+    title: "PARTITION BY clause",
+    description: "Divides query result rows into groups for independent window function calculation.",
+    order: "Evaluated within OVER()",
+    tip: "Tip: Unlike GROUP BY, PARTITION BY does not collapse multiple rows into one."
+  },
+  "row_number": {
+    title: "ROW_NUMBER() function",
+    description: "Assigns a unique, consecutive integer to each row starting at 1 within each partition.",
+    order: "Window calculation",
+    tip: "Tip: Deterministic ordering requires a unique ORDER BY tie-breaker."
+  },
+  rank: {
+    title: "RANK() function",
+    description: "Assigns rank with gaps for ties (e.g. 1, 2, 2, 4).",
+    order: "Window calculation",
+    tip: "Tip: Use DENSE_RANK() if you do not want gaps after ties."
+  },
+  "dense_rank": {
+    title: "DENSE_RANK() function",
+    description: "Assigns consecutive rank numbers without gaps for ties (e.g. 1, 2, 2, 3).",
+    order: "Window calculation",
+    tip: "Tip: Commonly used for finding Top N distinct values per category."
+  },
+  lag: {
+    title: "LAG() function",
+    description: "Accesses data from a previous row in the partition without a self-join.",
+    order: "Window calculation",
+    tip: "Tip: Ideal for calculating Month-over-Month (MoM) growth rates."
+  },
+  lead: {
+    title: "LEAD() function",
+    description: "Accesses data from a subsequent row in the partition without a self-join.",
+    order: "Window calculation",
+    tip: "Tip: Great for calculating session durations and next-event times."
+  },
+  case: {
+    title: "CASE WHEN statement",
+    description: "Conditional expression that returns values based on evaluated boolean criteria.",
+    order: "Expression evaluation",
+    tip: "Tip: Always include an ELSE branch to prevent unexpected NULL values."
+  },
+  cte: {
+    title: "Common Table Expression (WITH)",
+    description: "Defines a named temporary result set that exists only within query scope.",
+    order: "Evaluated before main query",
+    tip: "Tip: Dramatically improves readability over deep nested subqueries."
+  },
   select: {
     title: "SELECT clause",
     description: "Specifies which columns or computed fields the query should return.",
@@ -67,12 +133,6 @@ const DICTIONARY: Record<string, TooltipDefinition> = {
     description: "Returns only the rows where there is a match in both tables.",
     order: "Evaluated as part of FROM",
     tip: "Note: Rows with no corresponding match in either table are completely excluded."
-  },
-  cte: {
-    title: "Common Table Expression (WITH)",
-    description: "Defines a temporary named result set to simplify complex queries.",
-    order: "Evaluated before main SELECT",
-    tip: "Tip: Excellent for replacing nested subqueries and improving readability."
   },
   with: {
     title: "WITH clause (CTE)",

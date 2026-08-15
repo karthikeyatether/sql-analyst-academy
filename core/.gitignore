@@ -1,0 +1,36 @@
+# SQL Analyst Academy Git Ignore
+
+# Build & Dependencies
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Logs & Debug Output
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test Reports
+playwright-report/
+test-results/
+
+# Editor & OS Files
+.vscode/
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment & Local Secrets
+.env
+.env.local
+.gemini/
+rebuild-and-launch.bat
+sql-analyst-academy.zip

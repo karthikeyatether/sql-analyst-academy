@@ -3,7 +3,7 @@ export type ModuleLevel = "Beginner" | "Intermediate" | "Advanced";
 
 export type Difficulty = "Easy" | "Medium" | "Hard";
 
-type LessonExample = {
+export type LessonExample = {
   title: string;
 
   query: string;
@@ -134,9 +134,7 @@ files across drawers.
 Relationships:
 
 customers (1) ──< orders (many)     one customer can place many orders
-
 orders (1) ──< order_items (many)   one order can have many products
-
 order_items (many) >── products (1) many items can refer to one product`,
 
     realBusinessScenario: `You join Flipkart's Analytics team. Your manager asks: "How many customers do
@@ -155,9 +153,7 @@ This mental model — table → column → grain — is the foundation of every 
         title: "Explore the customers table",
 
         query: `SELECT *
-
 FROM customers
-
 LIMIT 10;`,
 
         explanation:
@@ -169,19 +165,12 @@ LIMIT 10;`,
         title: "Explore the orders table and understand foreign keys",
 
         query: `SELECT
-
   order_id,
-
   customer_id,
-
   order_date,
-
   status,
-
   total_amount
-
 FROM orders
-
 LIMIT 10;`,
 
         explanation:
@@ -225,79 +214,75 @@ LIMIT 10;`,
   },
 
   2: {
-    conceptExplanation: `The WHERE clause is like a bouncer at a club door — it inspects every single row in your table and only lets through rows that satisfy your exact rules.
+    conceptExplanation: `WHERE filters ROWS before any grouping or selection happens. It is your first
+      line of defence against processing unnecessary data.
 
-BASIC SYNTAX STRUCTURE:
+Syntax:
 
   SELECT columns
+
   FROM table
+
   WHERE condition;
 
-1. COMPARISON OPERATORS (Comparing single values):
+Comparison operators:
 
-  =    Equal to           WHERE status = 'Delivered'
-  !=   Not equal to       WHERE status != 'Cancelled'
-  >    Greater than       WHERE total_amount > 1000
-  >=   Greater or equal   WHERE total_amount >= 500
-  <    Less than          WHERE total_amount < 200
-  <=   Less or equal      WHERE total_amount <= 100
+  =    equal to           WHERE status = 'Delivered'
 
-2. COMBINING CONDITIONS (AND / OR / NOT):
+  !=   not equal          WHERE status != 'Cancelled'
 
-  AND  — Both rules MUST be true (e.g., Delivered AND amount > 1000)
-  OR   — At least ONE rule must be true (e.g., city = 'Mumbai' OR city = 'Delhi')
-  NOT  — Inverts a rule (e.g., NOT status = 'Cancelled')
+  >    greater than       WHERE total_amount > 1000
 
-3. RANGE & LIST OPERATORS (Beginner-Friendly Breakdown):
+  >=   greater or equal   WHERE total_amount >= 500
 
-  • BETWEEN min AND max — Filters values inside an INCLUSIVE range (includes min and max).
-    Example: WHERE total_amount BETWEEN 500 AND 2000  (Matches amounts from $500 up to $2000).
+  <    less than
 
-  • IN ('val1', 'val2') — A clean shortcut for matching any item in a list (replaces repeating multiple OR conditions).
-    Example: WHERE city IN ('Mumbai', 'Delhi', 'Bengaluru')
+  <=   less or equal
 
-  • LIKE 'pattern%' — Matches text patterns using wildcards (% means 0 or more characters).
-    Example: WHERE full_name LIKE 'Amit%'  (Matches names starting with 'Amit' like Amitabh, Amita).
+Logical operators (combine conditions):
 
-  • IS NULL / IS NOT NULL — Checks for missing or unknown data values (NULL means no value was entered).
-    Example: WHERE discount_amount IS NULL
+  AND  — both conditions must be true
 
-4. CRITICAL BEGINNER RULE (Quotes vs Numbers):
+  OR   — at least one condition must be true
 
-  • Text values MUST be enclosed in 'single quotes'.
-  • Numbers DO NOT use quotes.
+  NOT  — reverses the condition
 
-  WHERE city = 'Mumbai'   ✓ correct  (Searching for text 'Mumbai')
-  WHERE city = Mumbai     ✗ error    (SQL treats unquoted Mumbai as a column name!)`,
+Range and list operators:
+
+  BETWEEN x AND y   WHERE total_amount BETWEEN 500 AND 2000
+
+  IN (...)          WHERE city IN ('Mumbai', 'Delhi', 'Bengaluru')
+
+  LIKE 'pattern'    WHERE full_name LIKE 'Amit%'  (% = any characters)
+
+  IS NULL           WHERE discount_amount IS NULL
+
+  IS NOT NULL       WHERE discount_amount IS NOT NULL
+
+Important: String values need SINGLE quotes. Numbers do not.
+
+  WHERE city = 'Mumbai'   ✓ correct
+
+  WHERE city = Mumbai     ✗ error`,
 
     visualExplanation: `Imagine the full orders table has 1000 rows. Without WHERE, SELECT returns all 1000.
 
 orders table (1000 rows):
 
 ┌──────────┬────────────┬──────────────┐
-
 │ order_id │ status     │ total_amount │
-
 ├──────────┼────────────┼──────────────┤
-
 │ 1        │ Delivered  │ 1200         │
-
 │ 2        │ Cancelled  │ 500          │
-
 │ 3        │ Returned   │ 800          │
-
 │ 4        │ Delivered  │ 3400         │
-
 └──────────┴────────────┴──────────────┘
 
 After WHERE status = 'Delivered':
 
 ┌──────────┬────────────┬──────────────┐
-
 │ 1        │ Delivered  │ 1200         │
-
 │ 4        │ Delivered  │ 3400         │
-
 └──────────┴────────────┴──────────────┘
 
 WHERE removes rows. SELECT then chooses columns FROM the remaining rows.`,
@@ -315,23 +300,14 @@ Answer: Check whether you filtered by order status.`,
         title: "Filter delivered orders in a specific region",
 
         query: `SELECT
-
   order_id,
-
   customer_id,
-
   order_date,
-
   total_amount,
-
   status
-
 FROM orders
-
 WHERE status = 'Delivered'
-
   AND total_amount > 1000
-
 LIMIT 20;`,
 
         explanation:
@@ -343,19 +319,12 @@ LIMIT 20;`,
         title: "Filter using IN for multiple cities",
 
         query: `SELECT
-
   customer_id,
-
   full_name,
-
   city,
-
   segment
-
 FROM customers
-
 WHERE city IN ('Mumbai', 'Bengaluru', 'Delhi', 'Hyderabad')
-
 ORDER BY city;`,
 
         explanation:
@@ -432,29 +401,21 @@ ORDER BY position number (avoid in production):
     visualExplanation: `Unsorted result:
 
 │ city      │ revenue │
-
 │ Chennai   │ 45000   │
-
 │ Mumbai    │ 120000  │
-
 │ Delhi     │ 85000   │
 
 After ORDER BY revenue DESC:
 
 │ Mumbai    │ 120000  │ ← highest first
-
 │ Delhi     │ 85000   │
-
 │ Chennai   │ 45000   │
 
 Multi-column sort — by region then by revenue DESC:
 
 │ North │ Delhi   │ 85000 │
-
 │ North │ Jaipur  │ 42000 │
-
 │ South │ Chennai │ 45000 │
-
 │ West  │ Mumbai  │ 120000│`,
 
     realBusinessScenario: `A CRED analyst builds a "top cities by transaction value" leaderboard for the
@@ -469,25 +430,15 @@ guarantee consistency?" → ORDER BY on a unique or stable column.`,
         title: "Top 10 orders by value",
 
         query: `SELECT
-
   order_id,
-
   customer_id,
-
   total_amount,
-
   discount_amount,
-
   total_amount - discount_amount AS net_amount,
-
   order_date
-
 FROM orders
-
 WHERE status = 'Delivered'
-
 ORDER BY net_amount DESC
-
 LIMIT 10;`,
 
         explanation:
@@ -499,17 +450,11 @@ LIMIT 10;`,
         title: "Multi-column sort — region then signup date",
 
         query: `SELECT
-
   customer_id,
-
   full_name,
-
   region,
-
   signup_date
-
 FROM customers
-
 ORDER BY region ASC, signup_date DESC;`,
 
         explanation:
@@ -606,21 +551,13 @@ LIMIT 3 OFFSET 2 → skips rows 1-2, returns rows 3, 4, 5.`,
         title: "Top 5 most expensive orders",
 
         query: `SELECT
-
   order_id,
-
   customer_id,
-
   total_amount,
-
   order_date
-
 FROM orders
-
 WHERE status = 'Delivered'
-
 ORDER BY total_amount DESC
-
 LIMIT 5;`,
 
         explanation:
@@ -632,19 +569,12 @@ LIMIT 5;`,
         title: "Pagination — second page of customers",
 
         query: `SELECT
-
   customer_id,
-
   full_name,
-
   city,
-
   signup_date
-
 FROM customers
-
 ORDER BY signup_date DESC
-
 LIMIT 10 OFFSET 10;`,
 
         explanation:
@@ -726,13 +656,9 @@ Safe division with NULLIF:
     visualExplanation: `orders table with some NULL discounts:
 
 │ order_id │ discount_amount │
-
 │ 1        │ 200             │
-
 │ 2        │ NULL            │ ← missing discount data
-
 │ 3        │ 0               │ ← discount applied but is zero
-
 │ 4        │ NULL            │
 
 COUNT(discount_amount) → 2  (skips NULLs)
@@ -755,21 +681,13 @@ AVG skips NULLs in the denominator too — this can mislead analysis.`,
         title: "Find orders with missing discount data",
 
         query: `SELECT
-
   order_id,
-
   customer_id,
-
   total_amount,
-
   discount_amount,
-
   COALESCE(discount_amount, 0) AS discount_cleaned
-
 FROM orders
-
 WHERE discount_amount IS NULL
-
    OR discount_amount = 0;`,
 
         explanation:
@@ -782,17 +700,11 @@ WHERE discount_amount IS NULL
         title: "Safe AVG that treats NULL discount as zero",
 
         query: `SELECT
-
   COUNT(*) AS total_orders,
-
   COUNT(discount_amount) AS orders_with_discount,
-
   COUNT(*) - COUNT(discount_amount) AS orders_without_discount,
-
   ROUND(AVG(COALESCE(discount_amount, 0)), 2) AS avg_discount_all_orders
-
 FROM orders
-
 WHERE status = 'Delivered';`,
 
         explanation:
@@ -880,9 +792,7 @@ Common DA use cases:
     visualExplanation: `Dirty data in customers:
 
 │ full_name          │ city      │
-
 │ ' Amit Kumar '    │ 'MUMBAI'  │
-
 │ 'priya sharma'     │ 'delhi '  │
 
 After cleaning:
@@ -905,19 +815,12 @@ Data cleaning is one of the most common analyst tasks — string functions make 
         title: "Group orders by month using SUBSTR",
 
         query: `SELECT
-
   SUBSTR(order_date, 1, 7) AS order_month,
-
   COUNT(order_id) AS orders,
-
   SUM(total_amount - discount_amount) AS net_revenue
-
 FROM orders
-
 WHERE status = 'Delivered'
-
 GROUP BY SUBSTR(order_date, 1, 7)
-
 ORDER BY order_month;`,
 
         explanation:
@@ -929,19 +832,12 @@ ORDER BY order_month;`,
         title: "Normalize and clean customer names",
 
         query: `SELECT
-
   customer_id,
-
   TRIM(full_name)         AS full_name,
-
   UPPER(TRIM(city))       AS city_normalized,
-
   LENGTH(TRIM(full_name)) AS name_length
-
 FROM customers
-
 ORDER BY name_length DESC
-
 LIMIT 10;`,
 
         explanation:
@@ -1044,21 +940,13 @@ SUBSTR(signup_date, 1, 7) → '2023-06', '2023-07', etc.`,
         title: "Monthly order trend",
 
         query: `SELECT
-
   SUBSTR(order_date, 1, 7) AS month,
-
   COUNT(order_id) AS orders,
-
   SUM(total_amount - discount_amount) AS net_revenue,
-
   ROUND(AVG(total_amount), 2) AS avg_order_value
-
 FROM orders
-
 WHERE status = 'Delivered'
-
 GROUP BY SUBSTR(order_date, 1, 7)
-
 ORDER BY month;`,
 
         explanation:
@@ -1070,19 +958,12 @@ ORDER BY month;`,
         title: "Customer tenure in days",
 
         query: `SELECT
-
   customer_id,
-
   full_name,
-
   signup_date,
-
   ROUND(DATEDIFF(CURDATE(), signup_date)) AS days_since_signup
-
 FROM customers
-
 ORDER BY days_since_signup DESC
-
 LIMIT 10;`,
 
         explanation:
@@ -1150,13 +1031,9 @@ Important: aggregate functions cannot be in WHERE. Use HAVING to filter grouped 
     visualExplanation: `orders table:
 
 │ order_id │ customer_id │ status     │
-
 │ 1        │ 101         │ Delivered  │
-
 │ 2        │ 101         │ Cancelled  │
-
 │ 3        │ 102         │ Delivered  │
-
 │ 4        │ 103         │ Delivered  │
 
 COUNT(*) → 4
@@ -1178,17 +1055,11 @@ GROUP BY status + COUNT(*):
         title: "Order counts by status",
 
         query: `SELECT
-
   status,
-
   COUNT(*) AS total_orders,
-
   COUNT(DISTINCT customer_id) AS unique_customers
-
 FROM orders
-
 GROUP BY status
-
 ORDER BY total_orders DESC;`,
 
         explanation:
@@ -1200,19 +1071,12 @@ ORDER BY total_orders DESC;`,
         title: "Customers with more than 2 orders",
 
         query: `SELECT
-
   customer_id,
-
   COUNT(*) AS order_count
-
 FROM orders
-
 WHERE status = 'Delivered'
-
 GROUP BY customer_id
-
 HAVING COUNT(*) > 2
-
 ORDER BY order_count DESC;`,
 
         explanation:
@@ -1278,11 +1142,8 @@ To handle NULL from SUM: COALESCE(SUM(col), 0)`,
     visualExplanation: `orders per region:
 
 │ region │ net_revenue │
-
 │ North  │ 1200        │
-
 │ North  │ 800         │
-
 │ South  │ 2500        │
 
 SUM(net_revenue) without GROUP BY → 4500 (total)
@@ -1302,25 +1163,15 @@ GROUP BY region + SUM:
         title: "Regional revenue breakdown",
 
         query: `SELECT
-
   c.region,
-
   COUNT(o.order_id)                          AS orders,
-
   SUM(o.total_amount)                        AS gross_revenue,
-
   SUM(o.discount_amount)                     AS total_discount,
-
   SUM(o.total_amount - o.discount_amount)    AS net_revenue
-
 FROM customers c
-
 JOIN orders o ON c.customer_id = o.customer_id
-
 WHERE o.status = 'Delivered'
-
 GROUP BY c.region
-
 ORDER BY net_revenue DESC;`,
 
         explanation:
@@ -1333,13 +1184,9 @@ ORDER BY net_revenue DESC;`,
         title: "Conditional sum — delivered vs returned revenue",
 
         query: `SELECT
-
   SUM(CASE WHEN status = 'Delivered' THEN total_amount ELSE 0 END) AS delivered_revenue,
-
   SUM(CASE WHEN status = 'Returned'  THEN total_amount ELSE 0 END) AS returned_revenue,
-
   COUNT(CASE WHEN status = 'Cancelled' THEN 1 END)                 AS cancelled_orders
-
 FROM orders;`,
 
         explanation:
@@ -1422,25 +1269,15 @@ Which is correct depends on the business question.`,
         title: "Average Order Value by channel",
 
         query: `SELECT
-
   channel,
-
   COUNT(order_id)                                   AS orders,
-
   ROUND(SUM(total_amount - discount_amount), 2)     AS net_revenue,
-
   ROUND(AVG(total_amount), 2)                       AS avg_gross_order_value,
-
   ROUND(SUM(total_amount - discount_amount)
-
         / COUNT(order_id), 2)                       AS aov_net
-
 FROM orders
-
 WHERE status = 'Delivered'
-
 GROUP BY channel
-
 ORDER BY aov_net DESC;`,
 
         explanation:
@@ -1452,27 +1289,16 @@ ORDER BY aov_net DESC;`,
         title: "Average discount percentage by city",
 
         query: `SELECT
-
   c.city,
-
   COUNT(o.order_id) AS orders,
-
   ROUND(AVG(
-
     CAST(o.discount_amount AS REAL) / NULLIF(o.total_amount, 0) * 100
-
   ), 2) AS avg_discount_pct
-
 FROM orders o
-
 JOIN customers c ON o.customer_id = c.customer_id
-
 WHERE o.status = 'Delivered'
-
 GROUP BY c.city
-
 ORDER BY avg_discount_pct DESC
-
 LIMIT 10;`,
 
         explanation:
@@ -1560,29 +1386,17 @@ MAX(signup_date) → '2024-11-20'  (most recent customer)`,
         title: "Customer order history summary",
 
         query: `SELECT
-
   customer_id,
-
   COUNT(order_id) AS total_orders,
-
   MIN(order_date) AS first_order_date,
-
   MAX(order_date) AS last_order_date,
-
   MIN(total_amount) AS cheapest_order,
-
   MAX(total_amount) AS most_expensive_order,
-
   SUM(total_amount - discount_amount) AS lifetime_value
-
 FROM orders
-
 WHERE status = 'Delivered'
-
 GROUP BY customer_id
-
 ORDER BY lifetime_value DESC
-
 LIMIT 10;`,
 
         explanation:
@@ -1594,21 +1408,13 @@ LIMIT 10;`,
         title: "Product price range by category",
 
         query: `SELECT
-
   category,
-
   COUNT(product_id) AS products,
-
   ROUND(MIN(list_price), 2) AS min_price,
-
   ROUND(MAX(list_price), 2) AS max_price,
-
   ROUND(MAX(list_price) - MIN(list_price), 2) AS price_range
-
 FROM products
-
 GROUP BY category
-
 ORDER BY price_range DESC;`,
 
         explanation:
@@ -1697,23 +1503,16 @@ Advanced Aggregation (MySQL 8.0+):
     visualExplanation: `orders table (simplified):
 
 │ region │ status     │ amount │
-
 │ North  │ Delivered  │ 1000   │
-
 │ North  │ Cancelled  │ 500    │
-
 │ South  │ Delivered  │ 2000   │
-
 │ South  │ Delivered  │ 1500   │
 
 GROUP BY region, status:
 
 │ region │ status     │ COUNT │ SUM   │
-
 │ North  │ Cancelled  │ 1     │ 500   │
-
 │ North  │ Delivered  │ 1     │ 1000  │
-
 │ South  │ Delivered  │ 2     │ 3500  │`,
 
     realBusinessScenario: `"Show me revenue by region and month" — this is a GROUP BY region,
@@ -1725,23 +1524,14 @@ GROUP BY region, status:
         title: "Monthly revenue by region",
 
         query: `SELECT
-
   c.region,
-
   SUBSTR(o.order_date, 1, 7) AS month,
-
   COUNT(o.order_id) AS orders,
-
   SUM(o.total_amount - o.discount_amount) AS net_revenue
-
 FROM customers c
-
 JOIN orders o ON c.customer_id = o.customer_id
-
 WHERE o.status = 'Delivered'
-
 GROUP BY c.region, SUBSTR(o.order_date, 1, 7)
-
 ORDER BY c.region, month;`,
 
         explanation:
@@ -1753,25 +1543,15 @@ ORDER BY c.region, month;`,
         title: "Customer segment performance",
 
         query: `SELECT
-
   c.segment,
-
   COUNT(DISTINCT c.customer_id) AS customers,
-
   COUNT(o.order_id) AS orders,
-
   ROUND(AVG(o.total_amount - o.discount_amount), 2) AS avg_net_order_value,
-
   SUM(o.total_amount - o.discount_amount) AS total_revenue
-
 FROM customers c
-
 JOIN orders o ON c.customer_id = o.customer_id
-
 WHERE o.status = 'Delivered'
-
 GROUP BY c.segment
-
 ORDER BY total_revenue DESC;`,
 
         explanation:
@@ -1782,19 +1562,12 @@ ORDER BY total_revenue DESC;`,
         title: "Advanced: Sub-totals with ROLLUP",
 
         query: `SELECT
-
   COALESCE(c.region, 'All Regions') AS region,
-
   COALESCE(c.segment, 'All Segments') AS segment,
-
   SUM(o.total_amount) AS revenue
-
 FROM customers c
-
 JOIN orders o ON c.customer_id = o.customer_id
-
 GROUP BY ROLLUP(c.region, c.segment)
-
 ORDER BY c.region, c.segment;`,
 
         explanation:
@@ -1891,23 +1664,14 @@ The order matters. Run expensive filters in WHERE first — it reduces the data 
         title: "Cities with more than 2 delivered orders",
 
         query: `SELECT
-
   c.city,
-
   COUNT(o.order_id) AS delivered_orders,
-
   SUM(o.total_amount - o.discount_amount) AS net_revenue
-
 FROM customers c
-
 JOIN orders o ON c.customer_id = o.customer_id
-
 WHERE o.status = 'Delivered'
-
 GROUP BY c.city
-
 HAVING COUNT(o.order_id) > 2
-
 ORDER BY delivered_orders DESC;`,
 
         explanation:
@@ -1919,21 +1683,13 @@ ORDER BY delivered_orders DESC;`,
         title: "High-value customers (lifetime value > 5000)",
 
         query: `SELECT
-
   customer_id,
-
   COUNT(order_id) AS orders,
-
   SUM(total_amount - discount_amount) AS lifetime_value
-
 FROM orders
-
 WHERE status = 'Delivered'
-
 GROUP BY customer_id
-
 HAVING SUM(total_amount - discount_amount) > 5000
-
 ORDER BY lifetime_value DESC;`,
 
         explanation:
@@ -2016,21 +1772,15 @@ rows.`,
     visualExplanation: `customers:         orders:
 
 │ id │ name  │     │ id │ cust_id │ amount │
-
 │ 1  │ Amit  │     │ 1  │ 1       │ 1200   │
-
 │ 2  │ Priya │     │ 2  │ 1       │ 800    │
-
 │ 3  │ Ravi  │     │ 3  │ 2       │ 2500   │
-
 (no orders)     (no orders for 3)
 
 INNER JOIN ON customers.id = orders.cust_id:
 
 │ Amit  │ 1200 │
-
 │ Amit  │ 800  │
-
 │ Priya │ 2500 │
 
 Ravi is EXCLUDED — no matching orders.`,
@@ -2044,29 +1794,17 @@ Ravi is EXCLUDED — no matching orders.`,
         title: "Revenue by customer — INNER JOIN",
 
         query: `SELECT
-
   c.customer_id,
-
   c.full_name,
-
   c.city,
-
   c.segment,
-
   COUNT(o.order_id)                         AS total_orders,
-
   SUM(o.total_amount - o.discount_amount)   AS lifetime_value
-
 FROM customers c
-
 JOIN orders o ON c.customer_id = o.customer_id
-
 WHERE o.status = 'Delivered'
-
 GROUP BY c.customer_id, c.full_name, c.city, c.segment
-
 ORDER BY lifetime_value DESC
-
 LIMIT 10;`,
 
         explanation:
@@ -2078,27 +1816,16 @@ LIMIT 10;`,
         title: "Product revenue — three-table join",
 
         query: `SELECT
-
   p.category,
-
   p.product_name,
-
   SUM(oi.quantity * oi.unit_price) AS revenue,
-
   SUM(oi.quantity) AS units_sold
-
 FROM products p
-
 JOIN order_items oi ON p.product_id = oi.product_id
-
 JOIN orders o ON oi.order_id = o.order_id
-
 WHERE o.status = 'Delivered'
-
 GROUP BY p.category, p.product_name
-
 ORDER BY revenue DESC
-
 LIMIT 10;`,
 
         explanation:
@@ -2189,19 +1916,14 @@ Common pattern — find unmatched rows:
     visualExplanation: `customers (left):    orders (right):
 
 │ id │ name  │      │ id │ cust_id │
-
 │ 1  │ Amit  │      │ 1  │ 1       │
-
 │ 2  │ Priya │      │ 2  │ 2       │
-
 │ 3  │ Ravi  │      (no order for 3)
 
 LEFT JOIN result:
 
 │ 1  │ Amit  │ 1 (order) │
-
 │ 2  │ Priya │ 2 (order) │
-
 │ 3  │ Ravi  │ NULL       │ ← Ravi kept, no order
 
 With WHERE orders.cust_id IS NULL:
@@ -2217,21 +1939,13 @@ With WHERE orders.cust_id IS NULL:
         title: "Customers with no orders (anti-join)",
 
         query: `SELECT
-
   c.customer_id,
-
   c.full_name,
-
   c.city,
-
   c.signup_date
-
 FROM customers c
-
 LEFT JOIN orders o ON c.customer_id = o.customer_id
-
 WHERE o.order_id IS NULL
-
 ORDER BY c.signup_date;`,
 
         explanation:
@@ -2243,25 +1957,15 @@ ORDER BY c.signup_date;`,
         title: "All customers with order summary (including no orders)",
 
         query: `SELECT
-
   c.customer_id,
-
   c.full_name,
-
   c.city,
-
   COUNT(o.order_id) AS total_orders,
-
   COALESCE(SUM(o.total_amount - o.discount_amount), 0) AS lifetime_value
-
 FROM customers c
-
 LEFT JOIN orders o ON c.customer_id = o.customer_id
-
   AND o.status = 'Delivered'
-
 GROUP BY c.customer_id, c.full_name, c.city
-
 ORDER BY lifetime_value DESC;`,
 
         explanation:
@@ -2336,21 +2040,13 @@ RIGHT JOIN products:
   → Left side (order_items) is NULL for products with no orders
 
   product_id | order_item_id | quantity
-
   201        | 9             | 1         ← has orders
-
   202        | 2             | 1         ← has orders
-
   203        | 3             | 1         ← has orders
-
   204        | 8             | 1         ← has orders
-
   205        | 5             | 2         ← has orders
-
   206        | 4             | 1         ← has orders
-
   207        | 1             | 1         ← has orders
-
   208        | 10            | 3         ← has orders`,
 
     realBusinessScenario: `The product catalog team at Myntra adds new products weekly. After a sales
@@ -2369,21 +2065,13 @@ This quickly identifies dead-stock products that may need promotional push.`,
         title: "Find products with no orders using RIGHT JOIN",
 
         query: `SELECT
-
   p.product_id,
-
   p.product_name,
-
   p.category,
-
   COUNT(oi.order_item_id) AS times_ordered
-
 FROM order_items oi
-
 RIGHT JOIN products p ON oi.product_id = p.product_id
-
 GROUP BY p.product_id, p.product_name, p.category
-
 ORDER BY times_ordered ASC;`,
 
         explanation:
@@ -2396,17 +2084,11 @@ ORDER BY times_ordered ASC;`,
         title: "Equivalent with LEFT JOIN (recommended style)",
 
         query: `SELECT
-
   p.product_id, p.product_name, p.category,
-
   COUNT(oi.order_item_id) AS times_ordered
-
 FROM products p
-
 LEFT JOIN order_items oi ON p.product_id = oi.product_id
-
 GROUP BY p.product_id, p.product_name, p.category
-
 ORDER BY times_ordered ASC;`,
 
         explanation:
@@ -2492,11 +2174,8 @@ Table B (Orders):    C1 has order, C3 has order, C4 has order (C4 not in custome
 FULL JOIN result:
 
   C1 | customer data | order data   ← match
-
   C2 | customer data | NULL         ← left-only (no order)
-
   C3 | customer data | order data   ← match
-
   NULL | NULL         | C4 order    ← right-only (order with unknown customer)`,
 
     realBusinessScenario: `Two databases need to be reconciled at CRED: the payments database and the
@@ -2516,43 +2195,24 @@ FULL JOIN finds BOTH types of orphan records in one query:
         title: "Reconcile orders and payments (simulated in MySQL)",
 
         query: `-- Simulate FULL JOIN in MySQL
-
 SELECT
-
   o.order_id, o.total_amount,
-
   p.payment_id, p.amount AS paid_amount,
-
   CASE
-
     WHEN p.payment_id IS NULL THEN 'Order without payment'
-
     WHEN o.order_id IS NULL THEN 'Payment without order'
-
     ELSE 'Matched'
-
   END AS status
-
 FROM orders o
-
 LEFT JOIN payments p ON o.order_id = p.order_id
-
 UNION ALL
-
 SELECT
-
   o.order_id, o.total_amount,
-
   p.payment_id, p.amount,
-
   'Payment without order'
-
 FROM payments p
-
 LEFT JOIN orders o ON p.order_id = o.order_id
-
 WHERE o.order_id IS NULL
-
 ORDER BY o.order_id;`,
 
         explanation:
@@ -2565,19 +2225,12 @@ ORDER BY o.order_id;`,
         title: "COALESCE for unified columns across both sides",
 
         query: `SELECT
-
   COALESCE(o.order_id, p.order_id) AS order_ref,
-
   o.total_amount,
-
   p.amount AS paid_amount,
-
   p.payment_mode
-
 FROM orders o
-
 LEFT JOIN payments p ON o.order_id = p.order_id
-
 ORDER BY order_ref;`,
 
         explanation:
@@ -2651,13 +2304,9 @@ The JOIN condition defines the relationship between the two copies of the table.
     visualExplanation: `employees table:
 
   employee_id | employee_name | manager_id
-
   701         | Priya Menon   | NULL       ← no manager (she IS the manager)
-
   702         | Rahul Bansal  | 701        ← reports to 701 (Priya)
-
   703         | Sneha Jain    | 701        ← reports to 701 (Priya)
-
 SELF JOIN:
 
   FROM employees e1 LEFT JOIN employees e2 ON e1.manager_id = e2.employee_id
@@ -2665,11 +2314,8 @@ SELF JOIN:
 Result:
 
   e1.name      | e2.name (manager)
-
   Priya Menon  | NULL              ← no manager
-
   Rahul Bansal | Priya Menon       ← manager is Priya
-
   Sneha Jain   | Priya Menon       ← manager is Priya`,
 
     realBusinessScenario: `HR Analytics at a startup: the CHRO wants a report showing each employee
@@ -2689,25 +2335,15 @@ LEFT JOIN (not INNER JOIN) ensures top-level managers with no manager_id also ap
         title: "Employee-manager hierarchy with salary comparison",
 
         query: `SELECT
-
   e1.employee_id,
-
   e1.employee_name,
-
   e1.role,
-
   e1.salary_lpa,
-
   e2.employee_name  AS manager_name,
-
   e2.salary_lpa     AS manager_salary,
-
   ROUND(e2.salary_lpa - e1.salary_lpa, 1) AS salary_gap
-
 FROM employees e1
-
 LEFT JOIN employees e2 ON e1.manager_id = e2.employee_id
-
 ORDER BY e1.department_id, e1.salary_lpa DESC;`,
 
         explanation:
@@ -2720,21 +2356,13 @@ ORDER BY e1.department_id, e1.salary_lpa DESC;`,
         title: "Find employees in the same department",
 
         query: `SELECT
-
   e1.employee_name AS emp1,
-
   e2.employee_name AS emp2,
-
   e1.department_id
-
 FROM employees e1
-
 JOIN employees e2
-
   ON e1.department_id = e2.department_id
-
   AND e1.employee_id < e2.employee_id  -- avoid duplicates and self-pairing
-
 ORDER BY e1.department_id;`,
 
         explanation:
@@ -2857,29 +2485,17 @@ This compares each restaurant to their city peers, not all restaurants.`,
         title: "Customers with above-average order count (correlated)",
 
         query: `SELECT
-
   c.customer_id,
-
   c.full_name,
-
   (SELECT COUNT(*) FROM orders o WHERE o.customer_id = c.customer_id AND o.status = 'Delivered') AS delivered_orders
-
 FROM customers c
-
 WHERE (
-
   SELECT COUNT(*) FROM orders o WHERE o.customer_id = c.customer_id AND o.status = 'Delivered'
-
 ) > (
-
   SELECT AVG(cnt) FROM (
-
     SELECT COUNT(*) AS cnt FROM orders WHERE status = 'Delivered' GROUP BY customer_id
-
   )
-
 )
-
 ORDER BY delivered_orders DESC;`,
 
         explanation:
@@ -2892,31 +2508,18 @@ ORDER BY delivered_orders DESC;`,
         title: "Rewritten as JOIN + CTE (recommended for performance)",
 
         query: `WITH order_counts AS (
-
   SELECT customer_id, COUNT(*) AS delivered_orders
-
   FROM orders WHERE status = 'Delivered'
-
   GROUP BY customer_id
-
 ),
-
 avg_count AS (
-
   SELECT AVG(delivered_orders) AS avg_orders FROM order_counts
-
 )
-
 SELECT c.customer_id, c.full_name, oc.delivered_orders
-
 FROM customers c
-
 JOIN order_counts oc ON c.customer_id = oc.customer_id
-
 CROSS JOIN avg_count ac
-
 WHERE oc.delivered_orders > ac.avg_orders
-
 ORDER BY oc.delivered_orders DESC;`,
 
         explanation:
@@ -3066,57 +2669,31 @@ SELECT * FROM customer_ltv WHERE ltv > 5000;`,
         title: "Customer lifetime value with CTE",
 
         query: `WITH delivered_orders AS (
-
   SELECT
-
     o.customer_id,
-
     o.total_amount - o.discount_amount AS net_amount
-
   FROM orders o
-
   WHERE o.status = 'Delivered'
-
 ),
-
 customer_ltv AS (
-
   SELECT
-
     customer_id,
-
     COUNT(*) AS orders,
-
     SUM(net_amount) AS lifetime_value,
-
     ROUND(AVG(net_amount), 2) AS avg_order_value
-
   FROM delivered_orders
-
   GROUP BY customer_id
-
 )
-
 SELECT
-
   c.full_name,
-
   c.city,
-
   c.segment,
-
   ltv.orders,
-
   ltv.lifetime_value,
-
   ltv.avg_order_value
-
 FROM customer_ltv ltv
-
 JOIN customers c ON ltv.customer_id = c.customer_id
-
 WHERE ltv.lifetime_value > 2000
-
 ORDER BY ltv.lifetime_value DESC;`,
 
         explanation:
@@ -3128,39 +2705,22 @@ ORDER BY ltv.lifetime_value DESC;`,
         title: "Month-over-month revenue with CTE",
 
         query: `WITH monthly AS (
-
   SELECT
-
     SUBSTR(order_date, 1, 7) AS month,
-
     SUM(total_amount - discount_amount) AS net_revenue
-
   FROM orders
-
   WHERE status = 'Delivered'
-
   GROUP BY SUBSTR(order_date, 1, 7)
-
 )
-
 SELECT
-
   month,
-
   net_revenue,
-
   LAG(net_revenue) OVER (ORDER BY month) AS prev_month_revenue,
-
   ROUND(
-
     (net_revenue - LAG(net_revenue) OVER (ORDER BY month))
-
     / NULLIF(LAG(net_revenue) OVER (ORDER BY month), 0) * 100
-
   , 1) AS mom_growth_pct
-
 FROM monthly
-
 ORDER BY month;`,
 
         explanation:
@@ -3172,23 +2732,14 @@ ORDER BY month;`,
         title: "Recursive CTE: Generate a date sequence",
 
         query: `WITH RECURSIVE date_series AS (
-
   -- 1. Anchor Member (base case)
-
   SELECT '2024-01-01' AS date_val
-
   UNION ALL
-
   -- 2. Recursive Member
-
   SELECT DATE_ADD(date_val, INTERVAL 1 DAY)
-
   FROM date_series
-
   WHERE date_val < '2024-01-05' -- Termination condition
-
 )
-
 SELECT * FROM date_series;`,
 
         explanation:
@@ -3283,21 +2834,13 @@ Wrap in a CTE:
     visualExplanation: `Example: top-selling product per category
 
 | category    | product_name       | revenue | ROW_NUMBER() OVER (PARTITION BY category ORDER BY revenue DESC) |
-
 |-------------|--------------------|---------|-----------------------------------------------------------------|
-
 | Electronics | Headphones         | 45000   | 1  ← top in Electronics
-
 | Electronics | Ergo Keyboard      | 12000   | 2
-
 | Electronics | Wireless Mouse     | 5000    | 3
-
 | Fashion     | Running Shoes      | 18000   | 1  ← top in Fashion
-
 | Fashion     | Cotton Kurta       | 6000    | 2
-
 | Home        | Office Chair       | 32000   | 1  ← top in Home
-
 | Home        | Steel Water Bottle | 2400    | 2
 
 Filter WHERE rn = 1 → 3 rows (one per category)`,
@@ -3317,43 +2860,24 @@ When ties matter: use RANK() or DENSE_RANK()`,
         title: "Top product per category (classic ROW_NUMBER pattern)",
 
         query: `WITH product_revenue AS (
-
   SELECT
-
     p.category,
-
     p.product_name,
-
     SUM(oi.quantity * oi.unit_price) AS revenue
-
   FROM products p
-
   JOIN order_items oi ON p.product_id = oi.product_id
-
   JOIN orders o ON oi.order_id = o.order_id
-
   WHERE o.status = 'Delivered'
-
   GROUP BY p.category, p.product_name
-
 ),
-
 ranked AS (
-
   SELECT *,
-
     ROW_NUMBER() OVER (PARTITION BY category ORDER BY revenue DESC) AS rn
-
   FROM product_revenue
-
 )
-
 SELECT category, product_name, revenue
-
 FROM ranked
-
 WHERE rn = 1
-
 ORDER BY revenue DESC;`,
 
         explanation:
@@ -3366,23 +2890,14 @@ ORDER BY revenue DESC;`,
         title: "Most recent order per customer",
 
         query: `WITH ordered AS (
-
   SELECT
-
     customer_id, order_id, order_date, total_amount, status,
-
     ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date DESC) AS rn
-
   FROM orders
-
 )
-
 SELECT customer_id, order_id, order_date, total_amount, status
-
 FROM ordered
-
 WHERE rn = 1
-
 ORDER BY customer_id;`,
 
         explanation:
@@ -3476,21 +2991,15 @@ Most common window functions:
     visualExplanation: `orders grouped by region (no window):
 
 │ region │ total_revenue │  ← 3 rows only (GROUP BY collapsed)
-
 │ North  │ 45000         │
-
 │ South  │ 62000         │
-
 │ West   │ 38000         │
 
 orders with window function (rows preserved):
 
 │ order_id │ region │ revenue │ region_total │ rank_in_region │
-
 │ 1        │ North  │ 1200    │ 45000        │ 3              │
-
 │ 2        │ North  │ 8000    │ 45000        │ 1              │
-
 │ 3        │ South  │ 3200    │ 62000        │ 2              │
 
 All rows preserved, window values added.`,
@@ -3505,45 +3014,25 @@ All rows preserved, window values added.`,
         title: "Rank products by revenue within category",
 
         query: `WITH product_revenue AS (
-
   SELECT
-
     p.category,
-
     p.product_name,
-
     SUM(oi.quantity * oi.unit_price) AS revenue
-
   FROM products p
-
   JOIN order_items oi ON p.product_id = oi.product_id
-
   JOIN orders o ON oi.order_id = o.order_id
-
   WHERE o.status = 'Delivered'
-
   GROUP BY p.category, p.product_name
-
 )
-
 SELECT
-
   category,
-
   product_name,
-
   revenue,
-
   RANK() OVER (PARTITION BY category ORDER BY revenue DESC) AS rank_in_category,
-
   ROUND(
-
     100.0 * revenue / SUM(revenue) OVER (PARTITION BY category), 1
-
   ) AS pct_of_category_revenue
-
 FROM product_revenue
-
 ORDER BY category, rank_in_category;`,
 
         explanation:
@@ -3556,39 +3045,22 @@ ORDER BY category, rank_in_category;`,
         title: "Running total revenue over time",
 
         query: `WITH daily AS (
-
   SELECT
-
     order_date,
-
     SUM(total_amount - discount_amount) AS daily_revenue
-
   FROM orders
-
   WHERE status = 'Delivered'
-
   GROUP BY order_date
-
 )
-
 SELECT
-
   order_date,
-
   daily_revenue,
-
   SUM(daily_revenue) OVER (ORDER BY order_date) AS cumulative_revenue,
-
   ROUND(AVG(daily_revenue) OVER (
-
     ORDER BY order_date
-
     ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
-
   ), 2) AS seven_day_avg
-
 FROM daily
-
 ORDER BY order_date;`,
 
         explanation:
@@ -3665,13 +3137,9 @@ Key use cases:
     visualExplanation: `Monthly revenue table:
 
   Month   | Revenue | LAG(rev,1) | LEAD(rev,1)
-
   2024-01 | 10000   | NULL       | 12000   ← no previous month → NULL
-
   2024-02 | 12000   | 10000      | 9500
-
   2024-03 | 9500    | 12000      | 14000
-
   2024-04 | 14000   | 9500       | NULL    ← no next month → NULL
 
 MoM growth = (current - LAG) / LAG * 100
@@ -3698,39 +3166,22 @@ NULLIF protects against division by zero on the first month.`,
         title: "Month-over-month revenue growth",
 
         query: `WITH monthly AS (
-
   SELECT
-
     SUBSTR(order_date, 1, 7) AS month,
-
     SUM(total_amount - discount_amount) AS revenue
-
   FROM orders
-
   WHERE status = 'Delivered'
-
   GROUP BY 1
-
 )
-
 SELECT
-
   month,
-
   ROUND(revenue, 2) AS revenue,
-
   ROUND(LAG(revenue, 1) OVER (ORDER BY month), 2) AS prev_month,
-
   ROUND(
-
     (revenue - LAG(revenue, 1) OVER (ORDER BY month))
-
     / NULLIF(LAG(revenue, 1) OVER (ORDER BY month), 0) * 100,
-
   1) AS mom_growth_pct
-
 FROM monthly
-
 ORDER BY month;`,
 
         explanation:
@@ -3743,29 +3194,17 @@ ORDER BY month;`,
         title: "Days between consecutive orders per customer",
 
         query: `WITH ordered AS (
-
   SELECT
-
     customer_id, order_id, order_date,
-
     LAG(order_date, 1) OVER (PARTITION BY customer_id ORDER BY order_date) AS prev_order_date
-
   FROM orders
-
   WHERE status = 'Delivered'
-
 )
-
 SELECT
-
   customer_id, order_id, order_date, prev_order_date,
-
   DATEDIFF(order_date, prev_order_date) AS days_since_last_order
-
 FROM ordered
-
 WHERE prev_order_date IS NOT NULL
-
 ORDER BY customer_id, order_date;`,
 
         explanation:
@@ -3860,31 +3299,22 @@ When to use:
     visualExplanation: `Table A:        Table B:
 
   id | val       id | val
-
    1 | 100        2 | 200
-
    2 | 150        3 | 300
 
 UNION (removes duplicates):
 
   id | val
-
    1 | 100
-
    2 | 150   ← id=2 appears only once (deduped)
-
    3 | 300
 
 UNION ALL (keeps everything):
 
   id | val
-
    1 | 100
-
    2 | 150   ← FROM Table A
-
    2 | 200   ← FROM Table B (both kept!)
-
    3 | 300
 
 Conclusion: always use UNION ALL unless you explicitly need deduplication.`,
@@ -3916,25 +3346,15 @@ Instead of GROUP BY (which sums across all statuses), UNION ALL lets you label e
 
         query: `SELECT 'Delivered' AS status, COUNT(*) AS orders, ROUND(SUM(total_amount -
           discount_amount), 2) AS net_revenue
-
 FROM orders WHERE status = 'Delivered'
-
 UNION ALL
-
 SELECT 'Returned',  COUNT(*), ROUND(SUM(total_amount - discount_amount), 2)
-
 FROM orders WHERE status = 'Returned'
-
 UNION ALL
-
 SELECT 'Cancelled', COUNT(*), ROUND(SUM(total_amount - discount_amount), 2)
-
 FROM orders WHERE status = 'Cancelled'
-
 UNION ALL
-
 SELECT 'ALL STATUSES', COUNT(*), ROUND(SUM(total_amount - discount_amount), 2)
-
 FROM orders;`,
 
         explanation:
@@ -3947,15 +3367,10 @@ FROM orders;`,
         title: "Combine customers from two segments",
 
         query: `SELECT customer_id, full_name, 'Premium' AS tier, signup_date
-
 FROM customers WHERE segment = 'Premium'
-
 UNION ALL
-
 SELECT customer_id, full_name, 'Value', signup_date
-
 FROM customers WHERE segment = 'Value'
-
 ORDER BY signup_date DESC;`,
 
         explanation:
@@ -4068,9 +3483,7 @@ total_amount = 8000 → ELSE 'High'
 output column: revenue_band
 
 │ 500  │ Low    │
-
 │ 2000 │ Medium │
-
 │ 8000 │ High   │`,
 
     realBusinessScenario: `A Zomato analyst segments orders into value tiers (Low / Medium / High) for a
@@ -4082,33 +3495,19 @@ output column: revenue_band
         title: "Order value banding",
 
         query: `SELECT
-
   order_id,
-
   total_amount,
-
   discount_amount,
-
   total_amount - discount_amount AS net_amount,
-
   CASE
-
     WHEN total_amount - discount_amount < 500   THEN 'Low (<500)'
-
     WHEN total_amount - discount_amount < 2000  THEN 'Medium (500-1999)'
-
     WHEN total_amount - discount_amount < 5000  THEN 'High (2000-4999)'
-
     ELSE 'Premium (5000+)'
-
   END AS order_tier
-
 FROM orders
-
 WHERE status = 'Delivered'
-
 ORDER BY net_amount DESC
-
 LIMIT 15;`,
 
         explanation:
@@ -4120,29 +3519,17 @@ LIMIT 15;`,
         title: "Conditional aggregation — pivot by status",
 
         query: `SELECT
-
   c.region,
-
   COUNT(*) AS total_orders,
-
   SUM(CASE WHEN o.status = 'Delivered'  THEN 1 ELSE 0 END) AS delivered,
-
   SUM(CASE WHEN o.status = 'Returned'   THEN 1 ELSE 0 END) AS returned,
-
   SUM(CASE WHEN o.status = 'Cancelled'  THEN 1 ELSE 0 END) AS cancelled,
-
   ROUND(
-
     100.0 * SUM(CASE WHEN o.status = 'Delivered' THEN 1 ELSE 0 END) / COUNT(*), 1
-
   ) AS delivery_rate_pct
-
 FROM customers c
-
 JOIN orders o ON c.customer_id = o.customer_id
-
 GROUP BY c.region
-
 ORDER BY delivery_rate_pct DESC;`,
 
         explanation:
@@ -4266,43 +3653,24 @@ Result: query runs in 4 seconds.`,
         title: "Before vs after optimization",
 
         query: `-- BEFORE: slow, reads all data
-
 SELECT *
-
 FROM orders o
-
 JOIN customers c ON o.customer_id = c.customer_id
-
 JOIN order_items oi ON o.order_id = oi.order_id
-
 GROUP BY c.region
-
 HAVING o.status = 'Delivered'  -- filtering AFTER group = wasteful
-
 ORDER BY SUM(o.total_amount) DESC;
-
 -- AFTER: fast, filters early
-
 SELECT
-
   c.region,
-
   COUNT(DISTINCT o.order_id) AS orders,
-
   ROUND(SUM(oi.quantity * oi.unit_price), 2) AS revenue
-
 FROM orders o
-
 JOIN customers c ON o.customer_id = c.customer_id
-
 JOIN order_items oi ON o.order_id = oi.order_id
-
 WHERE o.status = 'Delivered'          -- filter BEFORE joining
-
   AND o.order_date >= '2024-01-01'    -- narrow date range
-
 GROUP BY c.region
-
 ORDER BY revenue DESC;`,
 
         explanation:
@@ -4316,17 +3684,11 @@ ORDER BY revenue DESC;`,
         title: "EXPLAIN (MySQL)",
 
         query: `EXPLAIN
-
 SELECT c.region, COUNT(o.order_id) AS orders
-
 FROM customers c
-
 JOIN orders o ON c.customer_id = o.customer_id
-
 WHERE o.status = 'Delivered'
-
 GROUP BY c.region
-
 ORDER BY orders DESC;`,
 
         explanation:
@@ -4462,47 +3824,26 @@ This requires: CTE chain + ROW_NUMBER + AVG OVER (PARTITION BY city) + final fil
         title: "Top 3 customers per city with city average comparison",
 
         query: `WITH customer_ltv AS (
-
   SELECT
-
     c.customer_id, c.full_name, c.city,
-
     SUM(o.total_amount - o.discount_amount) AS ltv
-
   FROM customers c
-
   JOIN orders o ON c.customer_id = o.customer_id
-
   WHERE o.status = 'Delivered'
-
   GROUP BY c.customer_id, c.full_name, c.city
-
 ),
-
 ranked AS (
-
   SELECT *,
-
     ROUND(AVG(ltv) OVER (PARTITION BY city), 2) AS city_avg_ltv,
-
     ROW_NUMBER() OVER (PARTITION BY city ORDER BY ltv DESC) AS rn
-
   FROM customer_ltv
-
 )
-
 SELECT
-
   city, full_name, ltv, city_avg_ltv,
-
   ROUND(ltv - city_avg_ltv, 2) AS vs_city_avg,
-
   CASE WHEN ltv > city_avg_ltv THEN 'Above Average' ELSE 'Below Average' END AS segment
-
 FROM ranked
-
 WHERE rn <= 3
-
 ORDER BY city, rn;`,
 
         explanation:
@@ -4515,47 +3856,26 @@ ORDER BY city, rn;`,
         title: "Monthly cohort revenue: first 3 months after signup",
 
         query: `WITH customer_first AS (
-
   SELECT customer_id, SUBSTR(signup_date, 1, 7) AS cohort_month
-
   FROM customers
-
 ),
-
 order_months AS (
-
   SELECT
-
     o.customer_id,
-
     SUBSTR(o.order_date, 1, 7) AS order_month,
-
     SUM(o.total_amount - o.discount_amount) AS revenue
-
   FROM orders o
-
   WHERE o.status = 'Delivered'
-
   GROUP BY o.customer_id, SUBSTR(o.order_date, 1, 7)
-
 )
-
 SELECT
-
   cf.cohort_month,
-
   om.order_month,
-
   COUNT(DISTINCT om.customer_id) AS active_customers,
-
   ROUND(SUM(om.revenue), 2) AS revenue
-
 FROM customer_first cf
-
 JOIN order_months om ON cf.customer_id = om.customer_id
-
 GROUP BY cf.cohort_month, om.order_month
-
 ORDER BY cf.cohort_month, om.order_month;`,
 
         explanation:
@@ -4568,33 +3888,19 @@ ORDER BY cf.cohort_month, om.order_month;`,
         title: "Basic E-commerce Funnel Analysis",
 
         query: `WITH funnel AS (
-
   SELECT
-
     COUNT(DISTINCT c.customer_id) AS total_signups,
-
     COUNT(DISTINCT o.customer_id) AS users_who_ordered,
-
     COUNT(DISTINCT CASE WHEN o.status = 'Delivered' THEN o.customer_id END) AS users_who_completed
-
   FROM customers c
-
   LEFT JOIN orders o ON c.customer_id = o.customer_id
-
 )
-
 SELECT
-
   total_signups,
-
   users_who_ordered,
-
   users_who_completed,
-
   ROUND(CAST(users_who_ordered AS REAL) / total_signups * 100, 2) AS order_conversion_pct,
-
   ROUND(CAST(users_who_completed AS REAL) / users_who_ordered * 100, 2) AS completion_rate_pct
-
 FROM funnel;`,
 
         explanation:
@@ -5564,7 +4870,6 @@ Adding a column with NOT NULL but no DEFAULT: fails because existing rows have n
       {
         title: "Add a new column with a default value",
         query: `ALTER TABLE customers ADD COLUMN phone VARCHAR(20);
-
 ALTER TABLE orders ADD COLUMN updated_at DATE DEFAULT (CURDATE());`,
         explanation:
           "ADD COLUMN appends a new column to the table. Existing rows get NULL (or the DEFAULT value).",
@@ -5572,7 +4877,6 @@ ALTER TABLE orders ADD COLUMN updated_at DATE DEFAULT (CURDATE());`,
       {
         title: "Rename a column and a table",
         query: `ALTER TABLE customers RENAME COLUMN name TO full_name;
-
 ALTER TABLE customer_orders RENAME TO orders;`,
         explanation:
           "RENAME COLUMN changes the column name. RENAME TO renames the entire table.",
@@ -5666,7 +4970,6 @@ Safe approach:
         title: "INSERT single and multiple rows",
         query: `INSERT INTO customers (customer_id, name, email, city)
 VALUES (1001, 'Priya Sharma', 'priya@example.com', 'Mumbai');
-
 INSERT INTO products (product_id, product_name, price, category)
 VALUES
   (201, 'Wireless Headphones', 2999.00, 'Electronics'),
@@ -5678,7 +4981,6 @@ VALUES
         title: "Safe UPDATE with WHERE clause",
         query: `-- Step 1: Check what will be updated
 SELECT COUNT(*) FROM orders WHERE status = 'Pending' AND order_date < '2024-01-01';
-
 -- Step 2: Run the update (with WHERE!)
 UPDATE orders
 SET status = 'Delivered'
@@ -5692,7 +4994,6 @@ WHERE status = 'Pending'
         title: "Safe DELETE with verification",
         query: `-- Verify before deleting
 SELECT COUNT(*) FROM orders WHERE status = 'Cancelled' AND order_date < '2023-01-01';
-
 -- Delete old cancelled orders
 DELETE FROM orders
 WHERE status = 'Cancelled'
@@ -5788,7 +5089,6 @@ SELECT
 FROM orders o
 JOIN customers c ON o.customer_id = c.customer_id
 WHERE o.status = 'Delivered';
-
 -- Use the view
 SELECT city, SUM(net_amount) AS revenue
 FROM delivered_orders
@@ -5810,7 +5110,6 @@ SELECT
 FROM orders
 WHERE status = 'Delivered'
 GROUP BY customer_id;
-
 SELECT * FROM customer_metrics WHERE lifetime_value > 10000 ORDER BY lifetime_value DESC;`,
         explanation:
           "All analysts use the same lifetime_value formula. If the formula changes, " +
@@ -5911,9 +5210,7 @@ Function on column breaks index:
         query: `CREATE INDEX idx_orders_customer ON orders (customer_id);
 CREATE INDEX idx_orders_date ON orders (order_date);
 CREATE INDEX idx_orders_status ON orders (status);
-
 CREATE INDEX idx_orders_cust_date ON orders (customer_id, order_date);
-
 CREATE UNIQUE INDEX idx_customers_email ON customers (email);`,
         explanation:
           "Index customer_id and order_date since they appear in WHERE and JOIN conditions " +
@@ -5924,7 +5221,6 @@ CREATE UNIQUE INDEX idx_customers_email ON customers (email);`,
         query: `-- Check if index is being used
 EXPLAIN
 SELECT * FROM orders WHERE customer_id = 123;
-
 -- Should output: SEARCH TABLE orders USING INDEX idx_orders_customer
 -- If it shows SCAN TABLE orders -- index not being used, check your query`,
         explanation:
@@ -6024,7 +5320,6 @@ WHERE o.status = 'Delivered'
         title: "Add index and verify plan improves",
         query: `-- Add index
 CREATE INDEX idx_orders_status_date ON orders (status, order_date);
-
 -- Re-run EXPLAIN — should now show SEARCH TABLE orders USING INDEX
 EXPLAIN
 SELECT o.order_id, c.name, o.total_amount
@@ -6112,12 +5407,9 @@ With transaction:
       {
         title: "Basic transaction with COMMIT",
         query: `BEGIN;
-
 UPDATE orders SET status = 'Delivered' WHERE order_id IN (5001, 5002, 5003);
-
 UPDATE customers SET total_orders = total_orders + 1
 WHERE customer_id IN (SELECT customer_id FROM orders WHERE order_id IN (5001, 5002, 5003));
-
 COMMIT;`,
         explanation:
           "Both UPDATEs are wrapped in a transaction. If anything fails, ROLLBACK ensures " +
@@ -6126,17 +5418,14 @@ COMMIT;`,
       {
         title: "Transaction with ROLLBACK safety",
         query: `BEGIN;
-
 UPDATE orders
 SET discount_amount = total_amount * 0.10
 WHERE customer_id IN (
   SELECT customer_id FROM customers WHERE city = 'Mumbai'
 )
 AND status = 'Pending';
-
 -- Check the result before committing
 SELECT COUNT(*), SUM(discount_amount) FROM orders WHERE status = 'Pending';
-
 -- If looks good: COMMIT;
 -- If something's wrong: ROLLBACK;`,
         explanation:

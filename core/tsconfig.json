@@ -6,7 +6,6 @@
     "allowJs": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
@@ -14,8 +13,6 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "incremental": true,
-    "tsBuildInfoFile": ".tsconfig.tsbuildinfo",
     "allowImportingTsExtensions": true,
     "jsx": "react-jsx"
   },

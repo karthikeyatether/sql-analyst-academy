@@ -1,6 +1,20 @@
-const StorageKeys = {
-  PROGRESS_V3: "sql-aa-progress-v3",
+export const STORAGE_VERSION = "2.0";
+
+export interface SavedQueryMeta {
+  id: string;
+  name: string;
+  sql: string;
+  timestamp: number;
+  tags?: string[];
+}
+
+export const StorageKeys = {
+  VERSION: "sql-aa-version",
+  PROGRESS: "sql-aa-progress",
+  PROGRESS_LEGACY: "sql-aa-progress-v3",
   HISTORY: "sql-aa-history",
+  SAVED: "sql-aa-saved",
+  SAVED_TAGS: "sql-aa-saved-tags",
   PROBLEM_DRAFTS: "sql-aa-problem-drafts",
   PUZZLE_DRAFTS: "sql-aa-puzzle-drafts",
   FREEFORM_QUERY: "sql-aa-freeform-query",
@@ -21,6 +35,12 @@ export function getStorageItem<T>(key: string, fallback: T): T {
   try {
     if (typeof localStorage === "undefined") return fallback;
     s = localStorage.getItem(key);
+    // Automatic fallback for canonical keys if primary key not present
+    if (!s && key === StorageKeys.PROGRESS) {
+      s = localStorage.getItem(StorageKeys.PROGRESS_LEGACY) || localStorage.getItem("sql-aa-progress-v2");
+    } else if (!s && key === "sql-aa-query-history-b") {
+      s = localStorage.getItem("sql-aa-query-b-v2");
+    }
     if (!s) return fallback;
     const parsed = JSON.parse(s);
     if (Array.isArray(fallback) && !Array.isArray(parsed)) {
@@ -43,6 +63,17 @@ export function getStorageItem<T>(key: string, fallback: T): T {
   }
 }
 
+export function getStorageItemWithFallback<T>(keys: string[], fallback: T): T {
+  if (typeof localStorage === "undefined") return fallback;
+  for (const key of keys) {
+    const val = getStorageItem<T | null>(key, null);
+    if (val !== null && val !== undefined) {
+      return val;
+    }
+  }
+  return fallback;
+}
+
 export function setStorageItem<T>(key: string, value: T): void {
   try {
     if (typeof localStorage === "undefined") return;
@@ -53,12 +84,8 @@ export function setStorageItem<T>(key: string, value: T): void {
       return;
     }
     localStorage.setItem(key, serialized);
-  } catch (err: unknown) {
-    const storageError = err as { name?: string; code?: number };
-    if (
-      storageError.name === "QuotaExceededError" ||
-      storageError.code === 22
-    ) {
+  } catch (err: any) {
+    if (err?.name === "QuotaExceededError" || err?.code === 22) {
       console.warn(
         "[storage] QuotaExceededError encountered. Pruning query history...",
       );
@@ -76,8 +103,10 @@ export function setStorageItem<T>(key: string, value: T): void {
   }
 }
 
+
+
 export function subscribeToCrossTabSync(
-  callback: (key: string, newValue: unknown) => void,
+  callback: (key: string, newValue: any) => void,
 ): () => void {
   if (typeof window === "undefined") return () => {};
   const handler = (e: StorageEvent) => {
@@ -85,7 +114,7 @@ export function subscribeToCrossTabSync(
       try {
         const parsed = e.newValue ? JSON.parse(e.newValue) : null;
         callback(e.key, parsed);
-      } catch {
+      } catch (_) {
         callback(e.key, e.newValue);
       }
     }

@@ -30,7 +30,7 @@ function injectSwPrecacheManifest() {
   if (!fs.existsSync(swPath)) return;
 
   const allFiles = walk(DIST_DIR);
-  const assetUrls = ["/", "/index.html", "/offline.html", "/manifest.json", "/favicon.png", "/sql-wasm.wasm"];
+  const assetUrls = ["/", "/index.html", "/manifest.json", "/favicon.png", "/logo.jpg"];
 
   for (const f of allFiles) {
     const rel = path.relative(DIST_DIR, f).replace(/\\/g, "/");
@@ -57,22 +57,22 @@ async function compressFile(filePath) {
 
   const relPath = path.relative(DIST_DIR, filePath);
 
-  // 1. Gzip compression (Level 6: optimal speed vs ratio balance)
+  // 1. Gzip compression
   const gzPath = filePath + ".gz";
   await pipeline(
     fs.createReadStream(filePath),
-    zlib.createGzip({ level: 6 }),
+    zlib.createGzip({ level: zlib.constants.Z_BEST_COMPRESSION }),
     fs.createWriteStream(gzPath)
   );
   const gzSize = fs.statSync(gzPath).size;
 
-  // 2. Brotli compression (Quality 6: 10x faster than MAX_QUALITY level 11 with ~98.5% identical ratio)
+  // 2. Brotli compression
   const brPath = filePath + ".br";
   await pipeline(
     fs.createReadStream(filePath),
     zlib.createBrotliCompress({
       params: {
-        [zlib.constants.BROTLI_PARAM_QUALITY]: 6,
+        [zlib.constants.BROTLI_PARAM_QUALITY]: zlib.constants.BROTLI_MAX_QUALITY,
       },
     }),
     fs.createWriteStream(brPath)

@@ -18,7 +18,7 @@ export type SqlPuzzle = {
   hints?: string[];
 };
 
-const rawDebugPuzzles: SqlPuzzle[] = [
+export const debugPuzzles: SqlPuzzle[] = [
   // CATEGORY 1: Aggregation (10 Puzzles)
 
   {
@@ -54,20 +54,20 @@ HAVING COUNT(order_id) > 2;`,
     difficulty: "Easy",
     category: "Aggregation",
     businessScenario:
-      "Count how many customers have a churned subscription (where end_date is populated). Right now, the count returns total subscription count.",
-    flawedQuery: `-- This counts all subscriptions instead of just churned ones!
-SELECT COUNT(*) as churned_count
-FROM subscriptions;`,
+      "Count how many discount coupons were actually applied (where discount_amount is not null). Right now, the count returns the total order count.",
+    flawedQuery: `-- This counts all orders instead of just discounted ones!
+SELECT COUNT(*) as discounts_applied
+FROM orders;`,
     hints: [
       "Focus on identifying the core table(s) and columns required for 'The COUNT Confusion'.",
       "Apply standard filtering and analytical clauses to isolate the exact target dataset.",
-      "Structure your query using clauses similar to: SELECT COUNT(end_date) as churned_count.",
+      "Structure your query using clauses similar to: SELECT COUNT(discount_amount) as discounts_applied.",
     ],
-    solutionQuery: `SELECT COUNT(end_date) as churned_count
-FROM subscriptions;`,
+    solutionQuery: `SELECT COUNT(discount_amount) as discounts_applied
+FROM orders;`,
     hint: "COUNT(*) counts every row. How do you count only non-null values in a specific column?",
     mistakeExplanation:
-      "COUNT(*) counts every row in the dataset. To count only the rows where a specific column contains a non-NULL value, pass that column name to the COUNT function (e.g. COUNT(end_date)).",
+      "COUNT(*) counts every row in the dataset. To count only the rows where a specific column contains a non-NULL value, pass that column name to the COUNT function (e.g. COUNT(discount_amount)).",
   },
   {
     id: "pz-3",
@@ -102,25 +102,25 @@ GROUP BY segment, city;`,
     difficulty: "Medium",
     category: "Aggregation",
     businessScenario:
-      "We need the highest department average salary across the company. The query crashes with a nested aggregate error.",
+      "We need the maximum average cart value across all customers. The query crashes with a nested aggregate error.",
     flawedQuery: `-- SQL does not allow nested aggregate functions directly
-SELECT MAX(AVG(salary_lpa)) as max_dept_avg
-FROM employees
-GROUP BY department_id;`,
+SELECT MAX(AVG(total_amount)) as max_average_order
+FROM orders
+GROUP BY customer_id;`,
     hints: [
       "Focus on identifying the core table(s) and columns required for 'The Double Aggregation Disaster'.",
       "Group your output rows using GROUP BY and apply aggregate functions like COUNT(), SUM(), or AVG().",
-      "Structure your query using clauses similar to: SELECT MAX(dept_avg) as max_dept_avg.",
+      "Structure your query using clauses similar to: SELECT MAX(avg_amount) as max_average_order.",
     ],
-    solutionQuery: `SELECT MAX(dept_avg) as max_dept_avg
+    solutionQuery: `SELECT MAX(avg_amount) as max_average_order
 FROM (
-  SELECT AVG(salary_lpa) as dept_avg
-  FROM employees
-  GROUP BY department_id
+  SELECT AVG(total_amount) as avg_amount
+  FROM orders
+  GROUP BY customer_id
 ) sub;`,
     hint: "You cannot nest MAX(AVG(...)) directly. Try running the inner query as a subquery.",
     mistakeExplanation:
-      "SQL does not support nested aggregate functions (like MAX(AVG(...))) directly. You must compute the average per department in a subquery first, and then apply the MAX aggregate function in the outer query.",
+      "SQL does not support nested aggregate functions (like MAX(AVG(...))) directly. You must compute the average per customer in a subquery first, and then apply the MAX aggregate function in the outer query.",
   },
   {
     id: "pz-5",
@@ -129,18 +129,20 @@ FROM (
     difficulty: "Easy",
     category: "Aggregation",
     businessScenario:
-      "Find how many unique customers placed orders across our platform. Right now, it returns the total order count instead.",
+      "Find how many unique customers placed orders on each date. Right now, it returns the total order count for each date instead.",
     flawedQuery: `-- This shows total order counts, not unique customer counts
-SELECT COUNT(customer_id) as active_customers
-FROM orders;`,
+SELECT order_date, COUNT(customer_id) as active_customers
+FROM orders
+GROUP BY order_date;`,
     hints: [
       "Focus on identifying the core table(s) and columns required for 'The Unique Customers Illusion'.",
       "Group your output rows using GROUP BY and apply aggregate functions like COUNT(), SUM(), or AVG().",
-      "Structure your query using clauses similar to: SELECT COUNT(DISTINCT customer_id) as active_customers.",
+      "Structure your query using clauses similar to: SELECT order_date, COUNT(DISTINCT customer_id) as active_customers.",
     ],
-    solutionQuery: `SELECT COUNT(DISTINCT customer_id) as active_customers
-FROM orders;`,
-    hint: "If a customer places multiple orders, how do you prevent them from being counted twice?",
+    solutionQuery: `SELECT order_date, COUNT(DISTINCT customer_id) as active_customers
+FROM orders
+GROUP BY order_date;`,
+    hint: "If a customer places multiple orders on the same day, how do you prevent them from being counted twice?",
     mistakeExplanation:
       "COUNT(customer_id) counts every customer ID occurrence, including duplicates. To find unique customers, you must add the DISTINCT keyword inside the count function: COUNT(DISTINCT customer_id).",
   },
@@ -151,22 +153,22 @@ FROM orders;`,
     difficulty: "Medium",
     category: "Aggregation",
     businessScenario:
-      "We want to sum subscription fees per customer, but customers with no active subscriptions should show 0 instead of NULL.",
-    flawedQuery: `-- We want 0 instead of NULL for customers with no subscriptions
-SELECT c.full_name, SUM(s.monthly_fee) as total_fee
-FROM customers c
-LEFT JOIN subscriptions s ON c.customer_id = s.customer_id
-GROUP BY c.full_name;`,
+      "We want to sum salaries per department, but departments with no employees should show 0 instead of NULL.",
+    flawedQuery: `-- We want 0 instead of NULL for empty departments
+SELECT d.department_name, SUM(e.salary_lpa) as total_salaries
+FROM departments d
+LEFT JOIN employees e ON d.department_id = e.department_id
+GROUP BY d.department_name;`,
     hints: [
       "Focus on identifying the core table(s) and columns required for 'The Sum of Nulls Hazard'.",
       "Connect the primary table with related foreign key tables using INNER JOIN or LEFT JOIN.",
-      "Structure your query using clauses similar to: SELECT c.full_name, COALESCE(SUM(s.monthly_fee), 0) as total_fee.",
+      "Structure your query using clauses similar to: SELECT d.department_name, COALESCE(SUM(e.salary_lpa), 0) as total_salaries.",
     ],
-    solutionQuery: `SELECT c.full_name, COALESCE(SUM(s.monthly_fee), 0) as total_fee
-FROM customers c
-LEFT JOIN subscriptions s ON c.customer_id = s.customer_id
-GROUP BY c.full_name;`,
-    hint: "If a customer has no matching subscriptions, LEFT JOIN outputs NULL. How do you convert NULL to 0 in SQL?",
+    solutionQuery: `SELECT d.department_name, COALESCE(SUM(e.salary_lpa), 0) as total_salaries
+FROM departments d
+LEFT JOIN employees e ON d.department_id = e.department_id
+GROUP BY d.department_name;`,
+    hint: "If a department has no matching employees, LEFT JOIN outputs NULL. How do you convert NULL to 0 in SQL?",
     mistakeExplanation:
       "When running a SUM on columns populated with NULL (due to a LEFT JOIN with no matches), the result is NULL. Use the COALESCE(SUM(...), 0) function to replace any NULL outputs with 0.",
   },
@@ -251,14 +253,14 @@ FROM orders;`,
     businessScenario:
       "We want to find the overall ratio of total discounts applied to total orders. The junior analyst tries to divide aggregates directly inside SUM, which fails.",
     flawedQuery: `-- Cannot divide fields before aggregating them in this context
-SELECT SUM(discount_amount * 1.0 / total_amount) as discount_ratio
+SELECT SUM(discount_amount / total_amount) as discount_ratio
 FROM orders;`,
     hints: [
       "Focus on identifying the core table(s) and columns required for 'The Multi-Column Aggregation'.",
       "Apply standard filtering and analytical clauses to isolate the exact target dataset.",
-      "Structure your query using clauses similar to: SELECT SUM(discount_amount) * 1.0 / SUM(total_amount) as discount_ratio.",
+      "Structure your query using clauses similar to: SELECT SUM(discount_amount) / SUM(total_amount) as discount_ratio.",
     ],
-    solutionQuery: `SELECT SUM(discount_amount) * 1.0 / SUM(total_amount) as discount_ratio
+    solutionQuery: `SELECT SUM(discount_amount) / SUM(total_amount) as discount_ratio
 FROM orders;`,
     hint: "Calculate the sum of all discounts first, then divide it by the sum of all total amounts.",
     mistakeExplanation:
@@ -324,24 +326,24 @@ GROUP BY p.category;`,
     difficulty: "Medium",
     category: "JOINs & Subqueries",
     businessScenario:
-      "Find the average number of items per transaction. The subquery is correct, but the outer query fails with a syntax error near ')'.",
-    flawedQuery: `-- Subquery in FROM clause missing table alias
-SELECT sub.item_count
+      "Find the average of order counts per customer. The subquery is correct, but the outer query fails.",
+    flawedQuery: `-- Syntax error near ")"
+SELECT AVG(order_count)
 FROM (
-  SELECT order_id, COUNT(*) as item_count
-  FROM order_items
-  GROUP BY order_id
+  SELECT customer_id, COUNT(*) as order_count
+  FROM orders
+  GROUP BY customer_id
 );`,
     hints: [
       "Focus on identifying the core table(s) and columns required for 'The Missing Subquery Alias'.",
       "Group your output rows using GROUP BY and apply aggregate functions like COUNT(), SUM(), or AVG().",
-      "Structure your query using clauses similar to: SELECT AVG(item_count).",
+      "Structure your query using clauses similar to: SELECT AVG(order_count).",
     ],
-    solutionQuery: `SELECT AVG(item_count)
+    solutionQuery: `SELECT AVG(order_count)
 FROM (
-  SELECT order_id, COUNT(*) as item_count
-  FROM order_items
-  GROUP BY order_id
+  SELECT customer_id, COUNT(*) as order_count
+  FROM orders
+  GROUP BY customer_id
 ) sub;`,
     hint: "Every derived table (a subquery in the FROM clause) needs a name.",
     mistakeExplanation:
@@ -354,22 +356,22 @@ FROM (
     difficulty: "Hard",
     category: "JOINs & Subqueries",
     businessScenario:
-      "We want to find all products that have NEVER been ordered. The subquery contains NULL product_ids, causing the parent query to yield 0 rows.",
+      "We want to find all customers who have NEVER placed an order. The subquery returns customer IDs, but the query yields 0 rows.",
     flawedQuery: `-- Why is this returning zero rows?
-SELECT product_id, product_name
-FROM products
-WHERE product_id NOT IN (
-  SELECT DISTINCT product_id FROM order_items
+SELECT customer_id, full_name
+FROM customers
+WHERE customer_id NOT IN (
+  SELECT DISTINCT customer_id FROM orders WHERE status = 'Cancelled' OR customer_id IS NULL
 );`,
     hints: [
       "Focus on identifying the core table(s) and columns required for 'The NOT IN Null Trap'.",
       "Filter your result set using WHERE conditions to isolate the target criteria.",
-      "Structure your query using clauses similar to: SELECT product_id, product_name.",
+      "Structure your query using clauses similar to: SELECT customer_id, full_name.",
     ],
-    solutionQuery: `SELECT product_id, product_name
-FROM products
-WHERE product_id NOT IN (
-  SELECT DISTINCT product_id FROM order_items WHERE product_id IS NOT NULL
+    solutionQuery: `SELECT customer_id, full_name
+FROM customers
+WHERE customer_id NOT IN (
+  SELECT DISTINCT customer_id FROM orders WHERE customer_id IS NOT NULL
 );`,
     hint: "If a NOT IN list contains even a single NULL value, the entire check evaluates to false or unknown. Filter out NULLs first.",
     mistakeExplanation:
@@ -510,19 +512,19 @@ WHERE EXISTS (
     difficulty: "Easy",
     category: "JOINs & Subqueries",
     businessScenario:
-      "We want to combine distinct catalog brand names and category names into a single list of entities. The query fails due to column count mismatch.",
+      "We want to combine city locations of our customers and offices. The query fails due to column count mismatch.",
     flawedQuery: `-- Columns mismatch in set operations
-SELECT brand, category FROM products
+SELECT city, region FROM customers
 UNION
-SELECT category FROM products;`,
+SELECT office_city FROM departments;`,
     hints: [
       "Focus on identifying the core table(s) and columns required for 'The Union Structural Crash'.",
       "Apply standard filtering and analytical clauses to isolate the exact target dataset.",
-      "Structure your query using clauses similar to: SELECT brand AS entity_name FROM products.",
+      "Structure your query using clauses similar to: SELECT city FROM customers.",
     ],
-    solutionQuery: `SELECT brand AS entity_name FROM products WHERE brand IS NOT NULL
+    solutionQuery: `SELECT city FROM customers
 UNION
-SELECT category AS entity_name FROM products WHERE category IS NOT NULL;`,
+SELECT office_city FROM departments;`,
     hint: "UNION requires all queries to have the exact same number of columns in the same order.",
     mistakeExplanation:
       "Set operations like UNION and UNION ALL require all queries to return the exact same number of columns with compatible data types. You cannot union a 2-column query with a 1-column query.",
@@ -640,9 +642,9 @@ FROM payments;`,
     category: "Window Functions",
     businessScenario:
       "Find the difference in revenue between the current order and the previous order. The lag amounts are random.",
-    flawedQuery: `-- Zero offset returns current row instead of previous row
+    flawedQuery: `-- Why are the lag calculations incorrect?
 SELECT order_id, total_amount,
-  LAG(total_amount, 0) OVER (ORDER BY order_date, order_id) as prev_amount
+  LAG(total_amount, 1) OVER () as prev_amount
 FROM orders;`,
     hints: [
       "Focus on identifying the core table(s) and columns required for 'The Lag of Chaos'.",
@@ -663,22 +665,22 @@ FROM orders;`,
     difficulty: "Medium",
     category: "Window Functions",
     businessScenario:
-      "We want to assign ranks to food orders by rating. If two orders share rank 1, the next rank assigned should be 2 (no gaps). The query currently outputs rank 3 instead.",
-    flawedQuery: `-- This assigns ranks with gaps (e.g. 1, 1, 3)
-SELECT food_order_id, restaurant, rating,
-  RANK() OVER (ORDER BY rating DESC) as rating_rank
-FROM food_orders;`,
+      "We want to assign ranks to employee salaries. If two employees share rank 2, the next rank assigned should be 3 (no gaps). The query currently outputs rank 4 instead.",
+    flawedQuery: `-- This assigns ranks with gaps (e.g. 1, 2, 2, 4)
+SELECT employee_name, salary_lpa,
+  RANK() OVER (ORDER BY salary_lpa DESC) as sal_rank
+FROM employees;`,
     hints: [
       "Focus on identifying the core table(s) and columns required for 'The Rank Gap Hazard'.",
       "Apply standard filtering and analytical clauses to isolate the exact target dataset.",
-      "Structure your query using clauses similar to: SELECT food_order_id, restaurant, rating,.",
+      "Structure your query using clauses similar to: SELECT employee_name, salary_lpa,.",
     ],
-    solutionQuery: `SELECT food_order_id, restaurant, rating,
-  DENSE_RANK() OVER (ORDER BY rating DESC) as rating_rank
-FROM food_orders;`,
+    solutionQuery: `SELECT employee_name, salary_lpa,
+  DENSE_RANK() OVER (ORDER BY salary_lpa DESC) as sal_rank
+FROM employees;`,
     hint: "Which window ranking function assigns ranks without leaving gaps when duplicate values exist?",
     mistakeExplanation:
-      "RANK() leaves gaps in the ranking sequence if there are duplicate ties. To assign consecutive ranks without gaps (e.g. 1, 1, 2), use DENSE_RANK() instead.",
+      "RANK() leaves gaps in the ranking sequence if there are duplicate ties. To assign consecutive ranks without gaps (e.g. 1, 2, 2, 3), use DENSE_RANK() instead.",
   },
   {
     id: "pz-27",
@@ -688,9 +690,9 @@ FROM food_orders;`,
     category: "Window Functions",
     businessScenario:
       "Find the first order date for each customer segment. But the first_value result is changing on every row.",
-    flawedQuery: `-- LAST_VALUE returns current row's date because default frame stops at current row
+    flawedQuery: `-- FIRST_VALUE is returning the current row's date instead of the first
 SELECT customer_id, segment, signup_date,
-  LAST_VALUE(signup_date) OVER (PARTITION BY segment ORDER BY signup_date) as last_signup
+  FIRST_VALUE(signup_date) OVER (PARTITION BY segment ORDER BY signup_date) as first_signup
 FROM customers;`,
     hints: [
       "Focus on identifying the core table(s) and columns required for 'The First Value Freeze'.",
@@ -786,24 +788,24 @@ FROM subscriptions;`,
     difficulty: "Easy",
     category: "Syntax & Logic",
     businessScenario:
-      "We want to find all order line items where the calculated line total (quantity * unit_price) is greater than 500. The query crashes.",
-    flawedQuery: `-- Using alias in WHERE evaluates after HAVING without GROUP BY
-SELECT order_id, product_id,
-  (quantity * unit_price) AS line_total
-FROM order_items
-HAVING line_total > 500;`,
+      "We want to find all orders where the calculated net revenue is greater than 1000. The query crashes.",
+    flawedQuery: `-- The database says "no such column: net_revenue"
+SELECT order_id,
+  (total_amount - discount_amount) AS net_revenue
+FROM orders
+WHERE net_revenue > 1000;`,
     hints: [
       "Focus on identifying the core table(s) and columns required for 'The Alias Ambush'.",
       "Filter your result set using WHERE conditions to isolate the target criteria.",
-      "Structure your query using clauses similar to: SELECT order_id, product_id,.",
+      "Structure your query using clauses similar to: SELECT order_id,.",
     ],
-    solutionQuery: `SELECT order_id, product_id,
-  (quantity * unit_price) AS line_total
-FROM order_items
-WHERE (quantity * unit_price) > 500;`,
+    solutionQuery: `SELECT order_id,
+  (total_amount - discount_amount) AS net_revenue
+FROM orders
+WHERE (total_amount - discount_amount) > 1000;`,
     hint: "Remember the SQL execution order. Which is evaluated first: SELECT or WHERE?",
     mistakeExplanation:
-      "In SQL, the WHERE clause is evaluated BEFORE the SELECT clause. Therefore, the alias 'line_total' doesn't exist yet when filtering rows. You must repeat the mathematical expression in the WHERE clause.",
+      "In SQL, the WHERE clause is evaluated BEFORE the SELECT clause. Therefore, the alias 'net_revenue' doesn't exist yet when filtering rows. You must repeat the mathematical expression in the WHERE clause.",
   },
   {
     id: "pz-32",
@@ -837,11 +839,10 @@ WHERE signup_date = '2023-01-18';`,
     category: "Syntax & Logic",
     businessScenario:
       "We want to calculate the cost-to-list-price ratio of products. But the query crashes when list_price is zero.",
-    flawedQuery: `-- Query omits zero-priced promo items instead of handling zero with NULLIF
+    flawedQuery: `-- Query crashes when list_price is zero
 SELECT product_name,
   (cost_price / list_price) as price_ratio
-FROM products
-WHERE list_price > 0;`,
+FROM products;`,
     hints: [
       "Focus on identifying the core table(s) and columns required for 'The Division By Zero Trap'.",
       "Apply standard filtering and analytical clauses to isolate the exact target dataset.",
@@ -885,12 +886,12 @@ WHERE segment LIKE 'Pr%';`,
     difficulty: "Medium",
     category: "Syntax & Logic",
     businessScenario:
-      "Categorize employee salaries: 'High' if > 25 LPA, 'Medium' if > 15 LPA, 'Low' otherwise. But right now, everyone > 25 LPA is categorized as 'Medium'.",
+      "Categorize employee salaries: 'High' if > 80 LPA, 'Medium' if > 40 LPA, 'Low' otherwise. But right now, everyone > 80 LPA is categorized as 'Medium'.",
     flawedQuery: `-- High salary category is never assigned!
 SELECT employee_name, salary_lpa,
   CASE
-    WHEN salary_lpa > 15 THEN 'Medium'
-    WHEN salary_lpa > 25 THEN 'High'
+    WHEN salary_lpa > 40 THEN 'Medium'
+    WHEN salary_lpa > 80 THEN 'High'
     ELSE 'Low'
   END as sal_tier
 FROM employees;`,
@@ -901,14 +902,14 @@ FROM employees;`,
     ],
     solutionQuery: `SELECT employee_name, salary_lpa,
   CASE
-    WHEN salary_lpa > 25 THEN 'High'
-    WHEN salary_lpa > 15 THEN 'Medium'
+    WHEN salary_lpa > 80 THEN 'High'
+    WHEN salary_lpa > 40 THEN 'Medium'
     ELSE 'Low'
   END as sal_tier
 FROM employees;`,
     hint: "CASE statements execute sequentially and stop at the first true condition. Order your conditions from most restrictive to least restrictive.",
     mistakeExplanation:
-      "CASE statements evaluate sequentially. Since a salary of 26 is > 15, it triggers the first WHEN branch ('Medium') and exits. Arrange ranges from highest to lowest.",
+      "CASE statements evaluate sequentially. Since a salary of 90 is > 40, it triggers the first WHEN branch ('Medium') and exits. Arrange ranges from highest to lowest.",
   },
   {
     id: "pz-36",
@@ -1056,30 +1057,30 @@ FROM orders;`,
   },
   {
     id: "pz-42",
-    dayId: 18,
+    dayId: 8,
     title: "The Aggregate Filter Leak",
     difficulty: "Medium",
     category: "Aggregation",
     businessScenario:
-      "We want to calculate total successful payments vs. total refunded payments in a single report. But putting WHERE payment_status = 'Success' wipes out refunded payment sums.",
-    flawedQuery: `-- WHERE clause filters out refunded payments before SUM evaluates!
+      "We want a single report showing the total revenue from 'App' orders alongside the total revenue from 'Web' orders. The query returns 0 for Web sales.",
+    flawedQuery: `-- Why are web sales summing to zero?
 SELECT
-  SUM(CASE WHEN payment_status = 'Success' THEN amount ELSE 0 END) as successful_payments,
-  SUM(CASE WHEN payment_status = 'Refunded' THEN amount ELSE 0 END) as refunded_payments
-FROM payments
-WHERE payment_status = 'Success';`,
+  SUM(CASE WHEN channel = 'App' THEN total_amount ELSE 0 END) as app_sales,
+  SUM(CASE WHEN channel = 'Web' THEN total_amount ELSE 0 END) as web_sales
+FROM orders
+WHERE channel = 'App';`,
     hints: [
       "Focus on identifying the core table(s) and columns required for 'The Aggregate Filter Leak'.",
       "Apply standard filtering and analytical clauses to isolate the exact target dataset.",
       "Structure your query using clauses similar to: SELECT.",
     ],
     solutionQuery: `SELECT
-  SUM(CASE WHEN payment_status = 'Success' THEN amount ELSE 0 END) as successful_payments,
-  SUM(CASE WHEN payment_status = 'Refunded' THEN amount ELSE 0 END) as refunded_payments
-FROM payments;`,
-    hint: "Look at the WHERE clause. If you filter the whole query to 'Success', what happens to 'Refunded' payments?",
+  SUM(CASE WHEN channel = 'App' THEN total_amount ELSE 0 END) as app_sales,
+  SUM(CASE WHEN channel = 'Web' THEN total_amount ELSE 0 END) as web_sales
+FROM orders;`,
+    hint: "Look at the WHERE clause. If you filter the whole query to 'App', what happens to the 'Web' sales sum?",
     mistakeExplanation:
-      "By putting WHERE payment_status = 'Success' at the end, the query filters out all refunded payments before the SELECT clause runs, causing refunded_payments to evaluate to 0. Remove the WHERE filter so the conditional CASE WHEN can aggregate both statuses correctly.",
+      "By putting WHERE channel = 'App' at the end, the query filters out all Web orders before the SELECT clause runs, causing web_sales to evaluate to 0. Remove the WHERE filter so the conditional CASE WHEN can aggregate both channels correctly.",
   },
   {
     id: "pz-43",
@@ -1368,19 +1369,19 @@ WHERE c.segment = 'Premium';`,
     difficulty: "Hard",
     category: "JOINs & Subqueries",
     businessScenario:
-      "Find all departments that have no active employees assigned. However, the subquery contains a NULL department_id, causing the query to return zero rows.",
-    flawedQuery: `-- This NOT IN subquery returns zero rows if any department_id in subquery is NULL
-SELECT department_id, department_name
-FROM departments
-WHERE department_id NOT IN (SELECT department_id FROM employees);`,
+      "Find all customers who have never placed an order. However, the query runs but returns zero rows.",
+    flawedQuery: `-- This NOT IN subquery returns zero rows if any customer_id is NULL
+SELECT customer_id, full_name
+FROM customers
+WHERE customer_id NOT IN (SELECT customer_id FROM orders);`,
     hints: [
       "Focus on identifying the core table(s) and columns required for 'The Anti-Join NULL Filter Trap'.",
       "Filter your result set using WHERE conditions to isolate the target criteria.",
-      "Structure your query using clauses similar to: SELECT department_id, department_name.",
+      "Structure your query using clauses similar to: SELECT customer_id, full_name.",
     ],
-    solutionQuery: `SELECT department_id, department_name
-FROM departments
-WHERE department_id NOT IN (SELECT department_id FROM employees WHERE department_id IS NOT NULL);`,
+    solutionQuery: `SELECT customer_id, full_name
+FROM customers
+WHERE customer_id NOT IN (SELECT customer_id FROM orders WHERE customer_id IS NOT NULL);`,
     hint: "If the subquery returns even a single NULL, NOT IN evaluates to UNKNOWN for all rows, returning empty results.",
     mistakeExplanation:
       "In SQL, comparing any value with NULL yields UNKNOWN. When NOT IN queries a list that contains a NULL, the overall expression evaluates to UNKNOWN, causing zero rows to be returned. Always filter out NULLs in NOT IN subqueries, or use LEFT JOIN with IS NULL.",
@@ -1392,23 +1393,22 @@ WHERE department_id NOT IN (SELECT department_id FROM employees WHERE department
     difficulty: "Medium",
     category: "Syntax & Logic",
     businessScenario:
-      "Combine customer names and employee names into a single list of entities and their roles. The analyst tried to stack them, but mapped name columns to ID columns incorrectly.",
+      "Combine customer cities with department cities. The analyst tried to stack them, but mapped name columns to city columns incorrectly.",
     flawedQuery: `-- Columns are matched by position, not by name!
-SELECT customer_id, full_name FROM customers
+SELECT customer_id, city FROM customers
 UNION
-SELECT employee_name, department_id FROM employees;`,
+SELECT office_city, department_id FROM departments;`,
     hints: [
       "Focus on identifying the core table(s) and columns required for 'UNION Column Alignment Bug'.",
       "Apply standard filtering and analytical clauses to isolate the exact target dataset.",
-      "Structure your query using clauses similar to: SELECT full_name AS entity_name, 'Customer' AS role FROM customers.",
+      "Structure your query using clauses similar to: SELECT city FROM customers.",
     ],
-    solutionQuery: `SELECT full_name AS entity_name, 'Customer' AS entity_role FROM customers
-UNION ALL
-SELECT employee_name AS entity_name, 'Employee' AS entity_role FROM employees
-ORDER BY entity_name;`,
+    solutionQuery: `SELECT city FROM customers
+UNION
+SELECT office_city FROM departments;`,
     hint: "UNION matches columns by position. Ensure your SELECT clauses have the same number of columns in the same order and compatible types.",
     mistakeExplanation:
-      "UNION merges datasets by column position rather than name. Merging customer_id (integer) with employee_name (text) and full_name (text) with department_id (integer) causes type coercion and semantic bugs. The lists must be aligned.",
+      "UNION merges datasets by column position rather than name. Merging customer_id (integer) with office_city (text) and city (text) with department_id (integer) causes type coercion and semantic bugs. The lists must be aligned.",
   },
   {
     id: "pz-55",
@@ -1553,8 +1553,3 @@ GROUP BY SUBSTR(signup_date, 1, 4);`,
       "Grouping by the daily signup_date creates groups at the day grain, but since you only select the year, the output has duplicate year rows. You must group by the exact year expression or its alias.",
   },
 ];
-
-const difficultyOrder = { Easy: 0, Medium: 1, Hard: 2 };
-export const debugPuzzles = [...rawDebugPuzzles].sort((a, b) => {
-  return difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
-});

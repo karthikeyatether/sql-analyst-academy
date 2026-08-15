@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
-import { AlertTriangle, Lightbulb, Zap, CheckCircle2, XCircle, ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
+import { AlertTriangle, Lightbulb, Zap, CheckCircle2, XCircle, ArrowRight, ChevronDown, ChevronUp, ShieldAlert } from "lucide-react";
+import { lintSqlAntiPatterns } from "../utils/sqlAntiPatternLinter";
 
 interface ResultRow {
   [col: string]: unknown;
@@ -129,6 +130,7 @@ function DiffTable({ yours, expected }: { yours: QueryResult; expected: QueryRes
 }
 
 export default function SqlDiagnosticCoach({
+
   queryResult,
   expectedResult,
   isCorrect,
@@ -149,6 +151,7 @@ export default function SqlDiagnosticCoach({
     (queryResult.rows.length > 0 || expectedResult.rows.length > 0);
 
   const fixedSql = pattern ? pattern.fix(query) : null;
+  const antiPatterns = lintSqlAntiPatterns(query);
 
   return (
     <div style={{
@@ -195,6 +198,34 @@ export default function SqlDiagnosticCoach({
               marginBottom: "12px",
             }}>
               {error}
+            </div>
+          )}
+
+          {/* Anti-pattern and SARGability warnings */}
+          {antiPatterns.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "12px" }}>
+              {antiPatterns.map((ap) => (
+                <div
+                  key={ap.id}
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: "8px",
+                    background: "rgba(244, 63, 94, 0.08)",
+                    border: "1px solid rgba(244, 63, 94, 0.2)",
+                    fontSize: "12px",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: 700, color: "var(--rose)", marginBottom: "4px" }}>
+                    <ShieldAlert size={14} /> {ap.title}
+                  </div>
+                  <div style={{ color: "var(--fg)", marginBottom: "4px", lineHeight: 1.5 }}>
+                    {ap.message}
+                  </div>
+                  <div style={{ color: "var(--cyan)", fontSize: "11.5px", fontFamily: "var(--font-mono, monospace)" }}>
+                    💡 Fix: {ap.recommendation}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 

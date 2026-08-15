@@ -9,42 +9,6 @@ import { seedDatabaseInstance } from "../utils/dbSeeder";
 let SQL: initSqlJs.SqlJsStatic | null = null;
 let dbInstance: initSqlJs.Database | null = null;
 
-function hasSandboxTransactionControl(sql: string): boolean {
-  const transactionCommands = new Set([
-    "COMMIT",
-    "ROLLBACK",
-    "BEGIN",
-    "SAVEPOINT",
-    "RELEASE",
-  ]);
-  const tokenPattern =
-    /'(?:''|[^'])*'|"(?:""|[^"])*"|`[^`]*`|--[^\r\n]*|\/\*[\s\S]*?\*\/|;|[A-Za-z_][A-Za-z0-9_]*/g;
-  let statementStart = true;
-  let match: RegExpExecArray | null;
-
-  while ((match = tokenPattern.exec(sql)) !== null) {
-    const token = match[0];
-    if (token === ";") {
-      statementStart = true;
-      continue;
-    }
-    if (
-      token.startsWith("'") ||
-      token.startsWith('"') ||
-      token.startsWith("`") ||
-      token.startsWith("--") ||
-      token.startsWith("/*")
-    ) {
-      continue;
-    }
-    if (statementStart && transactionCommands.has(token.toUpperCase())) {
-      return true;
-    }
-    statementStart = false;
-  }
-  return false;
-}
-
 export interface WorkerMessageData {
   id: string;
   type:
@@ -95,11 +59,6 @@ self.onmessage = async (e: MessageEvent<WorkerMessageData>) => {
           locateFile: () => sqlWasmUrl,
         });
       }
-      if (dbInstance) {
-        try {
-          dbInstance.close();
-        } catch (_) {}
-      }
       dbInstance = new SQL.Database(
         snapshot ? new Uint8Array(snapshot) : undefined,
       );
@@ -124,11 +83,6 @@ self.onmessage = async (e: MessageEvent<WorkerMessageData>) => {
         SQL = await initSqlJs({
           locateFile: () => sqlWasmUrl,
         });
-      }
-      if (dbInstance) {
-        try {
-          dbInstance.close();
-        } catch (_) {}
       }
       dbInstance = new SQL.Database();
       registerMySqlFunctions(dbInstance);
@@ -284,11 +238,6 @@ self.onmessage = async (e: MessageEvent<WorkerMessageData>) => {
 
     const t0 = performance.now();
     try {
-      if (sandbox && hasSandboxTransactionControl(sql)) {
-        throw new Error(
-          "Transaction-control statements are not allowed in sandbox mode.",
-        );
-      }
       if (sandbox) {
         dbInstance.run(`SAVEPOINT ${savepointName};`);
         savepointActive = true;
@@ -304,7 +253,7 @@ self.onmessage = async (e: MessageEvent<WorkerMessageData>) => {
       if (res && res.length > 0) {
         const lastResult = res[res.length - 1];
         columns = lastResult.columns;
-        const MAX_ROWS = 250;
+        const MAX_ROWS = 5000;
         const rawValues = lastResult.values;
         const cappedValues =
           rawValues.length > MAX_ROWS
@@ -315,8 +264,8 @@ self.onmessage = async (e: MessageEvent<WorkerMessageData>) => {
           const obj: Record<string, unknown> = {};
           columns.forEach((col, idx) => {
             let val = rowArr[idx];
-            if (typeof val === "string" && val.length > 250) {
-              val = val.substring(0, 250) + "... [Truncated]";
+            if (typeof val === "string" && val.length > 10000) {
+              val = val.substring(0, 10000) + "... [Truncated]";
             }
             obj[col] = val;
           });
@@ -341,20 +290,9 @@ self.onmessage = async (e: MessageEvent<WorkerMessageData>) => {
       }
 
       if (savepointActive) {
-        try {
-          dbInstance.run(`ROLLBACK TO ${savepointName};`);
-          dbInstance.run(`RELEASE ${savepointName};`);
-        } catch (_) {
-          // If user query issued explicit COMMIT/ROLLBACK, SQLite released savepoint automatically
-          try {
-            dbInstance.run("ROLLBACK;");
-          } catch (_) {}
-        }
+        dbInstance.run(`ROLLBACK TO ${savepointName};`);
+        dbInstance.run(`RELEASE ${savepointName};`);
       }
-
-      try {
-        dbInstance.run("PRAGMA shrink_memory;");
-      } catch (_) {}
 
       self.postMessage({
         id,
@@ -372,11 +310,7 @@ self.onmessage = async (e: MessageEvent<WorkerMessageData>) => {
         try {
           dbInstance.run(`ROLLBACK TO ${savepointName};`);
           dbInstance.run(`RELEASE ${savepointName};`);
-        } catch (_) {
-          try {
-            dbInstance.run("ROLLBACK;");
-          } catch (_) {}
-        }
+        } catch (_) {}
       }
       self.postMessage({
         id,

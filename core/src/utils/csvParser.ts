@@ -9,7 +9,7 @@ export interface CsvImportOptions {
   customColumnTypes?: Record<string, string>;
 }
 
-export function parseCsv(text: string): string[][] {
+function parseCsv(text: string): string[][] {
   const rows: string[][] = [];
   let currentRow: string[] = [];
   let currentVal = "";

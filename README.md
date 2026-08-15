@@ -101,8 +101,6 @@ The repository is built to strict MNC standards and includes validation at sever
 ```bash
 cd core
 npm run lint             # ESLint (0 errors)
-npm run typecheck        # TypeScript Compiler (0 errors)
-npm run audit:dead-code  # Knip unused-file/export audit
 npm test                 # curriculum, grading, parser, rollback checks
 npm run test:e2e         # Playwright browser flows
 ```

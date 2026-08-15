@@ -110,7 +110,7 @@ export default function OnboardingModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="onboarding-title"
-        style={{ maxWidth: "480px", padding: "24px" }}
+        style={{ maxWidth: "480px" }}
       >
         <div className="custom-modal-body" style={{ textAlign: "center" }}>
           <button

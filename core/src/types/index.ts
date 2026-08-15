@@ -1,6 +1,24 @@
-export type { QueryResult } from "../utils/sqlEngine";
+export type { QueryResult, QueryPlanStep } from "../utils/sqlEngine";
 export type { LintError } from "../utils/sqlLinter";
+export type {
+  RoadmapModule,
+  PracticeProblem,
+  RoadmapDay,
+  MockInterview,
+  Difficulty,
+} from "../data/curriculum";
 export type { SqlPuzzle } from "../data/puzzles";
+
+export interface UserProgressState {
+  completedModules: number[];
+  solvedProblems: string[];
+  solvedPuzzles: string[];
+  completedDays: number[];
+  queryRuns: number;
+  minutesStudied: number;
+  mockScores: Record<string, number>;
+  completedChecklistItems: string[];
+}
 
 export type ViewId =
   | "dashboard"
@@ -13,10 +31,8 @@ export type ViewId =
   | "mock-test"
   | "mock-results"
   | "day-details"
-  | "join-visualizer"
   | "missions"
-  | "modules"
-  | "interactive-lesson";
+  | "modules";
 
 export type PlaygroundMode = "practice" | "puzzle" | "free";
 
@@ -36,14 +52,3 @@ export interface MockTestResult {
 }
 
 export type RightTab = "schema" | "hints" | "erd" | "linter";
-
-export interface UserProgressState {
-  completedModules: number[];
-  solvedProblems: string[];
-  solvedPuzzles: string[];
-  completedDays: number[];
-  queryRuns: number;
-  minutesStudied: number;
-  mockScores: Record<string, number>;
-  completedChecklistItems: string[];
-}

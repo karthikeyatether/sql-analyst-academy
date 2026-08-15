@@ -1,7 +1,7 @@
 import initSqlJs from "sql.js";
 import { seedTables, tableSchemas } from "../data/datasets";
 
-function inferType(value: unknown): string {
+export function inferType(value: unknown): string {
   if (typeof value === "number") {
     return Number.isInteger(value) ? "INTEGER" : "REAL";
   }
@@ -35,9 +35,6 @@ export function seedDatabaseInstance(dbInstance: initSqlJs.Database): void {
     tableName: string,
     pk: string | undefined,
   ): string | null {
-    if (tableName === "subscriptions" && col === "customer_id") {
-      return null; // Skip foreign key to allow orphan entries for simulated FULL OUTER JOIN testing
-    }
     const cLower = col.toLowerCase();
     if (!cLower.endsWith("_id")) return null;
     if (pk && cLower === pk.toLowerCase()) return null;

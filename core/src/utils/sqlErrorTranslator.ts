@@ -79,8 +79,8 @@ export function translateSqlError(rawError: string, sql?: string): string {
 
   type TranslationDef = {
     pattern: RegExp;
-    msgCode: number; // MySQL error code
-    sqlState: string; // MySQL SQLSTATE
+    msgCode: number;
+    level: number;
     getToken?: (m: RegExpMatchArray) => string;
     detailed: (m: RegExpMatchArray) => string;
     getSuggestion?: (m: RegExpMatchArray) => string | null;
@@ -89,8 +89,8 @@ export function translateSqlError(rawError: string, sql?: string): string {
   const translations: TranslationDef[] = [
     {
       pattern: /misuse of window function/i,
-      msgCode: 3593,
-      sqlState: "HY000",
+      msgCode: 4108,
+      level: 15,
       detailed: () =>
         "Windowed functions (like ROW_NUMBER(), RANK(), OVER()) can only appear in the " +
         "SELECT or ORDER BY clauses. They cannot be used in the WHERE, GROUP BY, or HAVING " +
@@ -99,26 +99,26 @@ export function translateSqlError(rawError: string, sql?: string): string {
     {
       pattern:
         /(nested.*window|context of another windowed function|aggregate function.*nested|window.*nested)/i,
-      msgCode: 3593,
-      sqlState: "HY000",
+      msgCode: 4109,
+      level: 15,
       detailed: () =>
         "Windowed functions cannot be used in the context of another windowed function or aggregate.",
     },
     {
       pattern: /misuse of aggregate/i,
-      msgCode: 1111,
-      sqlState: "HY000",
+      msgCode: 147,
+      level: 15,
       detailed: () =>
         "Aggregate functions (like SUM, COUNT, MAX) cannot appear in the WHERE clause. " +
         "Use the HAVING clause instead to filter on aggregated results.",
     },
     {
       pattern: /no such column:\s*(['"]?[a-zA-Z0-9_\.]+['"]?)/i,
-      msgCode: 1054,
-      sqlState: "42S22",
+      msgCode: 207,
+      level: 16,
       getToken: (m) => m[1],
       detailed: (m) =>
-        `Unknown column '${m[1].replace(/['"]/g, "")}' in 'field list'. Please check your spelling ` +
+        `Invalid column name '${m[1].replace(/['"]/g, "")}'. Please check your spelling ` +
         `or verify that the column exists in the referenced tables.`,
       getSuggestion: (m) => {
         const col = m[1].replace(/['"]/g, "");
@@ -128,11 +128,12 @@ export function translateSqlError(rawError: string, sql?: string): string {
     },
     {
       pattern: /no such table:\s*(['"]?[a-zA-Z0-9_]+['"]?)/i,
-      msgCode: 1146,
-      sqlState: "42S02",
+      msgCode: 208,
+      level: 16,
       getToken: (m) => m[1],
       detailed: (m) =>
-        `Table '${m[1].replace(/['"]/g, "")}' doesn't exist in the database.`,
+        `Invalid object name '${m[1].replace(/['"]/g, "")}'. The table or view does not ` +
+        `exist in the database.`,
       getSuggestion: (m) => {
         const tbl = m[1].replace(/['"]/g, "");
         const match = findClosestTable(tbl);
@@ -141,95 +142,101 @@ export function translateSqlError(rawError: string, sql?: string): string {
     },
     {
       pattern: /ambiguous column name:\s*(['"]?[a-zA-Z0-9_]+['"]?)/i,
-      msgCode: 1052,
-      sqlState: "23000",
+      msgCode: 209,
+      level: 16,
       getToken: (m) => m[1],
       detailed: (m) =>
-        `Column '${m[1].replace(/['"]/g, "")}' in field list is ambiguous. Prefix it with ` +
-        `the table name or alias (e.g., table_name.${m[1].replace(/['"]/g, "")}).`,
+        `Ambiguous column name '${m[1].replace(/['"]/g, "")}'. This column exists in ` +
+        `multiple tables in your query. Prefix it with the table alias (e.g., ` +
+        `table_name.${m[1].replace(/['"]/g, "")}).`,
     },
     {
       pattern: /near (['"]?.*?['"]?):\s*syntax error/i,
-      msgCode: 1064,
-      sqlState: "42000",
+      msgCode: 102,
+      level: 15,
       getToken: (m) => m[1],
       detailed: (m) =>
-        `You have an error in your SQL syntax; check for correct syntax near ${m[1]}. ` +
-        `Verify commas, unclosed parentheses, or misspelled keywords.`,
+        `Incorrect syntax near ${m[1]}. Please check for missing commas, unclosed ` +
+        `parentheses, or misspelled keywords.`,
     },
     {
       pattern: /returns ([0-9]+) columns - expected ([0-9]+)/i,
-      msgCode: 1241,
-      sqlState: "21000",
+      msgCode: 116,
+      level: 16,
       detailed: (m) =>
-        `Operand should contain 1 column(s), but the subquery returns ${m[1]} columns.`,
+        `Subqueries used as expressions must return exactly 1 column, but your subquery ` +
+        `returns ${m[1]} columns.`,
     },
     {
       pattern: /([0-9]+) values for ([0-9]+) columns/i,
-      msgCode: 1136,
-      sqlState: "21S01",
+      msgCode: 213,
+      level: 16,
       detailed: (m) =>
-        `Column count doesn't match value count. You supplied ${m[1]} values but the target specifies ` +
-        `${m[2]} columns.`,
+        `Insert Error: You supplied ${m[1]} values but the table/statement specifies ` +
+        `${m[2]} columns. They must match exactly.`,
     },
     {
       pattern: /division by zero/i,
-      msgCode: 1365,
-      sqlState: "22012",
+      msgCode: 8134,
+      level: 16,
       detailed: () =>
-        "Division by zero error. Consider using NULLIF(denominator, 0) to prevent evaluation crashes.",
+        "Divide by zero error encountered. Consider using NULLIF(denominator, 0) to return NULL instead of failing.",
     },
     {
       pattern: /row value misused/i,
-      msgCode: 1064,
-      sqlState: "42000",
+      msgCode: 4145,
+      level: 15,
       detailed: () =>
-        "Incorrect use of row value. Ensure aggregate functions or subqueries are referenced correctly inside conditional operators.",
+        "An expression of non-boolean type specified in a context where a condition is expected. Ensure you are using operators like '=', '>', or 'IN' correctly.",
     },
     {
       pattern:
         /(more than one row returned by a subquery|cardinality violation)/i,
-      msgCode: 1242,
-      sqlState: "21000",
+      msgCode: 512,
+      level: 16,
       detailed: () =>
-        "Subquery returns more than 1 row. This is not permitted with comparative operators (e.g., =, !=, <, >). Use IN instead, or add LIMIT 1.",
+        "Subquery returned more than 1 value. This is not permitted when the subquery follows =, !=, <, <=, >, >= or when the subquery is used as an expression. Consider using the IN operator instead of '=' to match multiple values, or add LIMIT 1 to the subquery.",
     },
     {
       pattern: /UNIQUE constraint failed/i,
-      msgCode: 1062,
-      sqlState: "23000",
+      msgCode: 2627,
+      level: 14,
       detailed: () =>
-        "Duplicate entry for key. The value violates a unique key or primary key constraint.",
+        "Violation of UNIQUE KEY constraint. Cannot insert duplicate key in object. The duplicate key value violates the unique index or primary key constraint.",
     },
     {
       pattern: /FOREIGN KEY constraint failed/i,
-      msgCode: 1452,
-      sqlState: "23000",
+      msgCode: 547,
+      level: 16,
       detailed: () =>
-        "Cannot add or update child row: a foreign key constraint fails. The referenced parent ID does not exist.",
+        "The INSERT or UPDATE statement conflicted with the FOREIGN KEY constraint. The query references a parent ID that does not exist in the parent table.",
     },
     {
       pattern: /NOT NULL constraint failed:\s*(['"]?[a-zA-Z0-9_\.]+['"]?)/i,
-      msgCode: 1048,
-      sqlState: "23000",
+      msgCode: 515,
+      level: 16,
       getToken: (m) => m[1],
       detailed: (m) =>
-        `Column '${m[1].replace(/['"]/g, "")}' cannot be null. Please provide a valid non-null value.`,
+        `Cannot insert the value NULL into column '${m[1].replace(/['"]/g, "")}'. The ` +
+        `column does not allow NULL values. Consider providing a default value or ` +
+        `updating your query to insert a non-null value.`,
     },
     {
       pattern: /ORDER BY term out of range - should be between 1 and (\d+)/i,
-      msgCode: 1064,
-      sqlState: "42000",
+      msgCode: 108,
+      level: 15,
       detailed: (m) =>
-        `Unknown column index in ORDER BY. The SELECT list only contains ${m[1]} columns.`,
+        `The ORDER BY position number is out of range. The SELECT list only contains ` +
+        `${m[1]} columns. Ensure your position index is between 1 and the number of ` +
+        `selected columns.`,
     },
     {
       pattern:
         /(use of non-aggregate column|aggregated query without GROUP BY)/i,
-      msgCode: 1055,
-      sqlState: "42000",
+      msgCode: 8120,
+      level: 16,
       detailed: () =>
-        "Expression in SELECT list is not in GROUP BY clause and contains nonaggregated column. Aggregate rules require selecting only grouped columns or columns inside aggregates.",
+        "Column is invalid in the select list because it is not contained in either an aggregate function or the GROUP BY clause. When using aggregate functions like SUM, COUNT, or AVG, any non-aggregated column in the SELECT list must be included in the GROUP BY clause.",
     },
     {
       pattern: new RegExp(
@@ -237,80 +244,91 @@ export function translateSqlError(rawError: string, sql?: string): string {
           "do not have the same number of result columns",
         "i",
       ),
-      msgCode: 1222,
-      sqlState: "21000",
+      msgCode: 205,
+      level: 16,
       detailed: () =>
-        "The used SELECT statements have a different number of columns. Both sides of UNION must contain the same number of fields.",
+        "All queries combined using a UNION, INTERSECT or EXCEPT operator must have an equal number of expressions in their target lists. The select statement on the left returns a different number of columns than the select statement on the right.",
     },
     {
       pattern: /table (['"]?[a-zA-Z0-9_]+['"]?) already exists/i,
-      msgCode: 1050,
-      sqlState: "42S01",
+      msgCode: 2714,
+      level: 16,
       getToken: (m) => m[1],
       detailed: (m) =>
-        `Table '${m[1].replace(/['"]/g, "")}' already exists. Use 'DROP TABLE IF EXISTS' first.`,
+        `There is already an object named '${m[1].replace(/['"]/g, "")}' in the ` +
+        `database. Choose a unique name or drop the existing table first using 'DROP ` +
+        `TABLE IF EXISTS'.`,
     },
     {
       pattern: /view (['"]?[a-zA-Z0-9_]+['"]?) already exists/i,
-      msgCode: 1050,
-      sqlState: "42S01",
+      msgCode: 2714,
+      level: 16,
       getToken: (m) => m[1],
       detailed: (m) =>
-        `View '${m[1].replace(/['"]/g, "")}' already exists. Use 'DROP VIEW IF EXISTS' first.`,
+        `There is already a view named '${m[1].replace(/['"]/g, "")}' in the database. ` +
+        `Choose a unique name or drop the existing view first using 'DROP VIEW IF ` +
+        `EXISTS'.`,
     },
     {
       pattern: /index (['"]?[a-zA-Z0-9_]+['"]?) already exists/i,
-      msgCode: 1061,
-      sqlState: "42000",
+      msgCode: 1913,
+      level: 16,
       getToken: (m) => m[1],
       detailed: (m) =>
-        `Duplicate key name '${m[1].replace(/['"]/g, "")}'. An index with this name already exists.`,
+        `The index '${m[1].replace(/['"]/g, "")}' already exists on the table. Use a ` +
+        `unique index name or drop the existing index first.`,
     },
     {
       pattern: /table (['"]?[a-zA-Z0-9_]+['"]?) has more than one primary key/i,
-      msgCode: 1075,
-      sqlState: "42000",
+      msgCode: 8106,
+      level: 16,
       getToken: (m) => m[1],
       detailed: (m) =>
-        `Multiple primary key defined for table '${m[1].replace(/['"]/g, "")}'.`,
+        `Table '${m[1].replace(/['"]/g, "")}' has more than one primary key defined. A ` +
+        `table can only have a single primary key constraint. If you need a composite ` +
+        `primary key, define it at the table level: PRIMARY KEY (col1, col2).`,
     },
     {
       pattern: /duplicate column name:\s*(['"]?[a-zA-Z0-9_]+['"]?)/i,
-      msgCode: 1060,
-      sqlState: "42S21",
+      msgCode: 2705,
+      level: 16,
       getToken: (m) => m[1],
       detailed: (m) =>
-        `Duplicate column name '${m[1].replace(/['"]/g, "")}' in table definition.`,
+        `Column names in each table must be unique. The column name ` +
+        `'${m[1].replace(/['"]/g, "")}' is specified more than once in the table ` +
+        `definition.`,
     },
     {
       pattern: /cannot modify (['"]?[a-zA-Z0-9_]+['"]?) because it is a view/i,
-      msgCode: 1015,
-      sqlState: "HY000",
+      msgCode: 4405,
+      level: 16,
       getToken: (m) => m[1],
       detailed: (m) =>
-        `Cannot modify view '${m[1].replace(/['"]/g, "")}'. Read-only target.`,
+        `View '${m[1].replace(/['"]/g, "")}' is not updatable because modifications ` +
+        `affect multiple tables or the view is read-only. Run your mutation commands ` +
+        `(INSERT/UPDATE/DELETE) on the underlying tables instead.`,
     },
     {
       pattern: /cannot start a transaction within a transaction/i,
-      msgCode: 1305,
-      sqlState: "25000",
+      msgCode: 3902,
+      level: 16,
       detailed: () =>
-        "Active transaction exists. Commit or Rollback the current transaction first.",
+        "Cannot start a transaction within an already active transaction. Commit or Rollback the current transaction before starting a new one.",
     },
     {
       pattern:
         /cannot commit - no transaction active|cannot rollback - no transaction active/i,
-      msgCode: 1305,
-      sqlState: "25000",
+      msgCode: 3903,
+      level: 16,
       detailed: () =>
-        "No active transaction exists. Run BEGIN before committing or rolling back.",
+        "The COMMIT or ROLLBACK TRANSACTION request has no corresponding BEGIN TRANSACTION. Ensure a transaction has been started with BEGIN before committing or rolling back.",
     },
     {
       pattern: /temporary table name must be unqualified/i,
-      msgCode: 1064,
-      sqlState: "42000",
+      msgCode: 156,
+      level: 15,
       detailed: () =>
-        "Temporary table names cannot be qualified with schema names.",
+        "Temporary table names cannot be qualified with a database/schema prefix (like database_name.table_name). Define the temporary table name directly (e.g. temp_table_name).",
     },
   ];
 
@@ -320,6 +338,7 @@ export function translateSqlError(rawError: string, sql?: string): string {
       if (t.getToken) {
         lineNum = findLineNumber(t.getToken(match));
       } else {
+        // Fallback: try to find keywords like OVER, SELECT, WHERE if we can't extract a specific token
         if (cleanRaw.includes("window")) lineNum = findLineNumber("OVER");
         else if (cleanRaw.includes("aggregate"))
           lineNum = findLineNumber("WHERE");
@@ -328,13 +347,13 @@ export function translateSqlError(rawError: string, sql?: string): string {
       const detailedMsg = t.detailed(match);
       const sugg = t.getSuggestion ? t.getSuggestion(match) : null;
       const suggStr = sugg ? `\nSuggestion: ${sugg}` : "";
-      return `ERROR ${t.msgCode} (${t.sqlState}) at line ${lineNum}\n${detailedMsg}${suggStr}`;
+      return `Msg ${t.msgCode}, Level ${t.level}, State 1, Line ${lineNum}\n${detailedMsg}${suggStr}`;
     }
   }
 
   // Generic fallback if not matched
   return (
-    `ERROR 1064 (42000) at line 1\n` +
+    `Msg 50000, Level 16, State 1, Line 1\n` +
     `Database Error: ${cleanRaw}\n\n` +
     `Please review your SQL syntax and logic.`
   );

@@ -25,5 +25,9 @@ export function stripLineNumbersFromQuery(sql: string): string {
   if (matches >= 2) {
     normalized = lines.map((l) => l.replace(/^\s*\d{1,3}/, "")).join("\n");
   }
-  return normalized.replace(/\n\s*\n+/g, "\n").trim();
+  return normalized
+    .split("\n")
+    .filter((line) => line.trim() !== "")
+    .join("\n")
+    .trim();
 }

@@ -44,8 +44,8 @@ export default function ShortcutsModal({ onClose }: ShortcutsModalProps) {
   const list = [
     { key: "Alt + X", desc: "Run current SQL query" },
     { key: "Ctrl + Enter", desc: "Run current SQL query" },
+    { key: "Ctrl + K / /", desc: "Focus search bar" },
     { key: "F5", desc: "Execute SQL query" },
-    { key: "/", desc: "Focus search bar" },
     { key: "?", desc: "Toggle keyboard shortcuts help" },
     { key: "Escape", desc: "Close modal / Clear search" },
     { key: "Tab", desc: "Navigate interactive controls" },

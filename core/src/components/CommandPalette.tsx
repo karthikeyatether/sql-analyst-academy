@@ -21,11 +21,11 @@ interface CommandPaletteProps {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  module: "#22d3ee",
-  problem: "#4ade80",
-  puzzle: "#f472b6",
-  action: "#fb923c",
-  nav: "#a78bfa",
+  module: "var(--cyan)",
+  problem: "var(--emerald)",
+  puzzle: "var(--rose)",
+  action: "var(--amber)",
+  nav: "var(--violet)",
 };
 
 const TYPE_ICONS: Record<string, React.ReactNode> = {
@@ -110,10 +110,10 @@ export default function CommandPalette({ open, onClose, items }: CommandPaletteP
       <div style={{
         position: "relative", zIndex: 1,
         width: "min(640px, 92vw)",
-        background: "var(--surface, #1a1a2e)",
-        border: "1px solid rgba(255,255,255,0.1)",
+        background: "var(--panel2)",
+        border: "1px solid var(--border)",
         borderRadius: "16px",
-        boxShadow: "0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04)",
+        boxShadow: "0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px var(--border)",
         overflow: "hidden",
         animation: "cp-drop 0.18s cubic-bezier(0.34,1.56,0.64,1)",
       }}>
@@ -121,9 +121,9 @@ export default function CommandPalette({ open, onClose, items }: CommandPaletteP
         <div style={{
           display: "flex", alignItems: "center", gap: "12px",
           padding: "14px 18px",
-          borderBottom: "1px solid rgba(255,255,255,0.07)",
+          borderBottom: "1px solid var(--border)",
         }}>
-          <Search size={18} style={{ color: "var(--cyan, #22d3ee)", flexShrink: 0 }} />
+          <Search size={18} style={{ color: "var(--cyan)", flexShrink: 0 }} />
           <input
             ref={inputRef}
             value={query}
@@ -131,17 +131,17 @@ export default function CommandPalette({ open, onClose, items }: CommandPaletteP
             placeholder="Search modules, problems, puzzles, actions…"
             style={{
               flex: 1, background: "none", border: "none", outline: "none",
-              color: "var(--fg, #e2e8f0)", fontSize: "15px", fontWeight: 500,
-              caretColor: "var(--cyan, #22d3ee)",
+              color: "var(--text)", fontSize: "15px", fontWeight: 500,
+              caretColor: "var(--cyan)",
             }}
           />
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--muted, #64748b)", cursor: "pointer", padding: "2px", borderRadius: "4px" }}>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", padding: "2px", borderRadius: "4px" }}>
             <X size={15} />
           </button>
           <kbd style={{
             padding: "2px 6px", borderRadius: "5px",
-            background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)",
-            fontSize: "11px", color: "var(--muted, #64748b)", fontFamily: "inherit",
+            background: "color-mix(in srgb, var(--border) 40%, transparent)", border: "1px solid var(--border)",
+            fontSize: "11px", color: "var(--muted)", fontFamily: "inherit",
           }}>ESC</kbd>
         </div>
 
@@ -153,9 +153,9 @@ export default function CommandPalette({ open, onClose, items }: CommandPaletteP
           {filtered.length === 0 && (
             <div style={{
               padding: "32px 16px", textAlign: "center",
-              color: "var(--muted, #64748b)", fontSize: "13px",
+              color: "var(--muted)", fontSize: "13px",
             }}>
-              No results for <strong style={{ color: "var(--fg)" }}>"{query}"</strong>
+              No results for <strong style={{ color: "var(--text)" }}>"{query}"</strong>
             </div>
           )}
 
@@ -168,7 +168,7 @@ export default function CommandPalette({ open, onClose, items }: CommandPaletteP
               style={{
                 width: "100%", display: "flex", alignItems: "center", gap: "12px",
                 padding: "10px 12px", borderRadius: "10px",
-                background: idx === activeIdx ? "rgba(255,255,255,0.07)" : "transparent",
+                background: idx === activeIdx ? "color-mix(in srgb, var(--border) 45%, transparent)" : "transparent",
                 border: "none", cursor: "pointer",
                 textAlign: "left",
                 transition: "background 0.1s ease",
@@ -178,7 +178,7 @@ export default function CommandPalette({ open, onClose, items }: CommandPaletteP
               <span style={{
                 display: "inline-flex", alignItems: "center", gap: "5px",
                 padding: "3px 8px", borderRadius: "6px",
-                background: `${TYPE_COLORS[item.type]}18`,
+                background: `color-mix(in srgb, ${TYPE_COLORS[item.type]} 15%, transparent)`,
                 color: TYPE_COLORS[item.type],
                 fontSize: "11px", fontWeight: 700, letterSpacing: "0.3px",
                 flexShrink: 0,
@@ -190,12 +190,12 @@ export default function CommandPalette({ open, onClose, items }: CommandPaletteP
               {/* Label + subtitle */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
-                  color: "var(--fg, #e2e8f0)", fontSize: "13px", fontWeight: 600,
+                  color: "var(--text)", fontSize: "13px", fontWeight: 600,
                   whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                 }}>{item.label}</div>
                 {item.subtitle && (
                   <div style={{
-                    color: "var(--muted, #64748b)", fontSize: "11px",
+                    color: "var(--muted)", fontSize: "11px",
                     whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                   }}>{item.subtitle}</div>
                 )}
@@ -205,13 +205,13 @@ export default function CommandPalette({ open, onClose, items }: CommandPaletteP
               {item.shortcut && (
                 <kbd style={{
                   padding: "2px 6px", borderRadius: "5px", flexShrink: 0,
-                  background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-                  fontSize: "11px", color: "var(--muted, #64748b)", fontFamily: "inherit",
+                  background: "color-mix(in srgb, var(--border) 40%, transparent)", border: "1px solid var(--border)",
+                  fontSize: "11px", color: "var(--muted)", fontFamily: "inherit",
                 }}>{item.shortcut}</kbd>
               )}
 
               {idx === activeIdx && (
-                <ChevronRight size={14} style={{ color: "var(--cyan, #22d3ee)", flexShrink: 0 }} />
+                <ChevronRight size={14} style={{ color: "var(--cyan)", flexShrink: 0 }} />
               )}
             </button>
           ))}
@@ -220,9 +220,9 @@ export default function CommandPalette({ open, onClose, items }: CommandPaletteP
         {/* Footer */}
         <div style={{
           padding: "8px 16px",
-          borderTop: "1px solid rgba(255,255,255,0.06)",
+          borderTop: "1px solid var(--border)",
           display: "flex", gap: "16px", alignItems: "center",
-          color: "var(--muted, #64748b)", fontSize: "11px",
+          color: "var(--muted)", fontSize: "11px",
         }}>
           <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
             <ArrowUp size={11} /><ArrowDown size={11} /> Navigate
