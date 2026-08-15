@@ -125,22 +125,22 @@ function RoadmapView({
         }}
       >
         {learningRoadmap.map((day, dayIndex) => {
-          const isDone = (progress.completedDays || []).includes(day.day);
+          const isDone = completedDaysSet.has(day.day);
           const dayModules = day.modules
-            .map((id) => roadmapModules.find((m) => m.id === id))
+            .map((id) => modulesMap.get(id))
             .filter((m) => m !== undefined);
           const dayProblems = dayModules.flatMap((m) => m!.problems);
           const totalDayProblems = dayProblems.length;
           const solvedDayProblems = dayProblems.filter((p) =>
-            progress.solvedProblems.includes(p.id),
+            solvedProblemsSet.has(p.id),
           ).length;
-          const dayPuzzles = debugPuzzles.filter((pz) => pz.dayId === day.day);
+          const dayPuzzles = puzzlesByDayMap.get(day.day) || [];
           const totalDayItems =
             dayProblems.length +
             dayPuzzles.length +
             (day.mockInterview && day.mockInterview.company ? 1 : 0);
           const solvedPuzzlesCount = dayPuzzles.filter((pz) =>
-            (progress.solvedPuzzles || []).includes(pz.id),
+            solvedPuzzlesSet.has(pz.id),
           ).length;
           const mockScore =
             day.mockInterview && day.mockInterview.company

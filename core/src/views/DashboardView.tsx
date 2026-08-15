@@ -295,11 +295,24 @@ function DashboardView({
     learningRoadmap,
   ]);
 
-  const lastQuery = localStorage.getItem("sql-aa-last-query") || "";
-  const actualMinutesStudied = Math.max(
-    progress.minutesStudied || 0,
-    Number(localStorage.getItem("sql-aa-study-minutes")) || 0,
-  );
+  const lastQuery = useMemo(() => {
+    try {
+      return localStorage.getItem("sql-aa-last-query") || "";
+    } catch {
+      return "";
+    }
+  }, []);
+
+  const actualMinutesStudied = useMemo(() => {
+    try {
+      return Math.max(
+        progress.minutesStudied || 0,
+        Number(localStorage.getItem("sql-aa-study-minutes")) || 0,
+      );
+    } catch {
+      return progress.minutesStudied || 0;
+    }
+  }, [progress.minutesStudied]);
   const goalProgressPct = Math.min(
     100,
     Math.round((actualMinutesStudied / dailyGoalMinutes) * 100),

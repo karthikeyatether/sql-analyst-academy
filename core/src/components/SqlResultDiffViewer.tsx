@@ -32,26 +32,34 @@ export const SqlResultDiffViewer: React.FC<SqlResultDiffViewerProps> = ({
       return cols.map((c) => String(row[c] ?? "NULL").trim().toLowerCase()).join(" | ");
     };
 
-    const userRowStrings = userResult.rows.map((r) => stringifyRow(r, userResult.columns));
-    const expRowStrings = expectedResult.rows.map((r) => stringifyRow(r, expectedResult.columns));
+    // O(N + M) Multiset frequency map algorithm
+    const expFreqMap = new Map<string, number>();
+    expectedResult.rows.forEach((r) => {
+      const key = stringifyRow(r, expectedResult.columns);
+      expFreqMap.set(key, (expFreqMap.get(key) || 0) + 1);
+    });
 
     let matchedCount = 0;
-    const missingRows: Record<string, unknown>[] = [];
     const extraRows: Record<string, unknown>[] = [];
 
-    expectedResult.rows.forEach((expRow, idx) => {
-      const str = expRowStrings[idx];
-      if (userRowStrings.includes(str)) {
+    userResult.rows.forEach((userRow) => {
+      const key = stringifyRow(userRow, userResult.columns);
+      const count = expFreqMap.get(key) || 0;
+      if (count > 0) {
         matchedCount++;
+        expFreqMap.set(key, count - 1);
       } else {
-        missingRows.push(expRow);
+        extraRows.push(userRow);
       }
     });
 
-    userResult.rows.forEach((userRow, idx) => {
-      const str = userRowStrings[idx];
-      if (!expRowStrings.includes(str)) {
-        extraRows.push(userRow);
+    const missingRows: Record<string, unknown>[] = [];
+    expectedResult.rows.forEach((expRow) => {
+      const key = stringifyRow(expRow, expectedResult.columns);
+      const remaining = expFreqMap.get(key) || 0;
+      if (remaining > 0) {
+        missingRows.push(expRow);
+        expFreqMap.set(key, remaining - 1);
       }
     });
 
