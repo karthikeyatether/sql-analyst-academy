@@ -4474,7 +4474,7 @@ export default function App() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search modules, problems…"
               />
-              <kbd className="search-kbd-shortcut">Ctrl + K</kbd>
+              <kbd className="search-kbd-shortcut">Ctrl+K</kbd>
               {filteredSearch.length > 0 && (
                 <div className="search-popover">
                   {filteredSearch.map((item) => (
