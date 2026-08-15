@@ -86,6 +86,7 @@ interface VSplitPaneProps {
   onResize: (h: number) => void;
   minTop?: number;
   maxTop?: number;
+  minBottom?: number;
   maximized?: boolean;
 }
 
@@ -94,12 +95,35 @@ export function VSplitPane({
   bottom,
   topHeight,
   onResize,
-  minTop = 100,
-  maxTop = 1200,
+  minTop = 140,
+  maxTop = 900,
+  minBottom = 160,
   maximized = false,
 }: VSplitPaneProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
+
+  // Auto-clamp topHeight so output pane never disappears on window resize / load
+  React.useEffect(() => {
+    if (!containerRef.current) return;
+    const containerH = containerRef.current.clientHeight;
+    if (containerH > 0) {
+      const maxAllowed = Math.max(minTop, containerH - minBottom);
+      if (topHeight > maxAllowed) {
+        onResize(maxAllowed);
+      }
+    }
+  }, [topHeight, minTop, minBottom, onResize]);
+
+  function handleReset() {
+    if (!containerRef.current) {
+      onResize(340);
+      return;
+    }
+    const containerH = containerRef.current.clientHeight;
+    const half = Math.round(containerH * 0.45);
+    onResize(Math.max(minTop, Math.min(half, containerH - minBottom)));
+  }
 
   function onMouseDown(e: React.MouseEvent) {
     if (maximized) return;
@@ -117,7 +141,12 @@ export function VSplitPane({
     function onMove(ev: MouseEvent) {
       if (!dragging.current || !containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
-      const newH = Math.min(maxTop, Math.max(minTop, ev.clientY - rect.top));
+      const containerH = rect.height;
+      const effectiveMaxTop = Math.min(
+        maxTop,
+        Math.max(minTop, containerH - minBottom),
+      );
+      const newH = Math.min(effectiveMaxTop, Math.max(minTop, ev.clientY - rect.top));
       onResize(newH);
     }
 
@@ -156,7 +185,8 @@ export function VSplitPane({
         <div
           className="v-split-handle"
           onMouseDown={onMouseDown}
-          title="Drag to resize"
+          onDoubleClick={handleReset}
+          title="Drag to resize (Double-click to reset height)"
         >
           <div className="v-split-handle-bar" />
         </div>

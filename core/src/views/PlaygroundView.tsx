@@ -317,9 +317,15 @@ const PlaygroundView = React.memo(function PlaygroundView({
   const [editorHeight, setEditorHeight] = useState(() => {
     try {
       const saved = localStorage.getItem("sql-aa-editor-h");
-      return saved ? JSON.parse(saved) : 350;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (typeof parsed === "number" && !isNaN(parsed)) {
+          return Math.min(500, Math.max(160, parsed));
+        }
+      }
+      return 340;
     } catch {
-      return 350;
+      return 340;
     }
   });
   const handleEditorHeightResize = (h: number) => {
