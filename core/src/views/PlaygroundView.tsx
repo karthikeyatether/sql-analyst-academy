@@ -1727,34 +1727,16 @@ SELECT * FROM customers LIMIT 10;`;
           style={{ display: "flex", alignItems: "center", gap: "6px" }}
         >
           <button
-            className="icon-button"
+            className="format-btn"
             title="Format SQL Query (Alt + Shift + F)"
             onClick={() => {
               const f = formatSql(queryRef.current);
               updateEditorQuery(f);
             }}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "5px",
-              padding: "4px 8px",
-              borderRadius: "4px",
-              border: "1px solid var(--border)",
-              background: "var(--bg)",
-            }}
             aria-label="Format SQL Query"
           >
             <Sparkles size={14} style={{ color: "var(--cyan)" }} />
-            <span
-              style={{
-                fontSize: "11px",
-                fontWeight: 600,
-                color: "var(--text)",
-              }}
-            >
-              Format
-            </span>
+            <span>Format</span>
           </button>
           <div style={{ position: "relative", display: "inline-flex" }}>
             <button

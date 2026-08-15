@@ -996,8 +996,32 @@ a {
   height: 26px;
   border-radius: 5px;
 }
-.icon-button.solved {
-  color: var(--emerald);
+.format-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  height: 30px;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.format-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--cyan);
+  color: var(--cyan);
+  transform: translateY(-1px);
+}
+
+.format-btn:active {
+  transform: translateY(0);
 }
 
 /* SURFACE PANEL */
