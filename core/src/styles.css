@@ -4050,17 +4050,6 @@ details > summary:focus-visible {
   background: rgba(56, 217, 255, 0.05);
 }
 
-/* Linter error badge pulse animation */
-
-  70% {
-    transform: scale(1.1);
-    box-shadow: 0 0 0 4px rgba(255, 96, 133, 0);
-  }
-  100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(255, 96, 133, 0);
-  }
-}
 
 /* Interactive Schema Autocomplete click triggers */
 .schema-insertable-item:hover {

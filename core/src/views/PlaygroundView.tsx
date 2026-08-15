@@ -336,7 +336,7 @@ const PlaygroundView = React.memo(function PlaygroundView({
   >("problem");
   const [editorMaximized, setEditorMaximized] = useState(false);
   const [activeResultTab, setActiveResultTab] = useState<
-    "your" | "expected" | "plan" | "venn" | "compare" | "diff"
+    "your" | "expected" | "walkthrough" | "compare" | "diff"
   >("your");
   const [previewData, setPreviewData] = useState<{
     [table: string]: QueryResult | null;

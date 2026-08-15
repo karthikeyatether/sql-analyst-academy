@@ -58,6 +58,20 @@ function RoadmapView({
     (totalCompleted / learningRoadmap.length) * 100,
   );
 
+  const solvedProblemsSet = React.useMemo(() => new Set(progress.solvedProblems || []), [progress.solvedProblems]);
+  const solvedPuzzlesSet = React.useMemo(() => new Set(progress.solvedPuzzles || []), [progress.solvedPuzzles]);
+  const completedDaysSet = React.useMemo(() => new Set(progress.completedDays || []), [progress.completedDays]);
+  const modulesMap = React.useMemo(() => new Map(roadmapModules.map((m) => [m.id, m])), [roadmapModules]);
+  const puzzlesByDayMap = React.useMemo(() => {
+    const map = new Map<number, SqlPuzzle[]>();
+    debugPuzzles.forEach((p) => {
+      const arr = map.get(p.dayId) || [];
+      arr.push(p);
+      map.set(p.dayId, arr);
+    });
+    return map;
+  }, [debugPuzzles]);
+
   return (
     <div className="view-content roadmap-timeline-view">
       <div style={{ maxWidth: 900, margin: "0 auto", width: "100%" }}>
