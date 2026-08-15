@@ -497,7 +497,7 @@ const PlaygroundView = React.memo(function PlaygroundView({
   const [lessonModalOpen, setLessonModalOpen] = useState(false);
   const [solutionRevealed, setSolutionRevealed] = useState(false);
   const [showInlineRefSol, setShowInlineRefSol] = useState(false);
-  const [visibleHints, setVisibleHints] = useState(1);
+  const [visibleHints, setVisibleHints] = useState(0);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -538,7 +538,7 @@ const PlaygroundView = React.memo(function PlaygroundView({
   useEffect(() => {
     setSolutionRevealed(false);
     setShowInlineRefSol(false);
-    setVisibleHints(1);
+    setVisibleHints(0);
     setGraderFeedback(null);
     setQueryResult({ columns: [], rows: [], message: "" });
     if (playgroundMode === "puzzle") {
@@ -4647,8 +4647,10 @@ SELECT * FROM customers LIMIT 10;`;
                             transition: "all 0.2s ease",
                           }}
                         >
-                          <Lightbulb size={14} /> Unlock Next Hint (
-                          {displayHints.length - visibleHints} remaining)
+                          <Lightbulb size={14} />
+                          {visibleHints === 0
+                            ? `Unlock First Hint (${displayHints.length} remaining)`
+                            : `Unlock Next Hint (${displayHints.length - visibleHints} remaining)`}
                         </button>
                       )}
                     </>
