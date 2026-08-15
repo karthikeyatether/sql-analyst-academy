@@ -18,19 +18,26 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   </React.StrictMode>,
 );
 
-function registerServiceWorker() {
-  if (!("serviceWorker" in navigator)) return;
+function cleanupStaleCaches() {
+  if (typeof window === "undefined") return;
 
-  // Unregister stale service workers so the browser never serves cached old assets
-  void navigator.serviceWorker.getRegistrations().then((registrations) => {
-    for (const registration of registrations) {
-      void registration.unregister();
-    }
-  });
+  // 1. Unregister all service workers immediately
+  if ("serviceWorker" in navigator) {
+    void navigator.serviceWorker.getRegistrations().then((registrations) => {
+      for (const registration of registrations) {
+        void registration.unregister();
+      }
+    });
+  }
+
+  // 2. Wipe CacheStorage keys to prevent disk cache loops
+  if ("caches" in window) {
+    void caches.keys().then((keys) => {
+      for (const key of keys) {
+        void caches.delete(key);
+      }
+    });
+  }
 }
 
-if (document.readyState === "loading") {
-  window.addEventListener("load", registerServiceWorker, { once: true });
-} else {
-  registerServiceWorker();
-}
+cleanupStaleCaches();

@@ -16,12 +16,7 @@ if errorlevel 1 (
   exit /b 1
 )
 
-REM Skip build if dist exists — use "rebuild" argument to force: _launch.bat rebuild
-if /I "%1"=="rebuild" goto BUILD
-if exist "dist\index.html" goto LAUNCH
-
-:BUILD
-echo Building production bundle...
+echo Synchronizing and building latest application bundle...
 call npm run build
 if errorlevel 1 (
   echo Build failed! Exiting.
@@ -29,7 +24,6 @@ if errorlevel 1 (
   exit /b 1
 )
 
-:LAUNCH
 echo Starting SQL Analyst Academy...
 start "" "http://127.0.0.1:4173"
 call npm run preview

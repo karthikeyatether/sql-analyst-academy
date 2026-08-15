@@ -38,13 +38,13 @@ body,
   --bg-panel: var(--panel);
 
   --text: #ffffff;
-  --text-secondary: #cbd5e1;
+  --text-secondary: #e2e8f0;
   --text-tertiary: #94a3b8;
-  --text-muted: #cbd5e1;
-  --muted: #cbd5e1;
-  --faint: #94a3b8;
-  --border: rgba(255, 255, 255, 0.14);
-  --border-color: rgba(255, 255, 255, 0.14);
+  --text-muted: #94a3b8;
+  --muted: #94a3b8;
+  --faint: #cbd5e1;
+  --border: rgba(255, 255, 255, 0.16);
+  --border-color: rgba(255, 255, 255, 0.16);
   --hex-color-040d12: #040d12;
   --hex-color-dde8f5: #dde8f5;
   --hex-color-000000: #000000;
@@ -53,18 +53,18 @@ body,
   /* Glowing / Semantic Accents */
   --cyan: hsl(190, 100%, 50%); /* Vibrant Cyan */
   --primary: var(--cyan);
-  --cyan-glow: rgba(56, 217, 255, 0.12);
-  --emerald: hsl(150, 72%, 46%); /* Success Green */
-  --emerald-glow: rgba(48, 230, 149, 0.12);
+  --cyan-glow: rgba(56, 217, 255, 0.16);
+  --emerald: hsl(150, 72%, 48%); /* Success Green */
+  --emerald-glow: rgba(48, 230, 149, 0.16);
   --green: var(--emerald);
-  --amber: hsl(38, 96%, 50%); /* Warning Amber */
-  --amber-glow: rgba(255, 190, 61, 0.12);
+  --amber: hsl(38, 96%, 52%); /* Warning Amber */
+  --amber-glow: rgba(255, 190, 61, 0.16);
   --yellow: var(--amber);
-  --rose: hsl(345, 96%, 58%); /* Danger Rose */
-  --rose-glow: rgba(255, 96, 133, 0.12);
+  --rose: hsl(345, 96%, 60%); /* Danger Rose */
+  --rose-glow: rgba(255, 96, 133, 0.16);
   --red: var(--rose);
-  --violet: hsl(260, 92%, 68%); /* Cyber Violet */
-  --violet-glow: rgba(155, 124, 255, 0.12);
+  --violet: hsl(260, 92%, 70%); /* Cyber Violet */
+  --violet-glow: rgba(155, 124, 255, 0.16);
   --purple: var(--violet);
 
   /* ERD Accents mapped to HSL tokens */
@@ -103,13 +103,17 @@ body,
 }
 
 :root.oled {
-  --bg: hsl(0, 0%, 0%);
-  --bg2: hsl(0, 0%, 0%);
-  --panel: hsl(0, 0%, 2%);
-  --panel2: hsl(0, 0%, 6%);
-  --input-bg: hsl(0, 0%, 0%);
-  --bg-tertiary: hsl(0, 0%, 3%);
-  --bg-elevated: hsl(0, 0%, 7%);
+  --bg: #000000;
+  --bg2: #050505;
+  --panel: #0a0a0a;
+  --panel2: #141414;
+  --input-bg: #000000;
+  --bg-tertiary: #0e0e0e;
+  --bg-elevated: #181818;
+  --text: #ffffff;
+  --text-secondary: #f4f4f5;
+  --muted: #a1a1aa;
+  --faint: #d4d4d8;
   --border: rgba(255, 255, 255, 0.22);
   --border-color: rgba(255, 255, 255, 0.22);
   --glass-border: rgba(255, 255, 255, 0.28);
@@ -127,28 +131,28 @@ body,
   --input-bg: #ffffff;
   --text: #0f172a;
   --text-secondary: #1e293b;
-  --muted: #334155;
+  --muted: #475569;
   --faint: #64748b;
-  --border: rgba(0, 0, 0, 0.12);
+  --border: rgba(0, 0, 0, 0.15);
 
   /* Accent adaptation - rich high contrast for light mode */
   --cyan: #0284c7;
-  --cyan-glow: rgba(2, 132, 199, 0.12);
+  --cyan-glow: rgba(2, 132, 199, 0.15);
   --emerald: #059669;
-  --emerald-glow: rgba(5, 150, 105, 0.12);
+  --emerald-glow: rgba(5, 150, 105, 0.15);
   --amber: #d97706;
-  --amber-glow: rgba(217, 119, 6, 0.12);
+  --amber-glow: rgba(217, 119, 6, 0.15);
   --rose: #dc2626;
-  --rose-glow: rgba(220, 38, 38, 0.12);
+  --rose-glow: rgba(220, 38, 38, 0.15);
   --violet: #7c3aed;
-  --violet-glow: rgba(124, 58, 237, 0.12);
+  --violet-glow: rgba(124, 58, 237, 0.15);
 }
 
 :root.dracula {
   color-scheme: dark;
   /* Core Backgrounds - True Dracula darks */
   --bg: #282a36;
-  --bg2: #1e1f29; /* Slightly darker contrast layer */
+  --bg2: #1e1f29;
   --panel: #282a36;
   --panel2: #44475a;
   --input-bg: #191a21;
@@ -156,25 +160,25 @@ body,
   /* Text & Contrast - Max readability */
   --text: #ffffff;
   --text-secondary: #f8f8f2;
-  --muted: #8ca2d9;
-  --faint: #6272a4;
-  --border: rgba(255, 255, 255, 0.12);
+  --muted: #bd93f9;
+  --faint: #e2e8f0;
+  --border: rgba(255, 255, 255, 0.18);
 
   /* Premium Glassmorphism */
   --glass-panel-bg: rgba(40, 42, 54, 0.85);
   --glass-modal-bg: rgba(30, 31, 41, 0.95);
   --glass-popover-bg: rgba(68, 71, 90, 0.96);
-  --glass-border: rgba(248, 248, 242, 0.18);
+  --glass-border: rgba(248, 248, 242, 0.22);
   --overlay-bg: rgba(15, 16, 20, 0.75);
 
-  /* The Signature Neon Accents */
+  /* Signature Neon Accents */
   --cyan: #8be9fd;
   --cyan-glow: rgba(139, 233, 253, 0.25);
   --emerald: #50fa7b;
   --emerald-glow: rgba(80, 250, 123, 0.25);
-  --amber: #ffb86c; /* Swapped to the iconic Dracula Orange for warmth */
+  --amber: #ffb86c;
   --amber-glow: rgba(255, 184, 108, 0.25);
-  --rose: #ff79c6; /* Swapped to the unmistakable Dracula Pink */
+  --rose: #ff79c6;
   --rose-glow: rgba(255, 121, 198, 0.25);
   --violet: #bd93f9;
   --violet-glow: rgba(189, 147, 249, 0.25);
@@ -191,62 +195,60 @@ body,
   --panel: #282c34;
   --panel2: #3e4451;
   --input-bg: #1e2227;
-  --text: #abb2bf;
-  --text-secondary: #828997;
-  --muted: #5c6370;
-  --faint: #3e4451;
-  --border: rgba(255, 255, 255, 0.1);
+  --text: #ffffff;
+  --text-secondary: #e5e5e5;
+  --muted: #abb2bf;
+  --faint: #dcdfe4;
+  --border: rgba(255, 255, 255, 0.18);
 
   --glass-panel-bg: rgba(40, 44, 52, 0.75);
   --glass-modal-bg: rgba(40, 44, 52, 0.9);
   --glass-popover-bg: rgba(62, 68, 81, 0.95);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.18);
   --overlay-bg: rgba(0, 0, 0, 0.5);
 
   --cyan: #56b6c2;
-  --cyan-glow: rgba(86, 182, 194, 0.15);
+  --cyan-glow: rgba(86, 182, 194, 0.2);
   --emerald: #98c379;
-  --emerald-glow: rgba(152, 195, 121, 0.15);
+  --emerald-glow: rgba(152, 195, 121, 0.2);
   --amber: #e5c07b;
-  --amber-glow: rgba(229, 192, 123, 0.15);
+  --amber-glow: rgba(229, 192, 123, 0.2);
   --rose: #e06c75;
-  --rose-glow: rgba(224, 108, 117, 0.2);
+  --rose-glow: rgba(224, 108, 117, 0.25);
   --violet: #c678dd;
-  --violet-glow: rgba(198, 120, 221, 0.2);
+  --violet-glow: rgba(198, 120, 221, 0.25);
 }
 
 :root.ember {
   color-scheme: dark;
-  /* Ember - Anti-Blue Light Theme for Late Night Coding */
-  --bg: #1c1917; /* Warm Obsidian Black */
-  --bg2: #292524; /* Deep Taupe */
+  --bg: #1c1917;
+  --bg2: #292524;
   --panel: #292524;
   --panel2: #44403c;
   --input-bg: #1c1917;
 
-  --text: #f5f5f4; /* Warm Ivory */
-  --text-secondary: #d6d3d1;
-  --muted: #a8a29e;
-  --faint: #78716c;
-  --border: rgba(214, 211, 209, 0.12);
+  --text: #fafaf9;
+  --text-secondary: #f5f5f4;
+  --muted: #d6d3d1;
+  --faint: #e7e5e4;
+  --border: rgba(255, 255, 255, 0.18);
 
   --glass-panel-bg: rgba(41, 37, 36, 0.85);
   --glass-modal-bg: rgba(28, 25, 23, 0.95);
   --glass-popover-bg: rgba(68, 64, 60, 0.96);
-  --glass-border: rgba(214, 211, 209, 0.12);
+  --glass-border: rgba(255, 255, 255, 0.18);
   --overlay-bg: rgba(0, 0, 0, 0.7);
 
-  /* Ember Signature Accents (No Blues) */
-  --cyan: #f59e0b; /* Swapped to Amber for buttons */
-  --cyan-glow: rgba(245, 158, 11, 0.2);
-  --emerald: #84cc16; /* Lime Green */
-  --emerald-glow: rgba(132, 204, 22, 0.2);
-  --amber: #f97316; /* Bright Orange */
-  --amber-glow: rgba(249, 115, 22, 0.2);
-  --rose: #ef4444; /* Red */
-  --rose-glow: rgba(239, 68, 68, 0.2);
-  --violet: #eab308; /* Warm Gold instead of violet */
-  --violet-glow: rgba(234, 179, 8, 0.2);
+  --cyan: #f59e0b;
+  --cyan-glow: rgba(245, 158, 11, 0.25);
+  --emerald: #84cc16;
+  --emerald-glow: rgba(132, 204, 22, 0.25);
+  --amber: #f97316;
+  --amber-glow: rgba(249, 115, 22, 0.25);
+  --rose: #ef4444;
+  --rose-glow: rgba(239, 68, 68, 0.25);
+  --violet: #eab308;
+  --violet-glow: rgba(234, 179, 8, 0.25);
 }
 
 html,
@@ -2645,13 +2647,15 @@ details > p {
   align-items: flex-start;
 }
 .mock-head h3 {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
+  color: var(--text);
+  margin: 0;
 }
 .mock-focus {
-  font-size: 12.5px;
-  color: var(--muted);
-  line-height: 1.5;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.55;
 }
 .mock-stats {
   display: flex;
@@ -2661,13 +2665,16 @@ details > p {
 }
 .mock-stats > span {
   font-size: 11.5px;
-  color: var(--faint);
-  background: rgba(255, 255, 255, 0.05);
-  padding: 3px 8px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
+  padding: 4px 9px;
   border-radius: 6px;
 }
 .mock-score {
-  font-size: 11.5px;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--emerald);
 }
 
