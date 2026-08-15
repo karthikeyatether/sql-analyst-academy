@@ -218,47 +218,51 @@ function MockTestView({
               })
               .map((m) => (
                 <article key={m.company} className="mock-card">
-                  <div className="mock-head">
-                    <h3>{m.company}</h3>
-                    <Timer size={17} />
+                  <div className="mock-card-body">
+                    <div className="mock-head">
+                      <h3>{m.company}</h3>
+                      <Timer size={17} />
+                    </div>
+                    <p className="mock-focus">{m.focus}</p>
                   </div>
-                  <p className="mock-focus">{m.focus}</p>
-                  <div className="mock-stats">
-                    <span>{m.minutes} min</span>
-                    <span>{m.questions} Qs</span>
-                    <span
-                      className={`difficulty-pill ${
-                        m.difficulty.includes("Expert")
-                          ? "expert"
-                          : m.difficulty.includes("Advanced")
-                            ? "hard"
-                            : m.difficulty.includes("Intermediate")
-                              ? "medium"
-                              : "easy"
-                      }`}
+                  <div className="mock-card-footer">
+                    <div className="mock-stats">
+                      <span>{m.minutes} min</span>
+                      <span>{m.questions} Qs</span>
+                      <span
+                        className={`difficulty-pill ${
+                          m.difficulty.includes("Expert")
+                            ? "expert"
+                            : m.difficulty.includes("Advanced")
+                              ? "hard"
+                              : m.difficulty.includes("Intermediate")
+                                ? "medium"
+                                : "easy"
+                        }`}
+                      >
+                        {m.difficulty}
+                      </span>
+                    </div>
+                    {progress.mockScores[m.company] !== undefined && (
+                      <p className="mock-score">
+                        Last score: {progress.mockScores[m.company]}% readiness
+                      </p>
+                    )}
+                    <button
+                      className="primary-button compact start-test-btn"
+                      onClick={() =>
+                        startMockTest(
+                          m.company,
+                          m.minutes,
+                          m.difficulty,
+                          m.maxModuleId,
+                          m.questions,
+                        )
+                      }
                     >
-                      {m.difficulty}
-                    </span>
+                      <Timer size={14} /> Start Test
+                    </button>
                   </div>
-                  <button
-                    className="primary-button compact"
-                    onClick={() =>
-                      startMockTest(
-                        m.company,
-                        m.minutes,
-                        m.difficulty,
-                        m.maxModuleId,
-                        m.questions,
-                      )
-                    }
-                  >
-                    <Timer size={14} /> Start Test
-                  </button>
-                  {progress.mockScores[m.company] !== undefined && (
-                    <p className="mock-score">
-                      Last score: {progress.mockScores[m.company]}% readiness
-                    </p>
-                  )}
                 </article>
               ))}
           </div>
