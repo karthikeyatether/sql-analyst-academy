@@ -16,14 +16,6 @@ if errorlevel 1 (
   exit /b 1
 )
 
-echo Synchronizing and building latest application bundle...
-call npm run build
-if errorlevel 1 (
-  echo Build failed! Exiting.
-  pause
-  exit /b 1
-)
-
-echo Starting SQL Analyst Academy...
-start "" "http://127.0.0.1:4173"
-call npm run preview
+echo Starting SQL Analyst Academy (Instant Launch)...
+start "" "http://127.0.0.1:5173"
+call npm run dev
