@@ -44,15 +44,27 @@ export default defineConfig({
     port: 4173,
     host: "127.0.0.1"
   },
+  esbuild: {
+    drop: process.env.NODE_ENV === "production" ? ["console", "debugger"] : [],
+    legalComments: "none",
+  },
   build: {
     chunkSizeWarningLimit: 4000,
     target: "esnext",
     cssCodeSplit: true,
+    cssMinify: true,
+    minify: "esbuild",
+    sourcemap: false,
     reportCompressedSize: false,
+    assetsInlineLimit: 4096,
     modulePreload: {
       polyfill: false,
     },
     rollupOptions: {
+      treeshake: {
+        preset: "recommended",
+        moduleSideEffects: "no-external",
+      },
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
