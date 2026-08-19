@@ -16,6 +16,16 @@ if errorlevel 1 (
   exit /b 1
 )
 
-echo Starting SQL Analyst Academy (Instant Launch)...
-start "" "http://127.0.0.1:5173"
-call npm run dev
+if not exist "dist\index.html" (
+  echo Production bundle not found. Building SQL Analyst Academy...
+  call npm run build
+  if errorlevel 1 (
+    echo Build failed!
+    pause
+    exit /b 1
+  )
+)
+
+echo Starting SQL Analyst Academy Production Server...
+start "" "http://127.0.0.1:4173"
+call npm run preview
