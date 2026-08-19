@@ -1,17 +1,17 @@
 /**
  * precompress.cjs
- * Run after `vite build` to:
- * 1. Inject dynamic precache manifest with all hashed JS/CSS assets into dist/sw.js
- * 2. Pre-compress (Gzip & Brotli) all static assets in dist/.
+ * Blazing-fast multi-threaded asset pre-compression and Service Worker precache injection.
  */
 const fs = require("fs");
 const path = require("path");
 const zlib = require("zlib");
-const os = require("os");
-const { pipeline } = require("stream/promises");
+const util = require("util");
+
+const gzipAsync = util.promisify(zlib.gzip);
+const brotliAsync = util.promisify(zlib.brotliCompress);
 
 const DIST_DIR = path.join(__dirname, "dist");
-const COMPRESSIBLE = new Set([".html", ".js", ".css", ".json", ".svg"]);
+const COMPRESSIBLE = new Set([".html", ".js", ".css", ".json", ".svg", ".wasm"]);
 const MIN_SIZE_BYTES = 256;
 
 function walk(dir) {
@@ -52,38 +52,28 @@ function injectSwPrecacheManifest() {
 }
 
 async function compressFile(filePath) {
-  const origSize = fs.statSync(filePath).size;
-  if (origSize < MIN_SIZE_BYTES) return;
+  const content = fs.readFileSync(filePath);
+  if (content.length < MIN_SIZE_BYTES) return;
 
   const relPath = path.relative(DIST_DIR, filePath);
 
-  // 1. Gzip compression
-  const gzPath = filePath + ".gz";
-  await pipeline(
-    fs.createReadStream(filePath),
-    zlib.createGzip({ level: zlib.constants.Z_BEST_COMPRESSION }),
-    fs.createWriteStream(gzPath)
-  );
-  const gzSize = fs.statSync(gzPath).size;
-
-  // 2. Brotli compression (Quality 6: 100x faster than 11 with 98% compression ratio)
-  const brPath = filePath + ".br";
-  await pipeline(
-    fs.createReadStream(filePath),
-    zlib.createBrotliCompress({
+  const [gzBuf, brBuf] = await Promise.all([
+    gzipAsync(content, { level: 6 }),
+    brotliAsync(content, {
       params: {
-        [zlib.constants.BROTLI_PARAM_QUALITY]: 6,
+        [zlib.constants.BROTLI_PARAM_QUALITY]: 5,
       },
     }),
-    fs.createWriteStream(brPath)
-  );
-  const brSize = fs.statSync(brPath).size;
+  ]);
 
-  const gzPct = Math.round((1 - gzSize / origSize) * 100);
-  const brPct = Math.round((1 - brSize / origSize) * 100);
+  fs.writeFileSync(filePath + ".gz", gzBuf);
+  fs.writeFileSync(filePath + ".br", brBuf);
+
+  const gzPct = Math.round((1 - gzBuf.length / content.length) * 100);
+  const brPct = Math.round((1 - brBuf.length / content.length) * 100);
 
   console.log(
-    `  ✓ ${relPath.padEnd(42)} ${kb(origSize)} → Gz: ${kb(gzSize)} (-${gzPct}%) | Br: ${kb(brSize)} (-${brPct}%)`
+    `  ✓ ${relPath.padEnd(42)} ${kb(content.length)} → Gz: ${kb(gzBuf.length)} (-${gzPct}%) | Br: ${kb(brBuf.length)} (-${brPct}%)`
   );
 }
 
@@ -100,23 +90,19 @@ async function main() {
   injectSwPrecacheManifest();
 
   const allFiles = walk(DIST_DIR);
-  const targets = allFiles.filter(f => {
+  const targets = allFiles.filter((f) => {
     const ext = path.extname(f).toLowerCase();
     return COMPRESSIBLE.has(ext) && !f.endsWith(".gz") && !f.endsWith(".br");
   });
 
-  console.log(`\n⚡ Pre-compressing ${targets.length} assets with Gzip & Brotli...\n`);
+  console.log(`\n⚡ Pre-compressing ${targets.length} assets with Gzip & Brotli in parallel...\n`);
 
-  const concurrency = Math.max(1, os.cpus().length);
-  for (let i = 0; i < targets.length; i += concurrency) {
-    const batch = targets.slice(i, i + concurrency);
-    await Promise.all(batch.map(compressFile));
-  }
+  await Promise.all(targets.map(compressFile));
 
-  console.log("\n✅ Pre-compression & Service Worker precache complete.\n");
+  console.log("\n✅ Lightning pre-compression & Service Worker precache complete.\n");
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error("Pre-compression failed:", err);
   process.exit(1);
 });
