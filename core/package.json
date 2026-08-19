@@ -15,7 +15,8 @@
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "tsc && vite build",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
     "postbuild": "node precompress.cjs",
     "preview": "vite preview --host 127.0.0.1",
     "test": "npx tsx testRunner.ts",
