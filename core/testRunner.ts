@@ -147,8 +147,51 @@ async function runValidation() {
     dbTx.close();
   }
 
-  // 5. System Verification Smoke Tests
-  console.log("\n[5/5] Running System Verification Smoke Tests...");
+  // 5. Unit Test: Sandbox Table Lifecycle & Isolation (Create, Query, Drop, Reset)
+  console.log("\n[5/6] Running Unit Tests: Sandbox Table Lifecycle & Isolation...");
+  const dbSandbox = getFreshDb();
+  try {
+    // A. Create custom sandbox table
+    dbSandbox.exec("CREATE TABLE sandbox_orders (id INT PRIMARY KEY, customer_id INT, amount DECIMAL(10,2), category TEXT);");
+    // B. Insert custom data
+    dbSandbox.exec("INSERT INTO sandbox_orders VALUES (1, 101, 250.50, 'Electronics'), (2, 102, 450.00, 'Apparel'), (3, 101, 120.00, 'Electronics');");
+    // C. Run analytical SQL (CTE + Window function)
+    const res = dbSandbox.exec(`
+      WITH ranked AS (
+        SELECT id, customer_id, amount, category,
+               DENSE_RANK() OVER (PARTITION BY category ORDER BY amount DESC) as rnk
+        FROM sandbox_orders
+      )
+      SELECT id, customer_id, amount, category FROM ranked WHERE rnk = 1 ORDER BY id;
+    `);
+    if (!res || res.length === 0 || res[0].values.length !== 2) {
+      throw new Error(`Expected 2 top ranked rows in sandbox query, got ${res?.[0]?.values?.length || 0}`);
+    }
+    // D. Drop sandbox table
+    dbSandbox.exec("DROP TABLE sandbox_orders;");
+    const checkDropped = dbSandbox.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='sandbox_orders';");
+    if (checkDropped.length > 0 && checkDropped[0].values.length > 0) {
+      throw new Error("DROP TABLE failed: sandbox_orders still exists in database!");
+    }
+    console.log("  ✓ Sandbox table creation, analytical querying, and deletion verified cleanly!");
+    unitPass++;
+  } catch (err: unknown) {
+    unitFail++;
+    failures.push({
+      type: "Unit Test - Sandbox Lifecycle",
+      moduleId: "PLAYGROUND",
+      moduleTitle: "Sandbox Lifecycle",
+      problemId: "sandbox_lifecycle_test",
+      problemTitle: "Sandbox Table Creation, Query & Drop",
+      solution: "CREATE/QUERY/DROP sandbox",
+      error: (err as Error).message
+    });
+  } finally {
+    dbSandbox.close();
+  }
+
+  // 6. System Verification Smoke Tests
+  console.log("\n[6/6] Running System Verification Smoke Tests...");
   try {
     const { datasetDomains, tableSchemas } = await import("./src/data/datasets.ts");
     if (!datasetDomains || datasetDomains.length === 0) throw new Error("Dataset domains missing");
