@@ -1,128 +1,78 @@
-# ⚡ SQL Analyst Academy
+# ⚡ SQL Analyst Academy Core
 
-> **A modern, offline-first SQL learning and technical interview preparation workspace for Data Analysts.**
+> **Core application workspace for SQL Analyst Academy.**
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-18.3-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
-[![SQLite WASM](https://img.shields.io/badge/SQLite-WASM_3.39+-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://sqlite.org/)
-[![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Tests](https://img.shields.io/badge/SQL_Validation-208%2F208_Passing-10B981?style=flat-square)](https://github.com/karthikeyatether/sql-analyst-academy)
-[![CI](https://github.com/karthikeyatether/sql-analyst-academy/actions/workflows/ci.yml/badge.svg)](https://github.com/karthikeyatether/sql-analyst-academy/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![SQLite WASM](https://img.shields.io/badge/SQLite-WASM-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://sql.js.org/)
+[![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vite.dev/)
+[![CI Status](https://img.shields.io/badge/CI-Passing-10B981?style=flat-square&logo=githubactions&logoColor=white)](https://github.com/karthikeyatether/sql-analyst-academy/actions/workflows/ci.yml)
 
 ---
 
-## 🎯 Overview
+## Overview
 
-**SQL Analyst Academy** is an interactive, browser-based SQL mastery platform designed for aspiring and practicing Data Analysts. Running entirely inside your browser via **SQLite compiled to WebAssembly**, it requires zero server setup, zero database installations, and zero API keys.
-
-Practice real-world analytics queries using realistic business datasets modeled after top E-Commerce, FinTech, Quick-Commerce, and Logistics companies.
+This directory contains the primary frontend application and WebAssembly runtime for SQL Analyst Academy. The client is built with React 18, Vite 6, and TypeScript, interfacing with an in-memory SQLite WebAssembly engine executed inside a Web Worker.
 
 ---
 
-## 🚀 Key Features
+## Project Structure
 
-### 📚 38-Day Curriculum · 208 Verified Challenges
-- **142 Practice Problems**: Step-by-step SQL exercises spanning `SELECT`, `WHERE`, `GROUP BY`, `HAVING`, `JOINs`, Subqueries, CTEs, Window Functions (`ROW_NUMBER`, `RANK`, `DENSE_RANK`, `LAG`/`LEAD`), `CASE WHEN`, and Conditional Aggregation.
-- **60 Debug Puzzles**: Real-world buggy queries featuring NULL traps, implicit Cartesian products, window frame misconfigurations, and syntax anti-patterns.
-- **208 Automated Test Checks**: Continuous test runner validating solution queries, CSV parser compliance, transaction rollback, and schema integrity.
-
-### 💡 Progressive 3-Step Hint System
-Every problem in the academy unlocks up to 3 progressive, step-by-step hints:
-1. **Hint 1**: Analytical objective & target table/column overview.
-2. **Hint 2**: Clause-level guidance (`WHERE`, `JOIN`, `GROUP BY`, `HAVING`, Windowing).
-3. **Hint 3**: Query pattern & structural template.
-
-### 🏢 Company Mock Interview Simulators
-Timed interview practice sessions tailored after real Data Analyst technical rounds at **Blinkit**, **Zomato**, **Paytm**, **Swiggy**, **CRED**, **Myntra**, and **Flipkart**.
-
-### ⚙️ In-Browser Execution & Visual Profiler
-- **Monaco SQL Editor**: Full VS Code-style editor experience with auto-formatting, syntax highlighting, and smooth keyboard navigation.
-- **Visual EXPLAIN Query Plans**: Understand query cost, index usage, and scan strategies visually.
-- **Expected Output Comparison**: Compare your query output against target results on demand.
-
----
-
-## 📊 Business Datasets
-
-The platform seeds 9 relational tables into an in-memory SQLite instance on session startup:
-
-| Table | Description | Key Columns |
-| :--- | :--- | :--- |
-| `customers` | Customer profiles & segments | `customer_id`, `city`, `region`, `signup_date`, `segment` |
-| `orders` | Transaction records | `order_id`, `customer_id`, `order_date`, `channel`, `status`, `total_amount` |
-| `order_items` | Line items per order | `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price` |
-| `products` | Product catalog | `product_id`, `product_name`, `category`, `brand`, `list_price`, `cost_price` |
-| `payments` | Audit logs for payments | `payment_id`, `order_id`, `payment_method`, `payment_status`, `amount` |
-| `subscriptions` | SaaS subscription data | `subscription_id`, `customer_id`, `plan_name`, `start_date`, `end_date`, `monthly_fee` |
-
----
-
-## 🛠️ Quick Start & Installation
-
-### Prerequisites
-- **Node.js**: `v18.0.0` or higher
-- **npm**: `v9.0.0` or higher
-
-### 1. Clone Repository
-```bash
-git clone https://github.com/karthikeyatether/sql-analyst-academy.git
-cd sql-analyst-academy
+```text
+core/
+├── e2e/                     # Playwright end-to-end test specifications
+├── public/                  # Static assets, WebAssembly binaries, web manifest
+├── src/
+│   ├── components/          # Reusable UI components (Monaco editor, ERD viewer, modals)
+│   ├── data/                # Curriculum metadata, practice problems, debug puzzles, datasets
+│   ├── hooks/               # Custom React hooks (storage, lifecycle)
+│   ├── types/               # TypeScript interfaces and type definitions
+│   ├── utils/               # SQL parsing, schema analysis, database seeding, test utilities
+│   ├── views/               # Primary platform views (Roadmap, Playground, Mock Tests, Analytics)
+│   ├── workers/             # Dedicated Web Worker for SQLite WASM execution
+│   ├── App.tsx              # Main application shell and routing
+│   ├── main.tsx             # Application bootstrap and service worker registration
+│   └── styles.css           # Global stylesheet and theme tokens
+├── package.json             # Package configuration and dependencies
+├── playwright.config.ts     # Playwright test configuration
+├── precompress.cjs          # Build-time Gzip & Brotli asset pre-compression
+├── testRunner.ts            # Node.js automated SQL validation test runner
+├── tsconfig.json            # TypeScript compiler configuration
+└── vite.config.ts           # Vite build and plugin configuration
 ```
 
-### 2. Install Dependencies
+---
+
+## Development & Build Commands
+
 ```bash
+# Install dependencies
 npm install
-```
 
-### 3. Run Locally
-
-#### Development Mode
-```bash
+# Start development server with Hot Module Replacement (HMR)
 npm run dev
-```
-Launches the Vite dev server with Hot Module Replacement (HMR) at `http://localhost:5173`.
 
-#### Instant Production Server (Windows)
-Double-click `run-locally.bat` or run:
-```bash
-npm run build:fast
-node serve-dist.cjs
-```
-Serves pre-compressed Brotli/Gzip production assets locally at `http://localhost:4173`.
+# Compile TypeScript and bundle production assets
+npm run build
 
----
+# Typecheck codebase without emitting files
+npm run typecheck
 
-## 🧪 Testing & Quality Gates
+# Preview local production distribution
+npm run preview
 
-Run the automated test runner to validate all 208 curriculum problems and system checks:
-
-```bash
+# Run automated SQL curriculum and system test suite
 npm test
+
+# Run ESLint check
+npm run lint
+
+# Check code formatting with Prettier
+npm run format:check
+
+# Format code with Prettier
+npm run format
+
+# Run Playwright E2E browser tests
+npm run test:e2e
 ```
-
-Run code quality audits:
-```bash
-npm run lint         # ESLint check
-npm run format:check # Prettier check
-npm run test:e2e     # Playwright E2E smoke tests
-```
-
----
-
-## 📜 Available Scripts
-
-| Script | Description |
-| :--- | :--- |
-| `npm run dev` | Start development server |
-| `npm run build` | Compile TypeScript & build production distribution |
-| `npm run build:fast` | Build production bundle + pre-compress assets with Gzip & Brotli |
-| `npm test` | Run full SQL solution & system verification test suite |
-| `npm run lint` | Audit code formatting & ESLint rules |
-| `npm run test:e2e` | Run Playwright E2E smoke suite |
-
----
-
-## 📄 License
-
-Distributed under the MIT License. See [`LICENSE`](LICENSE) for more information.
