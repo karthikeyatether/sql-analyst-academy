@@ -15,7 +15,9 @@ export function exportWorkspaceAsJson(): void {
     version: "1.0.0",
     timestamp: new Date().toISOString(),
     progress: JSON.parse(localStorage.getItem("sql-aa-progress") || "{}"),
-    queryHistory: JSON.parse(localStorage.getItem("sql-aa-query-history") || "[]"),
+    queryHistory: JSON.parse(
+      localStorage.getItem("sql-aa-query-history") || "[]",
+    ),
   };
 
   const blob = new Blob([JSON.stringify(snapshot, null, 2)], {
@@ -36,7 +38,10 @@ export function importWorkspaceFromJson(jsonContent: string): boolean {
       localStorage.setItem("sql-aa-progress", JSON.stringify(data.progress));
     }
     if (data.queryHistory) {
-      localStorage.setItem("sql-aa-query-history", JSON.stringify(data.queryHistory));
+      localStorage.setItem(
+        "sql-aa-query-history",
+        JSON.stringify(data.queryHistory),
+      );
     }
     return true;
   } catch {

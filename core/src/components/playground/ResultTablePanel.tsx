@@ -157,7 +157,10 @@ export const ResultTablePanel: React.FC<ResultTablePanelProps> = ({
                     style={{
                       padding: "7px 12px",
                       color: "var(--text)",
-                      fontFamily: typeof row[c] === 'number' ? "var(--font-mono, monospace)" : "inherit",
+                      fontFamily:
+                        typeof row[c] === "number"
+                          ? "var(--font-mono, monospace)"
+                          : "inherit",
                     }}
                   >
                     {row[c] === null ? (

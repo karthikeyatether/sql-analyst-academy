@@ -12,35 +12,67 @@ export interface DialectTranslation {
   notes: string[];
 }
 
-export function translateSqlDialect(sql: string): Record<SqlDialect, DialectTranslation> {
+export function translateSqlDialect(
+  sql: string,
+): Record<SqlDialect, DialectTranslation> {
   const cleanSql = sql.trim();
 
   // PostgreSQL translation
   let pgSql = cleanSql
     .replace(/\bIFNULL\s*\(/gi, "COALESCE(")
-    .replace(/\bstrftime\s*\(\s*['"]%Y['"]\s*,\s*([^)]+)\)/gi, "EXTRACT(YEAR FROM $1)")
-    .replace(/\bstrftime\s*\(\s*['"]%m['"]\s*,\s*([^)]+)\)/gi, "EXTRACT(MONTH FROM $1)")
-    .replace(/\bstrftime\s*\(\s*['"]%Y-%m['"]\s*,\s*([^)]+)\)/gi, "TO_CHAR($1, 'YYYY-MM')");
+    .replace(
+      /\bstrftime\s*\(\s*['"]%Y['"]\s*,\s*([^)]+)\)/gi,
+      "EXTRACT(YEAR FROM $1)",
+    )
+    .replace(
+      /\bstrftime\s*\(\s*['"]%m['"]\s*,\s*([^)]+)\)/gi,
+      "EXTRACT(MONTH FROM $1)",
+    )
+    .replace(
+      /\bstrftime\s*\(\s*['"]%Y-%m['"]\s*,\s*([^)]+)\)/gi,
+      "TO_CHAR($1, 'YYYY-MM')",
+    );
 
   // MySQL translation
   let mysqlSql = cleanSql
     .replace(/\bstrftime\s*\(\s*['"]%Y['"]\s*,\s*([^)]+)\)/gi, "YEAR($1)")
     .replace(/\bstrftime\s*\(\s*['"]%m['"]\s*,\s*([^)]+)\)/gi, "MONTH($1)")
-    .replace(/\bstrftime\s*\(\s*['"]%Y-%m['"]\s*,\s*([^)]+)\)/gi, "DATE_FORMAT($1, '%Y-%m')");
+    .replace(
+      /\bstrftime\s*\(\s*['"]%Y-%m['"]\s*,\s*([^)]+)\)/gi,
+      "DATE_FORMAT($1, '%Y-%m')",
+    );
 
   // Snowflake translation
   let sfSql = cleanSql
     .replace(/\bIFNULL\s*\(/gi, "NVL(")
-    .replace(/\bstrftime\s*\(\s*['"]%Y['"]\s*,\s*([^)]+)\)/gi, "DATE_PART('year', $1)")
-    .replace(/\bstrftime\s*\(\s*['"]%m['"]\s*,\s*([^)]+)\)/gi, "DATE_PART('month', $1)")
-    .replace(/\bstrftime\s*\(\s*['"]%Y-%m['"]\s*,\s*([^)]+)\)/gi, "TO_VARCHAR($1, 'YYYY-MM')");
+    .replace(
+      /\bstrftime\s*\(\s*['"]%Y['"]\s*,\s*([^)]+)\)/gi,
+      "DATE_PART('year', $1)",
+    )
+    .replace(
+      /\bstrftime\s*\(\s*['"]%m['"]\s*,\s*([^)]+)\)/gi,
+      "DATE_PART('month', $1)",
+    )
+    .replace(
+      /\bstrftime\s*\(\s*['"]%Y-%m['"]\s*,\s*([^)]+)\)/gi,
+      "TO_VARCHAR($1, 'YYYY-MM')",
+    );
 
   // BigQuery translation
   let bqSql = cleanSql
     .replace(/\bIFNULL\s*\(/gi, "IFNULL(")
-    .replace(/\bstrftime\s*\(\s*['"]%Y['"]\s*,\s*([^)]+)\)/gi, "EXTRACT(YEAR FROM $1)")
-    .replace(/\bstrftime\s*\(\s*['"]%m['"]\s*,\s*([^)]+)\)/gi, "EXTRACT(MONTH FROM $1)")
-    .replace(/\bstrftime\s*\(\s*['"]%Y-%m['"]\s*,\s*([^)]+)\)/gi, "FORMAT_DATE('%Y-%m', $1)");
+    .replace(
+      /\bstrftime\s*\(\s*['"]%Y['"]\s*,\s*([^)]+)\)/gi,
+      "EXTRACT(YEAR FROM $1)",
+    )
+    .replace(
+      /\bstrftime\s*\(\s*['"]%m['"]\s*,\s*([^)]+)\)/gi,
+      "EXTRACT(MONTH FROM $1)",
+    )
+    .replace(
+      /\bstrftime\s*\(\s*['"]%Y-%m['"]\s*,\s*([^)]+)\)/gi,
+      "FORMAT_DATE('%Y-%m', $1)",
+    );
 
   return {
     postgresql: {

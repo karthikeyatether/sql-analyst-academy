@@ -1,5 +1,11 @@
 import React, { useMemo } from "react";
-import { CheckCircle2, AlertTriangle, XCircle, ArrowRightLeft, Info } from "lucide-react";
+import {
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  ArrowRightLeft,
+  Info,
+} from "lucide-react";
 import { QueryResult } from "../utils/sqlEngine";
 
 interface SqlResultDiffViewerProps {
@@ -29,7 +35,13 @@ export const SqlResultDiffViewer: React.FC<SqlResultDiffViewerProps> = ({
     const extraCols = userCols.filter((c) => !expCols.includes(c));
 
     const stringifyRow = (row: Record<string, unknown>, cols: string[]) => {
-      return cols.map((c) => String(row[c] ?? "NULL").trim().toLowerCase()).join(" | ");
+      return cols
+        .map((c) =>
+          String(row[c] ?? "NULL")
+            .trim()
+            .toLowerCase(),
+        )
+        .join(" | ");
     };
 
     // O(N + M) Multiset frequency map algorithm
@@ -67,7 +79,8 @@ export const SqlResultDiffViewer: React.FC<SqlResultDiffViewerProps> = ({
     const pct = Math.round((matchedCount / totalExp) * 100);
 
     return {
-      status: pct === 100 && missingCols.length === 0 ? "exact_match" : "divergent",
+      status:
+        pct === 100 && missingCols.length === 0 ? "exact_match" : "divergent",
       matchPercentage: pct,
       missingCols,
       extraCols,
@@ -120,7 +133,13 @@ export const SqlResultDiffViewer: React.FC<SqlResultDiffViewerProps> = ({
             <AlertTriangle size={20} style={{ color: "var(--amber)" }} />
           )}
           <div>
-            <div style={{ fontSize: "13px", fontWeight: 800, color: "var(--text)" }}>
+            <div
+              style={{
+                fontSize: "13px",
+                fontWeight: 800,
+                color: "var(--text)",
+              }}
+            >
               {diffAnalysis.status === "exact_match"
                 ? "Perfect Output Match (100%)"
                 : `Result Divergence (${diffAnalysis.matchPercentage}% Row Match)`}
@@ -154,7 +173,8 @@ export const SqlResultDiffViewer: React.FC<SqlResultDiffViewerProps> = ({
       </div>
 
       {/* Column Divergence Alerts */}
-      {((diffAnalysis.missingCols?.length ?? 0) > 0 || (diffAnalysis.extraCols?.length ?? 0) > 0) && (
+      {((diffAnalysis.missingCols?.length ?? 0) > 0 ||
+        (diffAnalysis.extraCols?.length ?? 0) > 0) && (
         <div
           style={{
             padding: "10px 14px",
@@ -167,12 +187,14 @@ export const SqlResultDiffViewer: React.FC<SqlResultDiffViewerProps> = ({
         >
           {(diffAnalysis.missingCols?.length ?? 0) > 0 && (
             <div style={{ color: "var(--rose)", marginBottom: "4px" }}>
-              ⚠️ Missing Expected Columns: <strong>{diffAnalysis.missingCols?.join(", ")}</strong>
+              ⚠️ Missing Expected Columns:{" "}
+              <strong>{diffAnalysis.missingCols?.join(", ")}</strong>
             </div>
           )}
           {(diffAnalysis.extraCols?.length ?? 0) > 0 && (
             <div style={{ color: "var(--amber)" }}>
-              ℹ️ Extra Unrequested Columns: <strong>{diffAnalysis.extraCols?.join(", ")}</strong>
+              ℹ️ Extra Unrequested Columns:{" "}
+              <strong>{diffAnalysis.extraCols?.join(", ")}</strong>
             </div>
           )}
         </div>
@@ -212,7 +234,13 @@ export const SqlResultDiffViewer: React.FC<SqlResultDiffViewerProps> = ({
             YOUR RESULT ({userResult.rows.length} Rows)
           </div>
           <div style={{ flex: 1, overflow: "auto", maxHeight: "300px" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                fontSize: "11px",
+              }}
+            >
               <thead>
                 <tr style={{ background: "var(--panel)" }}>
                   {userResult.columns.map((c) => (
@@ -233,9 +261,15 @@ export const SqlResultDiffViewer: React.FC<SqlResultDiffViewerProps> = ({
               </thead>
               <tbody>
                 {userResult.rows.map((row, ri) => (
-                  <tr key={ri} style={{ borderBottom: "1px solid var(--border)" }}>
+                  <tr
+                    key={ri}
+                    style={{ borderBottom: "1px solid var(--border)" }}
+                  >
                     {userResult.columns.map((c) => (
-                      <td key={c} style={{ padding: "6px 10px", color: "var(--text)" }}>
+                      <td
+                        key={c}
+                        style={{ padding: "6px 10px", color: "var(--text)" }}
+                      >
                         {String(row[c] ?? "NULL")}
                       </td>
                     ))}
@@ -270,7 +304,13 @@ export const SqlResultDiffViewer: React.FC<SqlResultDiffViewerProps> = ({
             EXPECTED TARGET ({expectedResult.rows.length} Rows)
           </div>
           <div style={{ flex: 1, overflow: "auto", maxHeight: "300px" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                fontSize: "11px",
+              }}
+            >
               <thead>
                 <tr style={{ background: "var(--panel)" }}>
                   {expectedResult.columns.map((c) => (
@@ -291,9 +331,15 @@ export const SqlResultDiffViewer: React.FC<SqlResultDiffViewerProps> = ({
               </thead>
               <tbody>
                 {expectedResult.rows.map((row, ri) => (
-                  <tr key={ri} style={{ borderBottom: "1px solid var(--border)" }}>
+                  <tr
+                    key={ri}
+                    style={{ borderBottom: "1px solid var(--border)" }}
+                  >
                     {expectedResult.columns.map((c) => (
-                      <td key={c} style={{ padding: "6px 10px", color: "var(--text)" }}>
+                      <td
+                        key={c}
+                        style={{ padding: "6px 10px", color: "var(--text)" }}
+                      >
                         {String(row[c] ?? "NULL")}
                       </td>
                     ))}

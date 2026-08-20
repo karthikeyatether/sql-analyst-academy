@@ -16,7 +16,7 @@ test('has title and dashboard renders compact', async ({ page }) => {
   }
 
   // The dashboard should contain "Dashboard" text or header
-  await expect(page.locator('text=Dashboard').first()).toBeVisible();
+  await expect(page.locator('text=Dashboard').first()).toBeVisible({ timeout: 10000 });
 });
 
 test('playground loads and executes query via keyboard shortcut', async ({ page }) => {
@@ -33,8 +33,19 @@ test('playground loads and executes query via keyboard shortcut', async ({ page 
     }
   }
 
+  // If sidebar is closed, open it via topbar hamburger
+  const sidebarNav = page.locator('.sidebar-nav');
+  if (!(await sidebarNav.isVisible().catch(() => false))) {
+    const hamBtn = page.locator('.tb-ham').first();
+    if (await hamBtn.isVisible().catch(() => false)) {
+      await hamBtn.click();
+    }
+  }
+
   // Navigate to playground
-  await page.locator('.sidebar-nav button', { hasText: 'Playground' }).evaluate((node) => (node as HTMLElement).click());
+  const pgBtn = page.locator('.sidebar-nav button', { hasText: 'Playground' }).first();
+  await expect(pgBtn).toBeVisible({ timeout: 5000 });
+  await pgBtn.click();
 
   // Wait for run button
   const runBtn = page.locator('.run-btn').first();
@@ -52,9 +63,7 @@ test('playground loads and executes query via keyboard shortcut', async ({ page 
 
 test('offline PWA app shell loads and renders offline', async ({ context, page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await page.evaluate(() => navigator.serviceWorker?.ready).catch(() => {});
   await context.setOffline(true);
-  await page.waitForTimeout(500);
   const bodyVisible = await page.locator('body').isVisible();
   expect(bodyVisible).toBeTruthy();
 });

@@ -88,7 +88,9 @@ import type { QueryResult, QueryPlanStep } from "./utils/sqlEngine";
 import SqlLinterAdvisor from "./components/SqlLinterAdvisor";
 import { lintSqlQuery } from "./utils/sqlLinter";
 import type { LintError } from "./utils/sqlLinter";
-const SqlPerformanceComparer = lazy(() => import("./components/SqlPerformanceComparer"));
+const SqlPerformanceComparer = lazy(
+  () => import("./components/SqlPerformanceComparer"),
+);
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import type {
   QAItem,
@@ -239,10 +241,9 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   /* ── theme ──────────────────────────────────────────────── */
-  const [theme, setTheme] = useLocalStorage<"dark" | "light" | "oled" | "dracula" | "onedark" | "ember">(
-    "sql-aa-theme",
-    "dark",
-  );
+  const [theme, setTheme] = useLocalStorage<
+    "dark" | "light" | "oled" | "dracula" | "onedark" | "ember"
+  >("sql-aa-theme", "dark");
   useEffect(() => {
     const root = document.documentElement;
     root.classList.remove("light", "oled", "dracula", "onedark", "ember");
@@ -2656,7 +2657,7 @@ export default function App() {
 
   // Command palette items
   const commandItems = useMemo<CommandItem[]>(() => {
-    const moduleItems: CommandItem[] = roadmapModules.slice(0, 20).map(m => ({
+    const moduleItems: CommandItem[] = roadmapModules.slice(0, 20).map((m) => ({
       id: `mod-${m.id}`,
       type: "module" as const,
       label: `M${m.id}: ${m.title}`,
@@ -2666,7 +2667,7 @@ export default function App() {
         setActiveView("modules");
       },
     }));
-    const problemItems: CommandItem[] = allProblems.slice(0, 40).map(p => ({
+    const problemItems: CommandItem[] = allProblems.slice(0, 40).map((p) => ({
       id: `prob-${p.id}`,
       type: "problem" as const,
       label: p.title,
@@ -2677,7 +2678,7 @@ export default function App() {
         setActiveView("playground");
       },
     }));
-    const puzzleItems: CommandItem[] = debugPuzzles.slice(0, 15).map(pz => ({
+    const puzzleItems: CommandItem[] = debugPuzzles.slice(0, 15).map((pz) => ({
       id: `puz-${pz.id}`,
       type: "puzzle" as const,
       label: pz.title,
@@ -2689,15 +2690,61 @@ export default function App() {
       },
     }));
     const actionItems: CommandItem[] = [
-      { id: "action-playground", type: "action" as const, label: "Open Freeform Playground", shortcut: "F", action: enterFreeformPlayground },
-      { id: "action-roadmap",    type: "nav"    as const, label: "Go to Learning Roadmap",  shortcut: "R", action: () => setActiveView("roadmap") },
-      { id: "action-practice",  type: "nav"    as const, label: "Go to Practice Problems", shortcut: "P", action: () => setActiveView("practice") },
-      { id: "action-puzzles",   type: "nav"    as const, label: "Go to Debug Puzzles",     shortcut: "D", action: () => setActiveView("puzzles") },
-      { id: "action-mocks",     type: "nav"    as const, label: "Go to Mock Tests",         shortcut: "M", action: () => setActiveView("mocks") },
-      { id: "action-dashboard", type: "nav"    as const, label: "Go to Dashboard",          shortcut: "H", action: () => setActiveView("dashboard") },
+      {
+        id: "action-playground",
+        type: "action" as const,
+        label: "Open Freeform Playground",
+        shortcut: "F",
+        action: enterFreeformPlayground,
+      },
+      {
+        id: "action-roadmap",
+        type: "nav" as const,
+        label: "Go to Learning Roadmap",
+        shortcut: "R",
+        action: () => setActiveView("roadmap"),
+      },
+      {
+        id: "action-practice",
+        type: "nav" as const,
+        label: "Go to Practice Problems",
+        shortcut: "P",
+        action: () => setActiveView("practice"),
+      },
+      {
+        id: "action-puzzles",
+        type: "nav" as const,
+        label: "Go to Debug Puzzles",
+        shortcut: "D",
+        action: () => setActiveView("puzzles"),
+      },
+      {
+        id: "action-mocks",
+        type: "nav" as const,
+        label: "Go to Mock Tests",
+        shortcut: "M",
+        action: () => setActiveView("mocks"),
+      },
+      {
+        id: "action-dashboard",
+        type: "nav" as const,
+        label: "Go to Dashboard",
+        shortcut: "H",
+        action: () => setActiveView("dashboard"),
+      },
     ];
     return [...actionItems, ...moduleItems, ...problemItems, ...puzzleItems];
-  }, [allProblems, roadmapModules, debugPuzzles, setActiveView, setActiveModuleId, setSelectedProblemId, setPlaygroundMode, setActivePuzzleId, enterFreeformPlayground]);
+  }, [
+    allProblems,
+    roadmapModules,
+    debugPuzzles,
+    setActiveView,
+    setActiveModuleId,
+    setSelectedProblemId,
+    setPlaygroundMode,
+    setActivePuzzleId,
+    enterFreeformPlayground,
+  ]);
 
   const [dbReady, setDbReady] = useState(false);
 
@@ -2768,7 +2815,11 @@ export default function App() {
         tag === "INPUT" ||
         tag === "TEXTAREA" ||
         (e.target as HTMLElement).getAttribute("contenteditable") === "true";
-      if ((e.key === "/" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k")) && !typing) {
+      if (
+        (e.key === "/" ||
+          ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k")) &&
+        !typing
+      ) {
         e.preventDefault();
         searchRef.current?.focus();
       }
@@ -4274,614 +4325,623 @@ export default function App() {
         items={commandItems}
       />
       <div className={`app-shell ${sidebarOpen ? "sb-open" : "sb-closed"}`}>
-      {sidebarOpen && (
-        <>
-          <div
-            className="sidebar-backdrop"
-            onClick={() => setSidebarOpen(false)}
-          />
-          {/* ── SIDEBAR ───────────────────────────────────── */}
-          <aside className="sidebar">
+        {sidebarOpen && (
+          <>
             <div
-              className="brand-row"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                width: "100%",
-              }}
-            >
+              className="sidebar-backdrop"
+              onClick={() => setSidebarOpen(false)}
+            />
+            {/* ── SIDEBAR ───────────────────────────────────── */}
+            <aside className="sidebar">
               <div
-                style={{ display: "flex", alignItems: "center", gap: "10px" }}
-              >
-                <div
-                  className="brand-mark"
-                  style={{
-                    background: "rgba(56, 217, 255, 0.12)",
-                    border: "1px solid rgba(56, 217, 255, 0.3)",
-                    borderRadius: "8px",
-                    width: "32px",
-                    height: "32px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "var(--cyan)",
-                  }}
-                >
-                  <Database size={17} />
-                </div>
-                <div>
-                  <strong>SQL</strong>
-                  <span>Academy</span>
-                </div>
-              </div>
-              <button
-                className="icon-button sidebar-toggle-btn"
-                onClick={() => setSidebarOpen((o) => !o)}
-                title="Toggle Sidebar"
-                aria-label="Toggle Sidebar"
+                className="brand-row"
                 style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "var(--text-secondary)",
-                  cursor: "pointer",
-                  padding: "6px",
-                  borderRadius: "6px",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
+                  justifyContent: "space-between",
+                  width: "100%",
                 }}
               >
-                <Menu size={18} />
-              </button>
-            </div>
-
-            <nav
-              className="sidebar-nav"
-              role="tablist"
-              aria-label="Main Navigation"
-              onKeyDown={handleSidebarNavKeyDown}
-            >
-              {navItems.map(({ id, label, icon: Icon }) => (
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
+                >
+                  <div
+                    className="brand-mark"
+                    style={{
+                      background: "rgba(56, 217, 255, 0.12)",
+                      border: "1px solid rgba(56, 217, 255, 0.3)",
+                      borderRadius: "8px",
+                      width: "32px",
+                      height: "32px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "var(--cyan)",
+                    }}
+                  >
+                    <Database size={17} />
+                  </div>
+                  <div>
+                    <strong>SQL</strong>
+                    <span>Academy</span>
+                  </div>
+                </div>
                 <button
-                  key={id}
-                  className={activeView === id ? "active" : ""}
-                  onClick={() => {
-                    if (id === "playground") {
-                      enterFreeformPlayground();
-                    } else if (id === "roadmap" || id === "day-details") {
-                      setSelectedDayId(activeDayWhereLeftOff);
-                      setActiveView(id);
-                    } else {
-                      setActiveView(id);
-                    }
-                    setSidebarOpen(false); // always close sidebar after nav pick
-                  }}
-                  role="tab"
-                  aria-selected={activeView === id}
-                  tabIndex={activeView === id ? 0 : -1}
-                >
-                  <Icon size={17} aria-hidden="true" />
-                  <span>{label}</span>
-                </button>
-              ))}
-            </nav>
-
-            <div className="sidebar-footer">
-              <div
-                className="sidebar-user-xp"
-                style={{
-                  padding: "10px 12px",
-                  background: "rgba(255,255,255,0.02)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "6px",
-                  marginBottom: "10px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                }}
-              >
-                <div
+                  className="icon-button sidebar-toggle-btn"
+                  onClick={() => setSidebarOpen((o) => !o)}
+                  title="Toggle Sidebar"
+                  aria-label="Toggle Sidebar"
                   style={{
-                    width: "28px",
-                    height: "28px",
-                    background: "rgba(56, 217, 255, 0.1)",
-                    border: "1px solid rgba(56, 217, 255, 0.2)",
-                    borderRadius: "50%",
+                    background: "transparent",
+                    border: "none",
+                    color: "var(--text-secondary)",
+                    cursor: "pointer",
+                    padding: "6px",
+                    borderRadius: "6px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    color: "var(--cyan)",
                   }}
                 >
-                  L{currentLevel}
-                </div>
+                  <Menu size={18} />
+                </button>
+              </div>
+
+              <nav
+                className="sidebar-nav"
+                role="tablist"
+                aria-label="Main Navigation"
+                onKeyDown={handleSidebarNavKeyDown}
+              >
+                {navItems.map(({ id, label, icon: Icon }) => (
+                  <button
+                    key={id}
+                    className={activeView === id ? "active" : ""}
+                    onClick={() => {
+                      if (id === "playground") {
+                        enterFreeformPlayground();
+                      } else if (id === "roadmap" || id === "day-details") {
+                        setSelectedDayId(activeDayWhereLeftOff);
+                        setActiveView(id);
+                      } else {
+                        setActiveView(id);
+                      }
+                      setSidebarOpen(false); // always close sidebar after nav pick
+                    }}
+                    role="tab"
+                    aria-selected={activeView === id}
+                    tabIndex={activeView === id ? 0 : -1}
+                  >
+                    <Icon size={17} aria-hidden="true" />
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </nav>
+
+              <div className="sidebar-footer">
                 <div
-                  style={{ display: "flex", flexDirection: "column", flex: 1 }}
+                  className="sidebar-user-xp"
+                  style={{
+                    padding: "10px 12px",
+                    background: "rgba(255,255,255,0.02)",
+                    border: "1px solid var(--border)",
+                    borderRadius: "6px",
+                    marginBottom: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                  }}
                 >
                   <div
                     style={{
+                      width: "28px",
+                      height: "28px",
+                      background: "rgba(56, 217, 255, 0.1)",
+                      border: "1px solid rgba(56, 217, 255, 0.2)",
+                      borderRadius: "50%",
                       display: "flex",
-                      justifyContent: "space-between",
-                      fontSize: "10px",
-                      color: "var(--text-secondary)",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      color: "var(--cyan)",
                     }}
                   >
-                    <span>SQL Apprentice</span>
-                    <span>{totalXP} XP</span>
+                    L{currentLevel}
                   </div>
                   <div
                     style={{
-                      height: "4px",
-                      background: "var(--border)",
-                      borderRadius: "2px",
-                      overflow: "hidden",
-                      marginTop: "4px",
+                      display: "flex",
+                      flexDirection: "column",
+                      flex: 1,
                     }}
                   >
                     <div
                       style={{
-                        width: `${xpProgressPercent}%`,
-                        height: "100%",
-                        background: "var(--cyan)",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        fontSize: "10px",
+                        color: "var(--text-secondary)",
                       }}
-                    />
+                    >
+                      <span>SQL Apprentice</span>
+                      <span>{totalXP} XP</span>
+                    </div>
+                    <div
+                      style={{
+                        height: "4px",
+                        background: "var(--border)",
+                        borderRadius: "2px",
+                        overflow: "hidden",
+                        marginTop: "4px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${xpProgressPercent}%`,
+                          height: "100%",
+                          background: "var(--cyan)",
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="readiness-card">
+                  <div className="rc-top">
+                    <span>Interview Readiness</span>
+                    <strong>{readiness}%</strong>
+                  </div>
+                  <div className="progress-track">
+                    <span style={{ width: `${readiness}%` }} />
+                  </div>
+                  <div className="rc-sub">
+                    <span>
+                      {progress.completedModules.length}/{totalModules} modules
+                    </span>
+                    <span>
+                      {progress.solvedProblems.length}/{totalProblems} problems
+                    </span>
                   </div>
                 </div>
               </div>
+            </aside>
+          </>
+        )}
 
-              <div className="readiness-card">
-                <div className="rc-top">
-                  <span>Interview Readiness</span>
-                  <strong>{readiness}%</strong>
-                </div>
-                <div className="progress-track">
-                  <span style={{ width: `${readiness}%` }} />
-                </div>
-                <div className="rc-sub">
-                  <span>
-                    {progress.completedModules.length}/{totalModules} modules
-                  </span>
-                  <span>
-                    {progress.solvedProblems.length}/{totalProblems} problems
-                  </span>
-                </div>
+        {/* ── MAIN ─────────────────────────────────────── */}
+        <main className="main-shell">
+          {/* topbar */}
+          <header className="topbar">
+            <button
+              className="icon-button tb-ham"
+              onClick={() => setSidebarOpen((o) => !o)}
+            >
+              {sidebarOpen ? <X size={17} /> : <Menu size={17} />}
+            </button>
+
+            <div className="topbar-search">
+              <div
+                className="search-shell"
+                onClick={() => searchRef.current?.focus()}
+              >
+                <Search size={14} />
+                <input
+                  ref={searchRef}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search modules, problems…"
+                />
+                <kbd className="search-kbd-shortcut">Ctrl+K</kbd>
+                {filteredSearch.length > 0 && (
+                  <div className="search-popover">
+                    {filteredSearch.map((item) => (
+                      <button
+                        key={`${item.type}-${item.id}`}
+                        onClick={() => handleSearchPick(item)}
+                      >
+                        <span>{item.type}</span>
+                        <strong>{item.label}</strong>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
-          </aside>
-        </>
-      )}
 
-      {/* ── MAIN ─────────────────────────────────────── */}
-      <main className="main-shell">
-        {/* topbar */}
-        <header className="topbar">
-          <button
-            className="icon-button tb-ham"
-            onClick={() => setSidebarOpen((o) => !o)}
-          >
-            {sidebarOpen ? <X size={17} /> : <Menu size={17} />}
-          </button>
-
-          <div className="topbar-search">
-            <div className="search-shell" onClick={() => searchRef.current?.focus()}>
-              <Search size={14} />
-              <input
-                ref={searchRef}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search modules, problems…"
+            <div className="topbar-right">
+              <GamifiedHud
+                solvedProblems={progress.solvedProblems}
+                solvedPuzzles={progress.solvedPuzzles}
+                streak={streak}
+                queryRuns={progress.queryRuns}
+                minutesStudied={progress.minutesStudied}
               />
-              <kbd className="search-kbd-shortcut">Ctrl+K</kbd>
-              {filteredSearch.length > 0 && (
-                <div className="search-popover">
-                  {filteredSearch.map((item) => (
-                    <button
-                      key={`${item.type}-${item.id}`}
-                      onClick={() => handleSearchPick(item)}
-                    >
-                      <span>{item.type}</span>
-                      <strong>{item.label}</strong>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="topbar-right">
-            <GamifiedHud
-              solvedProblems={progress.solvedProblems}
-              solvedPuzzles={progress.solvedPuzzles}
-              streak={streak}
-              queryRuns={progress.queryRuns}
-              minutesStudied={progress.minutesStudied}
-            />
-            <button
-              className={`icon-button theme-toggle-btn ${theme}`}
-              onClick={() =>
-                setTheme((t) => {
-                  if (t === "dark") return "light";
-                  if (t === "light") return "oled";
-                  if (t === "oled") return "dracula";
-                  if (t === "dracula") return "onedark";
-                  if (t === "onedark") return "ember";
-                  return "dark"; // fallback to dark
-                })
-              }
-              title={`Theme: ${theme}. Click to switch theme.`}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-              aria-label="Toggle visual theme"
-            >
-              {theme === "light" && <Sun size={16} style={{ color: "var(--amber)" }} />}
-              {theme === "oled" && (
-                <Zap size={16} style={{ color: "var(--violet)" }} />
-              )}
-              {theme === "dracula" && (
-                <Palette size={16} style={{ color: "var(--rose)" }} />
-              )}
-              {theme === "onedark" && (
-                <Code2 size={16} style={{ color: "var(--cyan)" }} />
-              )}
-              {theme === "ember" && (
-                <Flame size={16} style={{ color: "var(--amber)" }} />
-              )}
-              {!["light", "oled", "dracula", "onedark", "ember"].includes(theme) && (
-                <Moon size={16} style={{ color: "var(--cyan)" }} />
-              )}
-            </button>
-            <span title="Readiness">
-              <Target size={14} />
-              {readiness}%
-            </span>
-          </div>
-        </header>
-
-        {/* content */}
-        <div
-          className={`page-content ${
-            [
-              "dashboard",
-              "roadmap",
-              "mocks",
-              "mock-results",
-              "day-details",
-              "join-visualizer",
-            ].includes(activeView)
-              ? "scrollable-y"
-              : ""
-          }`}
-          style={{
-            flex: 1,
-            overflow: "auto",
-            position: "relative",
-          }}
-          id="main-scroll-container"
-        >
-          <Suspense
-            fallback={
-              <div
+              <button
+                className={`icon-button theme-toggle-btn ${theme}`}
+                onClick={() =>
+                  setTheme((t) => {
+                    if (t === "dark") return "light";
+                    if (t === "light") return "oled";
+                    if (t === "oled") return "dracula";
+                    if (t === "dracula") return "onedark";
+                    if (t === "onedark") return "ember";
+                    return "dark"; // fallback to dark
+                  })
+                }
+                title={`Theme: ${theme}. Click to switch theme.`}
                 style={{
-                  display: "flex",
+                  display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  height: "100%",
-                  width: "100%",
-                  flexDirection: "column",
-                  gap: "1rem",
-                  color: "var(--muted)",
                 }}
+                aria-label="Toggle visual theme"
               >
-                <div className="spinner"></div>
-                <p>Loading module...</p>
-              </div>
-            }
-          >
-            {activeView === "dashboard" && (
-              <DashboardView
-                progress={progress}
-                learningRoadmap={learningRoadmap}
-                roadmapModules={roadmapModules}
-                debugPuzzles={debugPuzzles}
-                streak={streak}
-                setActiveView={setActiveView}
-                setSelectedDayId={setSelectedDayId}
-                readiness={readiness}
-                totalModules={totalModules}
-                totalProblems={totalProblems}
-                totalXP={totalXP}
-                currentLevel={currentLevel}
-                xpProgressPercent={xpProgressPercent}
-                xpRemaining={xpRemaining}
-                earnedBadges={earnedBadges}
-                qaItems={qaItems}
-                enterFreeformPlayground={enterFreeformPlayground}
-                selectModule={selectModule}
-                updateEditorQuery={updateEditorQuery}
-                toggleChecklistItem={toggleChecklistItem}
-                next={next}
-              />
-            )}
-            {activeView === "roadmap" && (
-              <RoadmapView
-                progress={progress}
-                learningRoadmap={learningRoadmap}
-                roadmapModules={roadmapModules}
-                setSelectedDayId={setSelectedDayId}
-                setActiveView={setActiveView}
-                toggleDayComplete={toggleDayComplete}
-                selectModule={selectModule}
-                openInPlayground={openInPlayground}
-                debugPuzzles={debugPuzzles}
-                setActivePuzzleId={setActivePuzzleId}
-                setPlaygroundMode={setPlaygroundMode}
-                getSavedPuzzleQuery={getSavedPuzzleQuery}
-                updateEditorQuery={updateEditorQuery}
-                stopAutoTyping={stopAutoTyping}
-              />
-            )}
-            {activeView === "modules" && (
-              <ModulesView
-                activeModule={activeModule}
-                roadmapModules={roadmapModules}
-                progress={progress}
-                selectModule={selectModule}
-                setActiveView={setActiveView}
-                openInPlayground={openInPlayground}
-                markModuleDone={markModuleDone}
-                markProblemSolved={markProblemSolved}
-                updateEditorQuery={updateEditorQuery}
-                copyToClipboard={copyToClipboard}
-                classForDiff={classForDiff}
-              />
-            )}
-            {activeView === "practice" && (
-              <PracticeView
-                progress={progress}
-                activeModuleId={activeModuleId}
-                roadmapModules={roadmapModules}
-                selectedProblem={selectedProblem}
-                selectProblem={selectProblem}
-                openInPlayground={openInPlayground}
-                markProblemSolved={markProblemSolved}
-                updateEditorQuery={updateEditorQuery}
-                copyToClipboard={copyToClipboard}
-                classForDiff={classForDiff}
-                selectModule={selectModule}
-                setActiveView={setActiveView}
-                setPlaygroundMode={setPlaygroundMode}
-              />
-            )}
-            {activeView === "playground" && (
-              <PlaygroundView
-                progress={progress}
-                selectedProblem={selectedProblem}
-                playgroundMode={playgroundMode}
-                setPlaygroundMode={setPlaygroundMode}
-                roadmapModules={roadmapModules}
-                tableSchemas={tableSchemas}
-                datasetDomains={datasetDomains}
-                rowLimit={rowLimit}
-                setRowLimit={setRowLimit}
-                sqlUpperKeywords={sqlUpperKeywords}
-                setSqlUpperKeywords={setSqlUpperKeywords}
-                editorFontSize={editorFontSize}
-                setEditorFontSize={setEditorFontSize}
-                editorWordWrap={editorWordWrap}
-                setEditorWordWrap={setEditorWordWrap}
-                editorMinimap={editorMinimap}
-                setEditorMinimap={setEditorMinimap}
-                editorFontFamily={editorFontFamily}
-                setEditorFontFamily={setEditorFontFamily}
-                editorTabSize={editorTabSize}
-                setEditorTabSize={setEditorTabSize}
-                editorTheme={editorTheme}
-                setEditorTheme={setEditorTheme}
-                theme={theme}
-                rightOpen={rightOpen}
-                setRightOpen={setRightOpen}
-                query={query}
-                setQuery={setQuery}
-                queryResult={queryResult}
-                setQueryResult={setQueryResult}
-                expectedResult={expectedResult}
-                setExpectedResult={setExpectedResult}
-                graderFeedback={graderFeedback}
-                setGraderFeedback={setGraderFeedback}
-                runCurrentQuery={runCurrentQuery}
-                copyToClipboard={copyToClipboard}
-                openInPlayground={openInPlayground}
-                markProblemSolved={markProblemSolved}
-                handleRightNavKeyDown={handleRightNavKeyDown}
-                classForDiff={classForDiff}
-                editorRef={editorRef}
-                queryRef={queryRef}
-                handleBeforeMount={handleBeforeMount}
-                handleMount={handleMount}
-                handleEditorChange={handleEditorChange}
-                dbReady={dbReady}
-                streak={streak}
-                showToast={showToast}
-                liveSchema={liveSchema}
-                setLiveSchema={setLiveSchema}
-                savedQueries={savedQueries}
-                setSavedQueries={setSavedQueries}
-                showConfirm={showConfirm}
-                showPrompt={showPrompt}
-                graderStrict={graderStrict}
-                setGraderStrict={setGraderStrict}
-                activePuzzle={activePuzzle}
-                setActivePuzzleId={setActivePuzzleId}
-                debugPuzzles={debugPuzzles}
-                getSavedPuzzleQuery={getSavedPuzzleQuery}
-                getSavedDraftQuery={getSavedDraftQuery}
-                updateEditorQuery={updateEditorQuery}
-                stopAutoTyping={stopAutoTyping}
-                allProblems={allProblems}
-                monacoRef={monacoRef}
-                insertTextAtCursor={insertTextAtCursor}
-                lintErrors={lintErrors}
-                isAutoTyping={isAutoTyping}
-                autoTypeQuery={autoTypeQuery}
-                queryHistory={queryHistory}
-                setQueryHistory={setQueryHistory}
-                setSelectedDayId={setSelectedDayId}
-                setActiveView={setActiveView}
-                learningRoadmap={learningRoadmap}
-                readiness={readiness}
-                totalModules={totalModules}
-                totalProblems={totalProblems}
-              />
-            )}
-            {activeView === "puzzles" && (
-              <PuzzlesView
-                progress={progress}
-                debugPuzzles={debugPuzzles}
-                activePuzzle={activePuzzle}
-                setActivePuzzleId={setActivePuzzleId}
-                openPuzzleInPlayground={openPuzzleInPlayground}
-                markPuzzleSolved={markPuzzleSolved}
-                updateEditorQuery={updateEditorQuery}
-                setActiveView={setActiveView}
-                setPlaygroundMode={setPlaygroundMode}
-                classForDiff={classForDiff}
-              />
-            )}
-            {(activeView === "mocks" ||
-              activeView === "mock-runner" ||
-              activeView === "mock-results") && (
-              <MockTestView
-                activeView={activeView}
-                setActiveView={setActiveView}
-                progress={progress}
-                mockInterviews={mockInterviews}
-                mockHistory={mockHistory}
-                interviewQuestionBank={interviewQuestionBank}
-                mockTest={mockTest}
-                setMockTest={setMockTest}
-                mockReviewIndex={mockReviewIndex}
-                setMockReviewIndex={setMockReviewIndex}
-                startMockTest={startMockTest}
-                submitMockAnswer={submitMockAnswer}
-                runCurrentQuery={runCurrentQuery}
-                queryRef={queryRef}
-                queryResult={queryResult}
-                resultPage={resultPage}
-                setResultPage={setResultPage}
-                RESULT_PAGE_SIZE={15}
-                updateEditorQuery={updateEditorQuery}
-                editorTheme={editorTheme}
-                theme={theme}
-                query={query}
-                handleBeforeMount={handleBeforeMount}
-                handleMount={handleMount}
-                handleEditorChange={handleEditorChange}
-                editorMinimap={editorMinimap}
-                editorFontSize={editorFontSize}
-                editorFontFamily={editorFontFamily}
-                editorTabSize={editorTabSize}
-                editorWordWrap={editorWordWrap}
-              />
-            )}
-            {activeView === "day-details" && (
-              <DayDetailsView
-                selectedDayId={selectedDayId}
-                progress={progress}
-                learningRoadmap={learningRoadmap}
-                roadmapModules={roadmapModules}
-                debugPuzzles={debugPuzzles}
-                setActiveView={setActiveView}
-                setSelectedDayId={setSelectedDayId}
-                toggleDayComplete={toggleDayComplete}
-                toggleChecklistItem={toggleChecklistItem}
-                selectModule={selectModule}
-                openInPlayground={openInPlayground}
-                markProblemSolved={markProblemSolved}
-                markPuzzleSolved={markPuzzleSolved}
-                setActivePuzzleId={setActivePuzzleId}
-                setPlaygroundMode={setPlaygroundMode}
-                getSavedPuzzleQuery={getSavedPuzzleQuery}
-                updateEditorQuery={updateEditorQuery}
-                stopAutoTyping={stopAutoTyping}
-                setQueryResult={setQueryResult}
-                setExpectedResult={setExpectedResult}
-              />
-            )}
-            {activeView === "missions" && (
-              <MissionCapstoneView
-                onOpenStepInPlayground={(sql: string) => {
-                  updateEditorQuery(sql, "free");
-                  setActiveView("playground");
-                }}
-                onBackToRoadmap={() => setActiveView("roadmap")}
-              />
-            )}
-          </Suspense>
-        </div>
-      </main>
+                {theme === "light" && (
+                  <Sun size={16} style={{ color: "var(--amber)" }} />
+                )}
+                {theme === "oled" && (
+                  <Zap size={16} style={{ color: "var(--violet)" }} />
+                )}
+                {theme === "dracula" && (
+                  <Palette size={16} style={{ color: "var(--rose)" }} />
+                )}
+                {theme === "onedark" && (
+                  <Code2 size={16} style={{ color: "var(--cyan)" }} />
+                )}
+                {theme === "ember" && (
+                  <Flame size={16} style={{ color: "var(--amber)" }} />
+                )}
+                {!["light", "oled", "dracula", "onedark", "ember"].includes(
+                  theme,
+                ) && <Moon size={16} style={{ color: "var(--cyan)" }} />}
+              </button>
+              <span title="Readiness">
+                <Target size={14} />
+                {readiness}%
+              </span>
+            </div>
+          </header>
 
-      {showOnboarding && (
-        <OnboardingModal
-          roadmapLength={learningRoadmap.length}
-          onClose={completeOnboarding}
-        />
-      )}
-      {showShortcuts && (
-        <ShortcutsModal onClose={() => setShowShortcuts(false)} />
-      )}
-      {activeColumnProfile && (
-        <ColumnProfileModal
-          profile={activeColumnProfile}
-          onClose={() => setActiveColumnProfile(null)}
-        />
-      )}
-      {customConfirmOpen && renderCustomConfirmModal()}
-      {customPromptOpen && renderCustomPromptModal()}
-      {toast && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "24px",
-            right: "24px",
-            zIndex: 9999,
-            background:
-              toast.type === "error"
-                ? "rgba(239, 68, 68, 0.95)"
-                : toast.type === "success"
-                  ? "rgba(16, 185, 129, 0.95)"
-                  : "rgba(31, 41, 55, 0.95)",
-            color: "#fff",
-            padding: "12px 24px",
-            borderRadius: "8px",
-            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            fontSize: "13px",
-            fontWeight: 500,
-            border:
-              toast.type === "error"
-                ? "1px solid rgba(239, 68, 68, 0.5)"
-                : toast.type === "success"
-                  ? "1px solid rgba(16, 185, 129, 0.5)"
-                  : "1px solid rgba(255, 255, 255, 0.1)",
-            backdropFilter: "blur(8px)",
-            animation: "slideIn 0.2s ease-out forwards",
-          }}
-        >
-          {toast.type === "success" && <CheckCircle2 size={16} />}
-          {toast.type === "error" && <AlertTriangle size={16} />}
-          {toast.type === "info" && <Lightbulb size={16} />}
-          <span>{toast.message}</span>
-        </div>
-      )}
-    </div>
+          {/* content */}
+          <div
+            className={`page-content ${
+              [
+                "dashboard",
+                "roadmap",
+                "mocks",
+                "mock-results",
+                "day-details",
+                "join-visualizer",
+              ].includes(activeView)
+                ? "scrollable-y"
+                : ""
+            }`}
+            style={{
+              flex: 1,
+              overflow: "auto",
+              position: "relative",
+            }}
+            id="main-scroll-container"
+          >
+            <Suspense
+              fallback={
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: "100%",
+                    width: "100%",
+                    flexDirection: "column",
+                    gap: "1rem",
+                    color: "var(--muted)",
+                  }}
+                >
+                  <div className="spinner"></div>
+                  <p>Loading module...</p>
+                </div>
+              }
+            >
+              {activeView === "dashboard" && (
+                <DashboardView
+                  progress={progress}
+                  learningRoadmap={learningRoadmap}
+                  roadmapModules={roadmapModules}
+                  debugPuzzles={debugPuzzles}
+                  streak={streak}
+                  setActiveView={setActiveView}
+                  setSelectedDayId={setSelectedDayId}
+                  readiness={readiness}
+                  totalModules={totalModules}
+                  totalProblems={totalProblems}
+                  totalXP={totalXP}
+                  currentLevel={currentLevel}
+                  xpProgressPercent={xpProgressPercent}
+                  xpRemaining={xpRemaining}
+                  earnedBadges={earnedBadges}
+                  qaItems={qaItems}
+                  enterFreeformPlayground={enterFreeformPlayground}
+                  selectModule={selectModule}
+                  updateEditorQuery={updateEditorQuery}
+                  toggleChecklistItem={toggleChecklistItem}
+                  next={next}
+                />
+              )}
+              {activeView === "roadmap" && (
+                <RoadmapView
+                  progress={progress}
+                  learningRoadmap={learningRoadmap}
+                  roadmapModules={roadmapModules}
+                  setSelectedDayId={setSelectedDayId}
+                  setActiveView={setActiveView}
+                  toggleDayComplete={toggleDayComplete}
+                  selectModule={selectModule}
+                  openInPlayground={openInPlayground}
+                  debugPuzzles={debugPuzzles}
+                  setActivePuzzleId={setActivePuzzleId}
+                  setPlaygroundMode={setPlaygroundMode}
+                  getSavedPuzzleQuery={getSavedPuzzleQuery}
+                  updateEditorQuery={updateEditorQuery}
+                  stopAutoTyping={stopAutoTyping}
+                />
+              )}
+              {activeView === "modules" && (
+                <ModulesView
+                  activeModule={activeModule}
+                  roadmapModules={roadmapModules}
+                  progress={progress}
+                  selectModule={selectModule}
+                  setActiveView={setActiveView}
+                  openInPlayground={openInPlayground}
+                  markModuleDone={markModuleDone}
+                  markProblemSolved={markProblemSolved}
+                  updateEditorQuery={updateEditorQuery}
+                  copyToClipboard={copyToClipboard}
+                  classForDiff={classForDiff}
+                />
+              )}
+              {activeView === "practice" && (
+                <PracticeView
+                  progress={progress}
+                  activeModuleId={activeModuleId}
+                  roadmapModules={roadmapModules}
+                  selectedProblem={selectedProblem}
+                  selectProblem={selectProblem}
+                  openInPlayground={openInPlayground}
+                  markProblemSolved={markProblemSolved}
+                  updateEditorQuery={updateEditorQuery}
+                  copyToClipboard={copyToClipboard}
+                  classForDiff={classForDiff}
+                  selectModule={selectModule}
+                  setActiveView={setActiveView}
+                  setPlaygroundMode={setPlaygroundMode}
+                />
+              )}
+              {activeView === "playground" && (
+                <PlaygroundView
+                  progress={progress}
+                  selectedProblem={selectedProblem}
+                  playgroundMode={playgroundMode}
+                  setPlaygroundMode={setPlaygroundMode}
+                  roadmapModules={roadmapModules}
+                  tableSchemas={tableSchemas}
+                  datasetDomains={datasetDomains}
+                  rowLimit={rowLimit}
+                  setRowLimit={setRowLimit}
+                  sqlUpperKeywords={sqlUpperKeywords}
+                  setSqlUpperKeywords={setSqlUpperKeywords}
+                  editorFontSize={editorFontSize}
+                  setEditorFontSize={setEditorFontSize}
+                  editorWordWrap={editorWordWrap}
+                  setEditorWordWrap={setEditorWordWrap}
+                  editorMinimap={editorMinimap}
+                  setEditorMinimap={setEditorMinimap}
+                  editorFontFamily={editorFontFamily}
+                  setEditorFontFamily={setEditorFontFamily}
+                  editorTabSize={editorTabSize}
+                  setEditorTabSize={setEditorTabSize}
+                  editorTheme={editorTheme}
+                  setEditorTheme={setEditorTheme}
+                  theme={theme}
+                  rightOpen={rightOpen}
+                  setRightOpen={setRightOpen}
+                  query={query}
+                  setQuery={setQuery}
+                  queryResult={queryResult}
+                  setQueryResult={setQueryResult}
+                  expectedResult={expectedResult}
+                  setExpectedResult={setExpectedResult}
+                  graderFeedback={graderFeedback}
+                  setGraderFeedback={setGraderFeedback}
+                  runCurrentQuery={runCurrentQuery}
+                  copyToClipboard={copyToClipboard}
+                  openInPlayground={openInPlayground}
+                  markProblemSolved={markProblemSolved}
+                  handleRightNavKeyDown={handleRightNavKeyDown}
+                  classForDiff={classForDiff}
+                  editorRef={editorRef}
+                  queryRef={queryRef}
+                  handleBeforeMount={handleBeforeMount}
+                  handleMount={handleMount}
+                  handleEditorChange={handleEditorChange}
+                  dbReady={dbReady}
+                  streak={streak}
+                  showToast={showToast}
+                  liveSchema={liveSchema}
+                  setLiveSchema={setLiveSchema}
+                  savedQueries={savedQueries}
+                  setSavedQueries={setSavedQueries}
+                  showConfirm={showConfirm}
+                  showPrompt={showPrompt}
+                  graderStrict={graderStrict}
+                  setGraderStrict={setGraderStrict}
+                  activePuzzle={activePuzzle}
+                  setActivePuzzleId={setActivePuzzleId}
+                  debugPuzzles={debugPuzzles}
+                  getSavedPuzzleQuery={getSavedPuzzleQuery}
+                  getSavedDraftQuery={getSavedDraftQuery}
+                  updateEditorQuery={updateEditorQuery}
+                  stopAutoTyping={stopAutoTyping}
+                  allProblems={allProblems}
+                  monacoRef={monacoRef}
+                  insertTextAtCursor={insertTextAtCursor}
+                  lintErrors={lintErrors}
+                  isAutoTyping={isAutoTyping}
+                  autoTypeQuery={autoTypeQuery}
+                  queryHistory={queryHistory}
+                  setQueryHistory={setQueryHistory}
+                  setSelectedDayId={setSelectedDayId}
+                  setActiveView={setActiveView}
+                  learningRoadmap={learningRoadmap}
+                  readiness={readiness}
+                  totalModules={totalModules}
+                  totalProblems={totalProblems}
+                />
+              )}
+              {activeView === "puzzles" && (
+                <PuzzlesView
+                  progress={progress}
+                  debugPuzzles={debugPuzzles}
+                  activePuzzle={activePuzzle}
+                  setActivePuzzleId={setActivePuzzleId}
+                  openPuzzleInPlayground={openPuzzleInPlayground}
+                  markPuzzleSolved={markPuzzleSolved}
+                  updateEditorQuery={updateEditorQuery}
+                  setActiveView={setActiveView}
+                  setPlaygroundMode={setPlaygroundMode}
+                  classForDiff={classForDiff}
+                />
+              )}
+              {(activeView === "mocks" ||
+                activeView === "mock-runner" ||
+                activeView === "mock-results") && (
+                <MockTestView
+                  activeView={activeView}
+                  setActiveView={setActiveView}
+                  progress={progress}
+                  mockInterviews={mockInterviews}
+                  mockHistory={mockHistory}
+                  interviewQuestionBank={interviewQuestionBank}
+                  mockTest={mockTest}
+                  setMockTest={setMockTest}
+                  mockReviewIndex={mockReviewIndex}
+                  setMockReviewIndex={setMockReviewIndex}
+                  startMockTest={startMockTest}
+                  submitMockAnswer={submitMockAnswer}
+                  runCurrentQuery={runCurrentQuery}
+                  queryRef={queryRef}
+                  queryResult={queryResult}
+                  resultPage={resultPage}
+                  setResultPage={setResultPage}
+                  RESULT_PAGE_SIZE={15}
+                  updateEditorQuery={updateEditorQuery}
+                  editorTheme={editorTheme}
+                  theme={theme}
+                  query={query}
+                  handleBeforeMount={handleBeforeMount}
+                  handleMount={handleMount}
+                  handleEditorChange={handleEditorChange}
+                  editorMinimap={editorMinimap}
+                  editorFontSize={editorFontSize}
+                  editorFontFamily={editorFontFamily}
+                  editorTabSize={editorTabSize}
+                  editorWordWrap={editorWordWrap}
+                />
+              )}
+              {activeView === "day-details" && (
+                <DayDetailsView
+                  selectedDayId={selectedDayId}
+                  progress={progress}
+                  learningRoadmap={learningRoadmap}
+                  roadmapModules={roadmapModules}
+                  debugPuzzles={debugPuzzles}
+                  setActiveView={setActiveView}
+                  setSelectedDayId={setSelectedDayId}
+                  toggleDayComplete={toggleDayComplete}
+                  toggleChecklistItem={toggleChecklistItem}
+                  selectModule={selectModule}
+                  openInPlayground={openInPlayground}
+                  markProblemSolved={markProblemSolved}
+                  markPuzzleSolved={markPuzzleSolved}
+                  setActivePuzzleId={setActivePuzzleId}
+                  setPlaygroundMode={setPlaygroundMode}
+                  getSavedPuzzleQuery={getSavedPuzzleQuery}
+                  updateEditorQuery={updateEditorQuery}
+                  stopAutoTyping={stopAutoTyping}
+                  setQueryResult={setQueryResult}
+                  setExpectedResult={setExpectedResult}
+                />
+              )}
+              {activeView === "missions" && (
+                <MissionCapstoneView
+                  onOpenStepInPlayground={(sql: string) => {
+                    updateEditorQuery(sql, "free");
+                    setActiveView("playground");
+                  }}
+                  onBackToRoadmap={() => setActiveView("roadmap")}
+                />
+              )}
+            </Suspense>
+          </div>
+        </main>
+
+        {showOnboarding && (
+          <OnboardingModal
+            roadmapLength={learningRoadmap.length}
+            onClose={completeOnboarding}
+          />
+        )}
+        {showShortcuts && (
+          <ShortcutsModal onClose={() => setShowShortcuts(false)} />
+        )}
+        {activeColumnProfile && (
+          <ColumnProfileModal
+            profile={activeColumnProfile}
+            onClose={() => setActiveColumnProfile(null)}
+          />
+        )}
+        {customConfirmOpen && renderCustomConfirmModal()}
+        {customPromptOpen && renderCustomPromptModal()}
+        {toast && (
+          <div
+            style={{
+              position: "fixed",
+              bottom: "24px",
+              right: "24px",
+              zIndex: 9999,
+              background:
+                toast.type === "error"
+                  ? "rgba(239, 68, 68, 0.95)"
+                  : toast.type === "success"
+                    ? "rgba(16, 185, 129, 0.95)"
+                    : "rgba(31, 41, 55, 0.95)",
+              color: "#fff",
+              padding: "12px 24px",
+              borderRadius: "8px",
+              boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontSize: "13px",
+              fontWeight: 500,
+              border:
+                toast.type === "error"
+                  ? "1px solid rgba(239, 68, 68, 0.5)"
+                  : toast.type === "success"
+                    ? "1px solid rgba(16, 185, 129, 0.5)"
+                    : "1px solid rgba(255, 255, 255, 0.1)",
+              backdropFilter: "blur(8px)",
+              animation: "slideIn 0.2s ease-out forwards",
+            }}
+          >
+            {toast.type === "success" && <CheckCircle2 size={16} />}
+            {toast.type === "error" && <AlertTriangle size={16} />}
+            {toast.type === "info" && <Lightbulb size={16} />}
+            <span>{toast.message}</span>
+          </div>
+        )}
+      </div>
     </>
   );
 }

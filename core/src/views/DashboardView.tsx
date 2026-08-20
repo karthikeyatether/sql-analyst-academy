@@ -231,7 +231,15 @@ function DashboardView({
   const xpForNextLevel = 150;
   const currentLevelXP = totalXP % 150;
 
-  const { modPct, probPct, puzPct, mockPct, currentDay, mocksTaken, coreMocksTotal } = useMemo(() => {
+  const {
+    modPct,
+    probPct,
+    puzPct,
+    mockPct,
+    currentDay,
+    mocksTaken,
+    coreMocksTotal,
+  } = useMemo(() => {
     const mod = Math.round(
       (progress.completedModules.length / totalModules) * 100,
     );
@@ -689,10 +697,7 @@ function DashboardView({
       />
 
       {/* READINESS WIDGET & 30-DAY JOURNEY ROW */}
-      <div
-        className="dashboard-major-row"
-        style={{ marginBottom: "16px" }}
-      >
+      <div className="dashboard-major-row" style={{ marginBottom: "16px" }}>
         {/* READINESS WIDGET */}
         <div
           className="surface-panel readiness-breakdown premium-panel"
@@ -854,8 +859,10 @@ function DashboardView({
                   {/* Modules Card */}
                   <div
                     style={{
-                      background: "color-mix(in srgb, var(--emerald) 8%, transparent)",
-                      border: "1px solid color-mix(in srgb, var(--emerald) 20%, transparent)",
+                      background:
+                        "color-mix(in srgb, var(--emerald) 8%, transparent)",
+                      border:
+                        "1px solid color-mix(in srgb, var(--emerald) 20%, transparent)",
                       borderRadius: "8px",
                       padding: "0.6rem",
                       display: "flex",
@@ -863,23 +870,65 @@ function DashboardView({
                       gap: "6px",
                     }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: "0.75rem", color: "var(--text)", fontWeight: 600 }}>Modules</span>
-                      <strong style={{ fontSize: "0.85rem", color: "var(--emerald)" }}>{modPct}%</strong>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: "0.75rem",
+                          color: "var(--text)",
+                          fontWeight: 600,
+                        }}
+                      >
+                        Modules
+                      </span>
+                      <strong
+                        style={{ fontSize: "0.85rem", color: "var(--emerald)" }}
+                      >
+                        {modPct}%
+                      </strong>
                     </div>
-                    <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", marginBottom: "2px" }}>
-                      {progress.completedModules.length} / {totalModules} completed
+                    <div
+                      style={{
+                        fontSize: "0.65rem",
+                        color: "var(--text-secondary)",
+                        marginBottom: "2px",
+                      }}
+                    >
+                      {progress.completedModules.length} / {totalModules}{" "}
+                      completed
                     </div>
-                    <div style={{ height: "4px", background: "color-mix(in srgb, var(--emerald) 15%, transparent)", borderRadius: "2px", overflow: "hidden" }}>
-                      <div style={{ width: `${modPct}%`, height: "100%", background: "var(--emerald)", borderRadius: "2px" }} />
+                    <div
+                      style={{
+                        height: "4px",
+                        background:
+                          "color-mix(in srgb, var(--emerald) 15%, transparent)",
+                        borderRadius: "2px",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${modPct}%`,
+                          height: "100%",
+                          background: "var(--emerald)",
+                          borderRadius: "2px",
+                        }}
+                      />
                     </div>
                   </div>
 
                   {/* Problems Card */}
                   <div
                     style={{
-                      background: "color-mix(in srgb, var(--amber) 8%, transparent)",
-                      border: "1px solid color-mix(in srgb, var(--amber) 20%, transparent)",
+                      background:
+                        "color-mix(in srgb, var(--amber) 8%, transparent)",
+                      border:
+                        "1px solid color-mix(in srgb, var(--amber) 20%, transparent)",
                       borderRadius: "8px",
                       padding: "0.6rem",
                       display: "flex",
@@ -887,23 +936,64 @@ function DashboardView({
                       gap: "6px",
                     }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: "0.75rem", color: "var(--text)", fontWeight: 600 }}>Problems</span>
-                      <strong style={{ fontSize: "0.85rem", color: "var(--amber)" }}>{probPct}%</strong>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: "0.75rem",
+                          color: "var(--text)",
+                          fontWeight: 600,
+                        }}
+                      >
+                        Problems
+                      </span>
+                      <strong
+                        style={{ fontSize: "0.85rem", color: "var(--amber)" }}
+                      >
+                        {probPct}%
+                      </strong>
                     </div>
-                    <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", marginBottom: "2px" }}>
+                    <div
+                      style={{
+                        fontSize: "0.65rem",
+                        color: "var(--text-secondary)",
+                        marginBottom: "2px",
+                      }}
+                    >
                       {progress.solvedProblems.length} / {totalProblems} solved
                     </div>
-                    <div style={{ height: "4px", background: "color-mix(in srgb, var(--amber) 15%, transparent)", borderRadius: "2px", overflow: "hidden" }}>
-                      <div style={{ width: `${probPct}%`, height: "100%", background: "var(--amber)", borderRadius: "2px" }} />
+                    <div
+                      style={{
+                        height: "4px",
+                        background:
+                          "color-mix(in srgb, var(--amber) 15%, transparent)",
+                        borderRadius: "2px",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${probPct}%`,
+                          height: "100%",
+                          background: "var(--amber)",
+                          borderRadius: "2px",
+                        }}
+                      />
                     </div>
                   </div>
 
                   {/* Puzzles Card */}
                   <div
                     style={{
-                      background: "color-mix(in srgb, var(--cyan) 8%, transparent)",
-                      border: "1px solid color-mix(in srgb, var(--cyan) 20%, transparent)",
+                      background:
+                        "color-mix(in srgb, var(--cyan) 8%, transparent)",
+                      border:
+                        "1px solid color-mix(in srgb, var(--cyan) 20%, transparent)",
                       borderRadius: "8px",
                       padding: "0.6rem",
                       display: "flex",
@@ -911,23 +1001,65 @@ function DashboardView({
                       gap: "6px",
                     }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: "0.75rem", color: "var(--text)", fontWeight: 600 }}>Puzzles</span>
-                      <strong style={{ fontSize: "0.85rem", color: "var(--cyan)" }}>{puzPct}%</strong>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: "0.75rem",
+                          color: "var(--text)",
+                          fontWeight: 600,
+                        }}
+                      >
+                        Puzzles
+                      </span>
+                      <strong
+                        style={{ fontSize: "0.85rem", color: "var(--cyan)" }}
+                      >
+                        {puzPct}%
+                      </strong>
                     </div>
-                    <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", marginBottom: "2px" }}>
-                      {(progress.solvedPuzzles || []).length} / {debugPuzzles.length} debugged
+                    <div
+                      style={{
+                        fontSize: "0.65rem",
+                        color: "var(--text-secondary)",
+                        marginBottom: "2px",
+                      }}
+                    >
+                      {(progress.solvedPuzzles || []).length} /{" "}
+                      {debugPuzzles.length} debugged
                     </div>
-                    <div style={{ height: "4px", background: "color-mix(in srgb, var(--cyan) 15%, transparent)", borderRadius: "2px", overflow: "hidden" }}>
-                      <div style={{ width: `${puzPct}%`, height: "100%", background: "var(--cyan)", borderRadius: "2px" }} />
+                    <div
+                      style={{
+                        height: "4px",
+                        background:
+                          "color-mix(in srgb, var(--cyan) 15%, transparent)",
+                        borderRadius: "2px",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${puzPct}%`,
+                          height: "100%",
+                          background: "var(--cyan)",
+                          borderRadius: "2px",
+                        }}
+                      />
                     </div>
                   </div>
 
                   {/* Mock Tests Card */}
                   <div
                     style={{
-                      background: "color-mix(in srgb, var(--violet) 8%, transparent)",
-                      border: "1px solid color-mix(in srgb, var(--violet) 20%, transparent)",
+                      background:
+                        "color-mix(in srgb, var(--violet) 8%, transparent)",
+                      border:
+                        "1px solid color-mix(in srgb, var(--violet) 20%, transparent)",
                       borderRadius: "8px",
                       padding: "0.6rem",
                       display: "flex",
@@ -935,15 +1067,54 @@ function DashboardView({
                       gap: "6px",
                     }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: "0.75rem", color: "var(--text)", fontWeight: 600 }}>Mocks</span>
-                      <strong style={{ fontSize: "0.85rem", color: "var(--violet)" }}>{mockPct}%</strong>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: "0.75rem",
+                          color: "var(--text)",
+                          fontWeight: 600,
+                        }}
+                      >
+                        Mocks
+                      </span>
+                      <strong
+                        style={{ fontSize: "0.85rem", color: "var(--violet)" }}
+                      >
+                        {mockPct}%
+                      </strong>
                     </div>
-                    <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", marginBottom: "2px" }}>
+                    <div
+                      style={{
+                        fontSize: "0.65rem",
+                        color: "var(--text-secondary)",
+                        marginBottom: "2px",
+                      }}
+                    >
                       {mocksTaken} / {coreMocksTotal} taken
                     </div>
-                    <div style={{ height: "4px", background: "color-mix(in srgb, var(--violet) 15%, transparent)", borderRadius: "2px", overflow: "hidden" }}>
-                      <div style={{ width: `${mockPct}%`, height: "100%", background: "var(--violet)", borderRadius: "2px" }} />
+                    <div
+                      style={{
+                        height: "4px",
+                        background:
+                          "color-mix(in srgb, var(--violet) 15%, transparent)",
+                        borderRadius: "2px",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${mockPct}%`,
+                          height: "100%",
+                          background: "var(--violet)",
+                          borderRadius: "2px",
+                        }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -1316,7 +1487,6 @@ function CollapsibleInsightsSection({
               ))}
             </div>
           </div>
-
 
           {/* QUICK INTERVIEW Q&A ACCORDION */}
           <div className="surface-panel premium-panel qa-panel-wrap">

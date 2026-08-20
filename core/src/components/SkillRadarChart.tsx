@@ -20,12 +20,30 @@ export const SkillRadarChart: React.FC<SkillRadarChartProps> = ({
     const puzRatio = Math.min(1, solvedPuzzlesCount / 60);
 
     return [
-      { name: "Window Functions", value: Math.min(100, Math.round(probRatio * 90 + 10)) },
-      { name: "Complex Joins", value: Math.min(100, Math.round(probRatio * 85 + 15)) },
-      { name: "Aggregations", value: Math.min(100, Math.round(modRatio * 95 + 5)) },
-      { name: "Query Optimization", value: Math.min(100, Math.round(puzRatio * 90 + 10)) },
-      { name: "Data Modeling", value: Math.min(100, Math.round(modRatio * 80 + 20)) },
-      { name: "Business Analytics", value: Math.min(100, Math.round((probRatio + modRatio) * 50)) },
+      {
+        name: "Window Functions",
+        value: Math.min(100, Math.round(probRatio * 90 + 10)),
+      },
+      {
+        name: "Complex Joins",
+        value: Math.min(100, Math.round(probRatio * 85 + 15)),
+      },
+      {
+        name: "Aggregations",
+        value: Math.min(100, Math.round(modRatio * 95 + 5)),
+      },
+      {
+        name: "Query Optimization",
+        value: Math.min(100, Math.round(puzRatio * 90 + 10)),
+      },
+      {
+        name: "Data Modeling",
+        value: Math.min(100, Math.round(modRatio * 80 + 20)),
+      },
+      {
+        name: "Business Analytics",
+        value: Math.min(100, Math.round((probRatio + modRatio) * 50)),
+      },
     ];
   }, [completedModulesCount, solvedProblemsCount, solvedPuzzlesCount]);
 
@@ -36,7 +54,7 @@ export const SkillRadarChart: React.FC<SkillRadarChartProps> = ({
   const numAxes = skills.length;
 
   const getCoordinates = (index: number, valPercent: number) => {
-    const angle = (Math.PI * 2 / numAxes) * index - Math.PI / 2;
+    const angle = ((Math.PI * 2) / numAxes) * index - Math.PI / 2;
     const r = (valPercent / 100) * radius;
     return {
       x: center + r * Math.cos(angle),

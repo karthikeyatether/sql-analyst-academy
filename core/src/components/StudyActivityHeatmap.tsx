@@ -15,7 +15,10 @@ export const StudyActivityHeatmap: React.FC<StudyActivityHeatmapProps> = ({
   // Generate a mock 52-week activity grid with deterministic levels based on progress
   const weeks = useMemo(() => {
     const grid: number[][] = [];
-    const totalActivity = problemsSolvedCount * 3 + queryRunsCount + Math.floor(minutesStudied / 10);
+    const totalActivity =
+      problemsSolvedCount * 3 +
+      queryRunsCount +
+      Math.floor(minutesStudied / 10);
 
     for (let w = 0; w < 52; w++) {
       const days: number[] = [];
@@ -76,7 +79,15 @@ export const StudyActivityHeatmap: React.FC<StudyActivityHeatmapProps> = ({
           </strong>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", color: "var(--muted)" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            fontSize: "11px",
+            color: "var(--muted)",
+          }}
+        >
           <span>Less</span>
           {levelColors.map((c, i) => (
             <div
@@ -104,7 +115,10 @@ export const StudyActivityHeatmap: React.FC<StudyActivityHeatmapProps> = ({
           }}
         >
           {weeks.map((days, wIdx) => (
-            <div key={wIdx} style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+            <div
+              key={wIdx}
+              style={{ display: "flex", flexDirection: "column", gap: "3px" }}
+            >
               {days.map((lvl, dIdx) => (
                 <div
                   key={dIdx}

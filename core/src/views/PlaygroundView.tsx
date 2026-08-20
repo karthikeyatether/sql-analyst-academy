@@ -443,7 +443,9 @@ const PlaygroundView = React.memo(function PlaygroundView({
   const [compareModeOpen, setCompareModeOpen] = useState(false);
   const [queryB, setQueryB] = useState(() => {
     try {
-      const saved = localStorage.getItem("sql-aa-query-history-b") || localStorage.getItem("sql-aa-query-b-v2");
+      const saved =
+        localStorage.getItem("sql-aa-query-history-b") ||
+        localStorage.getItem("sql-aa-query-b-v2");
       return saved ? JSON.parse(saved) : "SELECT * FROM customers LIMIT 5;";
     } catch {
       return "SELECT * FROM customers LIMIT 5;";
@@ -682,20 +684,29 @@ SELECT * FROM customers LIMIT 10;`;
   };
 
   const handleExportCsv = () => {
-    if (!queryResult || queryResult.error || !queryResult.rows || queryResult.rows.length === 0) {
+    if (
+      !queryResult ||
+      queryResult.error ||
+      !queryResult.rows ||
+      queryResult.rows.length === 0
+    ) {
       showToast("No data to export", "error");
       return;
     }
     try {
       const header = queryResult.columns.join(",");
-      const csvRows = queryResult.rows.map(row => 
-        queryResult.columns.map(col => {
-          const val = row[col];
-          if (val === null || val === undefined) return "";
-          const str = String(val).replace(/"/g, '""');
-          return `"${str}"`;
-        }).join(",")
-      ).join("\n");
+      const csvRows = queryResult.rows
+        .map((row) =>
+          queryResult.columns
+            .map((col) => {
+              const val = row[col];
+              if (val === null || val === undefined) return "";
+              const str = String(val).replace(/"/g, '""');
+              return `"${str}"`;
+            })
+            .join(","),
+        )
+        .join("\n");
       const csvContent = header + "\n" + csvRows;
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
@@ -2572,20 +2583,29 @@ SELECT * FROM customers LIMIT 10;`;
                     className={`result-tab ${activeResultTab === "expected" ? "active" : ""}`}
                     onClick={() => setActiveResultTab("expected")}
                   >
-                    <Eye size={12} style={{ marginRight: "6px" }} /> Expected Output
+                    <Eye size={12} style={{ marginRight: "6px" }} /> Expected
+                    Output
                   </button>
                   <button
                     className={`result-tab ${activeResultTab === "walkthrough" ? "active" : ""}`}
                     onClick={() => setActiveResultTab("walkthrough")}
                   >
-                    <GitBranch size={12} style={{ marginRight: "6px", color: "var(--cyan)" }} /> Execution Walkthrough
+                    <GitBranch
+                      size={12}
+                      style={{ marginRight: "6px", color: "var(--cyan)" }}
+                    />{" "}
+                    Execution Walkthrough
                   </button>
                   {compareModeOpen && (
                     <button
                       className={`result-tab ${activeResultTab === "compare" ? "active" : ""}`}
                       onClick={() => setActiveResultTab("compare")}
                     >
-                      <TrendingUp size={12} style={{ marginRight: "6px", color: "var(--amber)" }} /> Performance Compare
+                      <TrendingUp
+                        size={12}
+                        style={{ marginRight: "6px", color: "var(--amber)" }}
+                      />{" "}
+                      Performance Compare
                     </button>
                   )}
                   {queryResult.durationMs !== undefined &&
@@ -2616,18 +2636,23 @@ SELECT * FROM customers LIMIT 10;`;
                       </span>
                     )}
                 </div>
-                
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  {!queryResult.error && queryResult.rows && queryResult.rows.length > 0 && (
-                    <button
-                      className="secondary-button"
-                      style={{ fontSize: "11px", padding: "4px 8px" }}
-                      onClick={handleExportCsv}
-                      title="Export Results as CSV"
-                    >
-                      <Download size={12} style={{ marginRight: "4px" }} /> Export CSV
-                    </button>
-                  )}
+
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  {!queryResult.error &&
+                    queryResult.rows &&
+                    queryResult.rows.length > 0 && (
+                      <button
+                        className="secondary-button"
+                        style={{ fontSize: "11px", padding: "4px 8px" }}
+                        onClick={handleExportCsv}
+                        title="Export Results as CSV"
+                      >
+                        <Download size={12} style={{ marginRight: "4px" }} />{" "}
+                        Export CSV
+                      </button>
+                    )}
                 </div>
               </div>
 
@@ -2784,8 +2809,6 @@ SELECT * FROM customers LIMIT 10;`;
                   </div>
                 )}
 
-                
-
                 <div
                   className="results-container"
                   style={{
@@ -2798,25 +2821,65 @@ SELECT * FROM customers LIMIT 10;`;
                     padding: "12px",
                   }}
                 >
-                                    {activeResultTab === "diff" && expectedResult ? (
-                    <SqlResultDiffViewer userResult={queryResult} expectedResult={expectedResult} />
-
+                  {activeResultTab === "diff" && expectedResult ? (
+                    <SqlResultDiffViewer
+                      userResult={queryResult}
+                      expectedResult={expectedResult}
+                    />
                   ) : activeResultTab === "walkthrough" ? (
-                    <div style={{ flex: 1, height: "100%", overflowY: "auto", padding: "12px", width: "100%" }}>
-                      {queryResult && !queryResult.error && queryResult.rows.length > 0 ? (
+                    <div
+                      style={{
+                        flex: 1,
+                        height: "100%",
+                        overflowY: "auto",
+                        padding: "12px",
+                        width: "100%",
+                      }}
+                    >
+                      {queryResult &&
+                      !queryResult.error &&
+                      queryResult.rows.length > 0 ? (
                         <QueryExecutionStudio
                           queryResult={queryResult}
                           query={query}
                         />
                       ) : (
-                        <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--muted)", background: "var(--panel)", borderRadius: "8px", border: "1px solid var(--border)" }}>
-                          <GitBranch size={32} style={{ color: "var(--cyan)", marginBottom: "12px" }} />
-                          <p style={{ margin: 0, fontSize: "13px" }}>Run a successful SQL query to step through the logical execution pipeline.</p>
+                        <div
+                          style={{
+                            textAlign: "center",
+                            padding: "40px 20px",
+                            color: "var(--muted)",
+                            background: "var(--panel)",
+                            borderRadius: "8px",
+                            border: "1px solid var(--border)",
+                          }}
+                        >
+                          <GitBranch
+                            size={32}
+                            style={{
+                              color: "var(--cyan)",
+                              marginBottom: "12px",
+                            }}
+                          />
+                          <p style={{ margin: 0, fontSize: "13px" }}>
+                            Run a successful SQL query to step through the
+                            logical execution pipeline.
+                          </p>
                         </div>
                       )}
                     </div>
                   ) : activeResultTab === "compare" ? (
-                    <div style={{ flex: 1, height: "100%", overflow: "auto", padding: "12px", background: "var(--panel)", borderRadius: "8px", border: "1px solid var(--border)" }}>
+                    <div
+                      style={{
+                        flex: 1,
+                        height: "100%",
+                        overflow: "auto",
+                        padding: "12px",
+                        background: "var(--panel)",
+                        borderRadius: "8px",
+                        border: "1px solid var(--border)",
+                      }}
+                    >
                       {resB ? (
                         <SqlPerformanceComparer
                           queryA={query}
@@ -2827,9 +2890,24 @@ SELECT * FROM customers LIMIT 10;`;
                           planB={planB}
                         />
                       ) : (
-                        <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--muted)" }}>
-                          <TrendingUp size={32} style={{ color: "var(--amber)", marginBottom: "12px" }} />
-                          <p style={{ margin: 0, fontSize: "13px" }}>Click "Run A/B Benchmark" in the toolbar above to compare Query A vs Query B performance.</p>
+                        <div
+                          style={{
+                            textAlign: "center",
+                            padding: "40px 20px",
+                            color: "var(--muted)",
+                          }}
+                        >
+                          <TrendingUp
+                            size={32}
+                            style={{
+                              color: "var(--amber)",
+                              marginBottom: "12px",
+                            }}
+                          />
+                          <p style={{ margin: 0, fontSize: "13px" }}>
+                            Click "Run A/B Benchmark" in the toolbar above to
+                            compare Query A vs Query B performance.
+                          </p>
                         </div>
                       )}
                     </div>

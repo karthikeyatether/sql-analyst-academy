@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Trophy, Flame, Star, TrendingUp, Target, Zap, ShieldCheck } from "lucide-react";
+import {
+  Trophy,
+  Flame,
+  Star,
+  TrendingUp,
+  Target,
+  Zap,
+  ShieldCheck,
+} from "lucide-react";
 import {
   PROGRESSION_LEVELS,
   calculateTotalXP,
@@ -51,7 +59,17 @@ export default function GamifiedHud({
   const nextLevel = getNextProgressionLevel(totalXP);
 
   const progressPercent = nextLevel
-    ? Math.min(100, Math.max(0, Math.round(((totalXP - currentLevel.minXP) / (nextLevel.minXP - currentLevel.minXP)) * 100)))
+    ? Math.min(
+        100,
+        Math.max(
+          0,
+          Math.round(
+            ((totalXP - currentLevel.minXP) /
+              (nextLevel.minXP - currentLevel.minXP)) *
+              100,
+          ),
+        ),
+      )
     : 100;
 
   const readiness = calculateInterviewReadiness({
@@ -64,7 +82,10 @@ export default function GamifiedHud({
   // Close HUD popover on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setShowDetails(false);
       }
     }
@@ -77,7 +98,14 @@ export default function GamifiedHud({
   }, [showDetails]);
 
   return (
-    <div ref={containerRef} style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+    <div
+      ref={containerRef}
+      style={{
+        position: "relative",
+        display: "inline-flex",
+        alignItems: "center",
+      }}
+    >
       <button
         onClick={() => setShowDetails((v) => !v)}
         title={`${currentLevel.title} (Level ${currentLevel.level}) — ${totalXP} XP`}
@@ -102,8 +130,20 @@ export default function GamifiedHud({
         <span style={{ letterSpacing: "0.3px" }}>{currentLevel.title}</span>
 
         {/* Mini progress ring */}
-        <svg width="20" height="20" viewBox="0 0 20 20" style={{ transform: "rotate(-90deg)" }}>
-          <circle cx="10" cy="10" r="7" fill="none" stroke="var(--border)" strokeWidth="2.5" />
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          style={{ transform: "rotate(-90deg)" }}
+        >
+          <circle
+            cx="10"
+            cy="10"
+            r="7"
+            fill="none"
+            stroke="var(--border)"
+            strokeWidth="2.5"
+          />
           <circle
             cx="10"
             cy="10"
@@ -117,7 +157,9 @@ export default function GamifiedHud({
           />
         </svg>
 
-        <span style={{ color: "var(--text)", opacity: 0.85 }}>{totalXP} XP</span>
+        <span style={{ color: "var(--text)", opacity: 0.85 }}>
+          {totalXP} XP
+        </span>
 
         {streak > 0 && (
           <span
@@ -155,12 +197,27 @@ export default function GamifiedHud({
             zIndex: 99999,
           }}
         >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "8px",
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <Trophy size={16} style={{ color: currentLevel.color }} />
-              <strong style={{ fontSize: "14px", color: "var(--text)" }}>{currentLevel.title}</strong>
+              <strong style={{ fontSize: "14px", color: "var(--text)" }}>
+                {currentLevel.title}
+              </strong>
             </div>
-            <span style={{ fontSize: "11px", color: "var(--muted)", fontWeight: 700 }}>
+            <span
+              style={{
+                fontSize: "11px",
+                color: "var(--muted)",
+                fontWeight: 700,
+              }}
+            >
               LVL {currentLevel.level}
             </span>
           </div>
@@ -186,52 +243,130 @@ export default function GamifiedHud({
             />
           </div>
 
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "var(--muted)", marginBottom: "14px" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "11px",
+              color: "var(--muted)",
+              marginBottom: "14px",
+            }}
+          >
             <span>{totalXP} XP</span>
-            <span>{nextLevel ? `Next Level: ${nextLevel.minXP} XP` : "Max Rank Achieved! 🏆"}</span>
+            <span>
+              {nextLevel
+                ? `Next Level: ${nextLevel.minXP} XP`
+                : "Max Rank Achieved! 🏆"}
+            </span>
           </div>
 
           {/* Stats List */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "12px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)" }}>
-              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <Star size={13} style={{ color: "var(--emerald)" }} /> Problems Solved
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "8px",
+              fontSize: "12px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                color: "var(--text-secondary)",
+              }}
+            >
+              <span
+                style={{ display: "flex", alignItems: "center", gap: "6px" }}
+              >
+                <Star size={13} style={{ color: "var(--emerald)" }} /> Problems
+                Solved
               </span>
               <strong>{solvedProblems.length} / 142</strong>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)" }}>
-              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <Zap size={13} style={{ color: "var(--violet)" }} /> Debug Puzzles
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                color: "var(--text-secondary)",
+              }}
+            >
+              <span
+                style={{ display: "flex", alignItems: "center", gap: "6px" }}
+              >
+                <Zap size={13} style={{ color: "var(--violet)" }} /> Debug
+                Puzzles
               </span>
               <strong>{solvedPuzzles.length} / 60</strong>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)" }}>
-              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                color: "var(--text-secondary)",
+              }}
+            >
+              <span
+                style={{ display: "flex", alignItems: "center", gap: "6px" }}
+              >
                 <Flame size={13} style={{ color: "var(--amber)" }} /> Day Streak
               </span>
               <strong>{streak} days</strong>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)" }}>
-              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <TrendingUp size={13} style={{ color: "var(--cyan)" }} /> Queries Run
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                color: "var(--text-secondary)",
+              }}
+            >
+              <span
+                style={{ display: "flex", alignItems: "center", gap: "6px" }}
+              >
+                <TrendingUp size={13} style={{ color: "var(--cyan)" }} />{" "}
+                Queries Run
               </span>
               <strong>{queryRuns}</strong>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)" }}>
-              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <Target size={13} style={{ color: "var(--rose)" }} /> Readiness Index
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                color: "var(--text-secondary)",
+              }}
+            >
+              <span
+                style={{ display: "flex", alignItems: "center", gap: "6px" }}
+              >
+                <Target size={13} style={{ color: "var(--rose)" }} /> Readiness
+                Index
               </span>
               <strong style={{ color: "var(--cyan)" }}>{readiness}%</strong>
             </div>
           </div>
 
           {/* All Ranks Preview */}
-          <div style={{ marginTop: "14px", paddingTop: "12px", borderTop: "1px solid var(--border)" }}>
-            <div style={{ fontSize: "10.5px", textTransform: "uppercase", color: "var(--muted)", fontWeight: 700, marginBottom: "8px", letterSpacing: "0.04em" }}>
+          <div
+            style={{
+              marginTop: "14px",
+              paddingTop: "12px",
+              borderTop: "1px solid var(--border)",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "10.5px",
+                textTransform: "uppercase",
+                color: "var(--muted)",
+                fontWeight: 700,
+                marginBottom: "8px",
+                letterSpacing: "0.04em",
+              }}
+            >
               Analyst Career Ranks
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
@@ -248,10 +383,14 @@ export default function GamifiedHud({
                       background: isCurrent
                         ? `color-mix(in srgb, ${lvl.color} 20%, transparent)`
                         : isUnlocked
-                        ? "rgba(255,255,255,0.05)"
-                        : "rgba(255,255,255,0.02)",
+                          ? "rgba(255,255,255,0.05)"
+                          : "rgba(255,255,255,0.02)",
                       border: `1px solid ${isCurrent ? lvl.color : "transparent"}`,
-                      color: isCurrent ? lvl.color : isUnlocked ? "var(--text-secondary)" : "var(--muted)",
+                      color: isCurrent
+                        ? lvl.color
+                        : isUnlocked
+                          ? "var(--text-secondary)"
+                          : "var(--muted)",
                       fontWeight: isCurrent ? 700 : 500,
                       opacity: isUnlocked ? 1 : 0.45,
                     }}

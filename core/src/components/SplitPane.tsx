@@ -146,7 +146,10 @@ export function VSplitPane({
         maxTop,
         Math.max(minTop, containerH - minBottom),
       );
-      const newH = Math.min(effectiveMaxTop, Math.max(minTop, ev.clientY - rect.top));
+      const newH = Math.min(
+        effectiveMaxTop,
+        Math.max(minTop, ev.clientY - rect.top),
+      );
       onResize(newH);
     }
 

@@ -41,7 +41,7 @@ async function runValidation() {
   const failures: ValidationFailure[] = [];
 
   // 1. Validate Roadmap Module Practice Problems
-  console.log("\n[1/5] Validating Practice Problems...");
+  console.log("\n[1/6] Validating Practice Problems...");
   for (const m of roadmapModules) {
     for (const p of m.problems) {
       const db = getFreshDb();
@@ -67,7 +67,7 @@ async function runValidation() {
   console.log(`  ✓ ${practicePass} practice problems validated (${practiceFail} failed)`);
 
   // 2. Validate Debug Puzzles
-  console.log("\n[2/5] Validating Debug Puzzles...");
+  console.log("\n[2/6] Validating Debug Puzzles...");
   const { debugPuzzles } = await import("./src/data/puzzles.ts");
   for (const p of debugPuzzles) {
     const db = getFreshDb();
@@ -92,7 +92,7 @@ async function runValidation() {
   console.log(`  ✓ ${puzzlePass} debug puzzles validated (${puzzleFail} failed)`);
 
   // 3. Unit Test: RFC 4180 CSV Parser
-  console.log("\n[3/5] Running Unit Tests: RFC 4180 CSV Parser...");
+  console.log("\n[3/6] Running Unit Tests: RFC 4180 CSV Parser...");
   try {
     const { buildCsvImportSql } = await import("./src/utils/csvParser.ts");
     const testCsv = 'id,name,city\n1,"Doe, John","Mumbai"\n2,"Jane ""Boss"" Smith","Delhi\nIndia"';
@@ -116,7 +116,7 @@ async function runValidation() {
   }
 
   // 4. Unit Test: Transaction State & Rollback Recovery
-  console.log("\n[4/5] Running Unit Tests: Transaction Recovery...");
+  console.log("\n[4/6] Running Unit Tests: Transaction Recovery...");
   const dbTx = getFreshDb();
   try {
     try {

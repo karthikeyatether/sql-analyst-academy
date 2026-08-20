@@ -32,9 +32,13 @@ export default function MissionCapstoneView({
   const [selectedMissionId, setSelectedMissionId] = useState<string>(
     missionCapstones[0].id,
   );
-  const [completedStepNumbers, setCompletedStepNumbers] = useState<number[]>([]);
+  const [completedStepNumbers, setCompletedStepNumbers] = useState<number[]>(
+    [],
+  );
   const [stepQueries, setStepQueries] = useState<Record<number, string>>({});
-  const [stepResults, setStepResults] = useState<Record<number, QueryResult | null>>({});
+  const [stepResults, setStepResults] = useState<
+    Record<number, QueryResult | null>
+  >({});
   const [stepLoading, setStepLoading] = useState<Record<number, boolean>>({});
   const [stepTimings, setStepTimings] = useState<Record<number, number>>({});
   const [copiedQueryStep, setCopiedQueryStep] = useState<number | null>(null);
@@ -76,7 +80,10 @@ export default function MissionCapstoneView({
   const handleResetStepQuery = (stepNum: number) => {
     const step = activeMission.steps.find((s) => s.stepNumber === stepNum);
     if (step) {
-      setStepQueries((prev) => ({ ...prev, [stepNum]: step.starterQuery.trim() }));
+      setStepQueries((prev) => ({
+        ...prev,
+        [stepNum]: step.starterQuery.trim(),
+      }));
       setStepResults((prev) => ({ ...prev, [stepNum]: null }));
       setCompletedStepNumbers((prev) => prev.filter((n) => n !== stepNum));
     }
@@ -150,9 +157,10 @@ export default function MissionCapstoneView({
     setTimeout(() => setCopiedReport(false), 2000);
   };
 
-  const isAllComplete = completedStepNumbers.length === activeMission.steps.length;
+  const isAllComplete =
+    completedStepNumbers.length === activeMission.steps.length;
   const completionPct = Math.round(
-    (completedStepNumbers.length / activeMission.steps.length) * 100
+    (completedStepNumbers.length / activeMission.steps.length) * 100,
   );
 
   return (
@@ -197,7 +205,8 @@ export default function MissionCapstoneView({
                 height: "32px",
                 borderRadius: "8px",
                 background: "color-mix(in srgb, var(--amber) 15%, transparent)",
-                border: "1px solid color-mix(in srgb, var(--amber) 30%, transparent)",
+                border:
+                  "1px solid color-mix(in srgb, var(--amber) 30%, transparent)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -239,7 +248,13 @@ export default function MissionCapstoneView({
               border: "1px solid var(--border)",
             }}
           >
-            <span style={{ fontSize: "11.5px", color: "var(--muted)", fontWeight: 600 }}>
+            <span
+              style={{
+                fontSize: "11.5px",
+                color: "var(--muted)",
+                fontWeight: 600,
+              }}
+            >
               Milestones:
             </span>
             <strong
@@ -248,7 +263,8 @@ export default function MissionCapstoneView({
                 color: isAllComplete ? "var(--emerald)" : "var(--cyan)",
               }}
             >
-              {completedStepNumbers.length} / {activeMission.steps.length} ({completionPct}%)
+              {completedStepNumbers.length} / {activeMission.steps.length} (
+              {completionPct}%)
             </strong>
           </div>
         </div>
@@ -295,7 +311,9 @@ export default function MissionCapstoneView({
                   cursor: "pointer",
                   color: "var(--text)",
                   transition: "all 0.15s ease",
-                  boxShadow: isSelected ? "0 4px 16px rgba(0,0,0,0.25)" : "none",
+                  boxShadow: isSelected
+                    ? "0 4px 16px rgba(0,0,0,0.25)"
+                    : "none",
                 }}
               >
                 <div
@@ -413,7 +431,14 @@ export default function MissionCapstoneView({
                 paddingBottom: "14px",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  marginBottom: "4px",
+                }}
+              >
                 <span
                   style={{
                     fontSize: "10.5px",
@@ -436,16 +461,26 @@ export default function MissionCapstoneView({
               >
                 {activeMission.title}
               </h3>
-              <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, lineHeight: 1.55 }}>
+              <p
+                style={{
+                  fontSize: "13px",
+                  color: "var(--text-secondary)",
+                  margin: 0,
+                  lineHeight: 1.55,
+                }}
+              >
                 {activeMission.description}
               </p>
             </div>
 
             {/* Mission Milestones List */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+            >
               {activeMission.steps.map((stg) => {
                 const isDone = completedStepNumbers.includes(stg.stepNumber);
-                const queryVal = stepQueries[stg.stepNumber] ?? stg.starterQuery;
+                const queryVal =
+                  stepQueries[stg.stepNumber] ?? stg.starterQuery;
                 const result = stepResults[stg.stepNumber];
                 const loading = stepLoading[stg.stepNumber];
                 const execTime = stepTimings[stg.stepNumber];
@@ -472,7 +507,13 @@ export default function MissionCapstoneView({
                         marginBottom: "8px",
                       }}
                     >
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                        }}
+                      >
                         <span
                           style={{
                             fontSize: "10.5px",
@@ -488,7 +529,9 @@ export default function MissionCapstoneView({
                         >
                           Milestone {stg.stepNumber}
                         </span>
-                        <strong style={{ fontSize: "13.5px", color: "var(--text)" }}>
+                        <strong
+                          style={{ fontSize: "13.5px", color: "var(--text)" }}
+                        >
                           {stg.title}
                         </strong>
                       </div>
@@ -507,7 +550,9 @@ export default function MissionCapstoneView({
                           <CheckCircle2 size={14} /> Verified
                         </span>
                       ) : (
-                        <span style={{ fontSize: "11px", color: "var(--muted)" }}>
+                        <span
+                          style={{ fontSize: "11px", color: "var(--muted)" }}
+                        >
                           Pending Verification
                         </span>
                       )}
@@ -548,13 +593,28 @@ export default function MissionCapstoneView({
                           fontFamily: "var(--font-mono, monospace)",
                         }}
                       >
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                          <Code2 size={12} style={{ color: "var(--cyan)" }} /> Milestone SQL Editor
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
+                        >
+                          <Code2 size={12} style={{ color: "var(--cyan)" }} />{" "}
+                          Milestone SQL Editor
                         </span>
 
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
                           <button
-                            onClick={() => handleFormatStepQuery(stg.stepNumber)}
+                            onClick={() =>
+                              handleFormatStepQuery(stg.stepNumber)
+                            }
                             style={{
                               background: "none",
                               border: "none",
@@ -594,7 +654,10 @@ export default function MissionCapstoneView({
                             style={{
                               background: "none",
                               border: "none",
-                              color: copiedQueryStep === stg.stepNumber ? "var(--emerald)" : "var(--muted)",
+                              color:
+                                copiedQueryStep === stg.stepNumber
+                                  ? "var(--emerald)"
+                                  : "var(--muted)",
                               cursor: "pointer",
                               fontSize: "10.5px",
                               padding: "2px 6px",
@@ -605,15 +668,23 @@ export default function MissionCapstoneView({
                             }}
                             title="Copy SQL"
                           >
-                            {copiedQueryStep === stg.stepNumber ? <Check size={11} /> : <Copy size={11} />}
-                            {copiedQueryStep === stg.stepNumber ? "Copied" : "Copy"}
+                            {copiedQueryStep === stg.stepNumber ? (
+                              <Check size={11} />
+                            ) : (
+                              <Copy size={11} />
+                            )}
+                            {copiedQueryStep === stg.stepNumber
+                              ? "Copied"
+                              : "Copy"}
                           </button>
                         </div>
                       </div>
 
                       <textarea
                         value={queryVal}
-                        onChange={(e) => handleQueryChange(stg.stepNumber, e.target.value)}
+                        onChange={(e) =>
+                          handleQueryChange(stg.stepNumber, e.target.value)
+                        }
                         rows={Math.min(12, Math.max(5, queryLineCount))}
                         style={{
                           width: "100%",
@@ -621,7 +692,8 @@ export default function MissionCapstoneView({
                           border: "none",
                           padding: "12px 14px",
                           color: "var(--cyan)",
-                          fontFamily: "var(--font-mono, 'JetBrains Mono', Consolas, monospace)",
+                          fontFamily:
+                            "var(--font-mono, 'JetBrains Mono', Consolas, monospace)",
                           fontSize: "12.5px",
                           lineHeight: 1.55,
                           resize: "vertical",
@@ -641,7 +713,13 @@ export default function MissionCapstoneView({
                         gap: "8px",
                       }}
                     >
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                        }}
+                      >
                         <button
                           onClick={() => handleRunAndVerifyStep(stg.stepNumber)}
                           disabled={loading}
@@ -656,7 +734,9 @@ export default function MissionCapstoneView({
                           }}
                         >
                           <Play size={12} fill="currentColor" />
-                          {loading ? "Verifying Query..." : "Run & Verify Milestone"}
+                          {loading
+                            ? "Verifying Query..."
+                            : "Run & Verify Milestone"}
                         </button>
 
                         {onOpenStepInPlayground && (
@@ -693,8 +773,10 @@ export default function MissionCapstoneView({
                           <div
                             style={{
                               padding: "10px 14px",
-                              background: "color-mix(in srgb, var(--rose) 10%, transparent)",
-                              border: "1px solid color-mix(in srgb, var(--rose) 25%, transparent)",
+                              background:
+                                "color-mix(in srgb, var(--rose) 10%, transparent)",
+                              border:
+                                "1px solid color-mix(in srgb, var(--rose) 25%, transparent)",
                               borderRadius: "6px",
                               color: "var(--rose)",
                               fontSize: "12px",
@@ -766,7 +848,8 @@ export default function MissionCapstoneView({
                                           style={{
                                             padding: "5px 10px",
                                             color: "var(--text-secondary)",
-                                            fontFamily: "var(--font-mono, monospace)",
+                                            fontFamily:
+                                              "var(--font-mono, monospace)",
                                             fontSize: "11px",
                                           }}
                                         >
@@ -790,9 +873,15 @@ export default function MissionCapstoneView({
                               }}
                             >
                               <span>
-                                Returned {result.rows.length} rows (showing first 5)
+                                Returned {result.rows.length} rows (showing
+                                first 5)
                               </span>
-                              <span style={{ color: "var(--emerald)", fontWeight: 600 }}>
+                              <span
+                                style={{
+                                  color: "var(--emerald)",
+                                  fontWeight: 600,
+                                }}
+                              >
                                 ✓ Criteria Met
                               </span>
                             </div>
@@ -810,8 +899,10 @@ export default function MissionCapstoneView({
               <div
                 style={{
                   marginTop: "20px",
-                  background: "color-mix(in srgb, var(--emerald) 8%, var(--panel))",
-                  border: "1px solid color-mix(in srgb, var(--emerald) 30%, transparent)",
+                  background:
+                    "color-mix(in srgb, var(--emerald) 8%, var(--panel))",
+                  border:
+                    "1px solid color-mix(in srgb, var(--emerald) 30%, transparent)",
                   borderRadius: "8px",
                   padding: "18px 20px",
                 }}
@@ -825,13 +916,20 @@ export default function MissionCapstoneView({
                     gap: "12px",
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                    }}
+                  >
                     <div
                       style={{
                         width: "36px",
                         height: "36px",
                         borderRadius: "8px",
-                        background: "color-mix(in srgb, var(--emerald) 18%, transparent)",
+                        background:
+                          "color-mix(in srgb, var(--emerald) 18%, transparent)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -851,8 +949,15 @@ export default function MissionCapstoneView({
                       >
                         All Milestones Verified! (+250 XP Awarded)
                       </h4>
-                      <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
-                        You solved all enterprise milestone requirements for this scenario.
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: "12px",
+                          color: "var(--text-secondary)",
+                        }}
+                      >
+                        You solved all enterprise milestone requirements for
+                        this scenario.
                       </p>
                     </div>
                   </div>
@@ -904,7 +1009,11 @@ export default function MissionCapstoneView({
                           gap: "4px",
                         }}
                       >
-                        {copiedReport ? <Check size={11} /> : <Copy size={11} />}
+                        {copiedReport ? (
+                          <Check size={11} />
+                        ) : (
+                          <Copy size={11} />
+                        )}
                         {copiedReport ? "Report Copied!" : "Copy Report"}
                       </button>
                     </div>

@@ -1,9 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { X, Copy, Check, Globe, Code2, Sparkles } from "lucide-react";
-import {
-  translateSqlDialect,
-  SqlDialect,
-} from "../utils/sqlDialectTranslator";
+import { translateSqlDialect, SqlDialect } from "../utils/sqlDialectTranslator";
 
 interface SqlDialectModalProps {
   isOpen: boolean;
@@ -16,7 +13,8 @@ export const SqlDialectModal: React.FC<SqlDialectModalProps> = ({
   onClose,
   sqlQuery,
 }) => {
-  const [selectedDialect, setSelectedDialect] = useState<SqlDialect>("postgresql");
+  const [selectedDialect, setSelectedDialect] =
+    useState<SqlDialect>("postgresql");
   const [copied, setCopied] = useState(false);
 
   const translations = useMemo(() => {
@@ -116,12 +114,7 @@ export const SqlDialectModal: React.FC<SqlDialectModalProps> = ({
           }}
         >
           {(
-            [
-              "postgresql",
-              "snowflake",
-              "bigquery",
-              "mysql",
-            ] as SqlDialect[]
+            ["postgresql", "snowflake", "bigquery", "mysql"] as SqlDialect[]
           ).map((dialectKey) => {
             const d = translations[dialectKey];
             const isSelected = selectedDialect === dialectKey;
@@ -135,9 +128,7 @@ export const SqlDialectModal: React.FC<SqlDialectModalProps> = ({
                   fontSize: "12px",
                   fontWeight: 700,
                   cursor: "pointer",
-                  background: isSelected
-                    ? "var(--cyan)"
-                    : "var(--panel)",
+                  background: isSelected ? "var(--cyan)" : "var(--panel)",
                   color: isSelected ? "#000" : "var(--text)",
                   border: isSelected
                     ? "1px solid var(--cyan)"
@@ -152,7 +143,14 @@ export const SqlDialectModal: React.FC<SqlDialectModalProps> = ({
         </div>
 
         {/* Body */}
-        <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div
+          style={{
+            padding: "20px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "16px",
+          }}
+        >
           {/* Translated SQL Code Box */}
           <div style={{ position: "relative" }}>
             <div
@@ -206,7 +204,8 @@ export const SqlDialectModal: React.FC<SqlDialectModalProps> = ({
                 whiteSpace: "pre-wrap",
               }}
             >
-              {activeTranslation.translatedSql || "-- Write a query to translate"}
+              {activeTranslation.translatedSql ||
+                "-- Write a query to translate"}
             </pre>
           </div>
 

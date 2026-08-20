@@ -23,7 +23,8 @@ export const missionCapstones: MissionCapstone[] = [
   {
     id: "m1",
     title: "E-Commerce Customer Churn & Unit Economics Audit",
-    subtitle: "Audit customer repeat rates, identify churned VIP accounts, and calculate revenue loss",
+    subtitle:
+      "Audit customer repeat rates, identify churned VIP accounts, and calculate revenue loss",
     category: "E-Commerce",
     difficulty: "Advanced",
     estimatedMinutes: 30,
@@ -81,7 +82,8 @@ export const missionCapstones: MissionCapstone[] = [
   {
     id: "m2",
     title: "FinTech Fraud Risk & Transaction Anomaly Detection",
-    subtitle: "Identify high-frequency duplicate transfers, abnormal withdrawal spikes, and account takeovers",
+    subtitle:
+      "Identify high-frequency duplicate transfers, abnormal withdrawal spikes, and account takeovers",
     category: "FinTech",
     difficulty: "Advanced",
     estimatedMinutes: 35,
@@ -139,7 +141,8 @@ export const missionCapstones: MissionCapstone[] = [
   {
     id: "m3",
     title: "SaaS Subscription Cohort Retention & LTV Analysis",
-    subtitle: "Calculate monthly subscriber retention cohorts, churn velocity, and lifetime customer value",
+    subtitle:
+      "Calculate monthly subscriber retention cohorts, churn velocity, and lifetime customer value",
     category: "SaaS",
     difficulty: "Advanced",
     estimatedMinutes: 30,
@@ -197,7 +200,8 @@ export const missionCapstones: MissionCapstone[] = [
   {
     id: "m4",
     title: "10-Minute Grocery Delivery SLA & Fulfillment Audit",
-    subtitle: "Analyze delivery delays, stockout frequency, and warehouse fulfillment bottlenecks",
+    subtitle:
+      "Analyze delivery delays, stockout frequency, and warehouse fulfillment bottlenecks",
     category: "Logistics",
     difficulty: "Intermediate",
     estimatedMinutes: 25,

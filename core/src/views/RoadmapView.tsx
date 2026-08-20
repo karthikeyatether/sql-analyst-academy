@@ -58,10 +58,22 @@ function RoadmapView({
     (totalCompleted / learningRoadmap.length) * 100,
   );
 
-  const solvedProblemsSet = React.useMemo(() => new Set(progress.solvedProblems || []), [progress.solvedProblems]);
-  const solvedPuzzlesSet = React.useMemo(() => new Set(progress.solvedPuzzles || []), [progress.solvedPuzzles]);
-  const completedDaysSet = React.useMemo(() => new Set(progress.completedDays || []), [progress.completedDays]);
-  const modulesMap = React.useMemo(() => new Map(roadmapModules.map((m) => [m.id, m])), [roadmapModules]);
+  const solvedProblemsSet = React.useMemo(
+    () => new Set(progress.solvedProblems || []),
+    [progress.solvedProblems],
+  );
+  const solvedPuzzlesSet = React.useMemo(
+    () => new Set(progress.solvedPuzzles || []),
+    [progress.solvedPuzzles],
+  );
+  const completedDaysSet = React.useMemo(
+    () => new Set(progress.completedDays || []),
+    [progress.completedDays],
+  );
+  const modulesMap = React.useMemo(
+    () => new Map(roadmapModules.map((m) => [m.id, m])),
+    [roadmapModules],
+  );
   const puzzlesByDayMap = React.useMemo(() => {
     const map = new Map<number, SqlPuzzle[]>();
     debugPuzzles.forEach((p) => {
@@ -80,477 +92,521 @@ function RoadmapView({
           style={{
             padding: "1.5rem 2rem",
             margin: "0 0 1.5rem 0",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "2rem",
-        }}
-      >
-        <div style={{ flex: "1 1 450px" }}>
-          <h1 style={{ margin: "0 0 0.5rem 0", fontSize: "1.6rem", fontWeight: 800 }}>
-            {learningRoadmap.length}-Day SQL Roadmap
-          </h1>
-          <p style={{ margin: 0, opacity: 0.8, fontSize: "0.85rem", lineHeight: "1.5" }}>
-            Follow this step-by-step guide to become job-ready in{" "}
-            {learningRoadmap.length} days. You are free to move at your own pace.
-          </p>
-        </div>
-        <div
-          style={{
-            flex: "0 1 280px",
-            maxWidth: "280px",
             display: "flex",
-            flexDirection: "column",
-            gap: "0.5rem",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "2rem",
           }}
         >
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem", color: "var(--muted)" }}>
-            <span style={{ fontWeight: 600 }}>Track Progress</span>
-            <span style={{ fontWeight: "bold", color: "var(--primary)" }}>{progressPct}% Complete</span>
+          <div style={{ flex: "1 1 450px" }}>
+            <h1
+              style={{
+                margin: "0 0 0.5rem 0",
+                fontSize: "1.6rem",
+                fontWeight: 800,
+              }}
+            >
+              {learningRoadmap.length}-Day SQL Roadmap
+            </h1>
+            <p
+              style={{
+                margin: 0,
+                opacity: 0.8,
+                fontSize: "0.85rem",
+                lineHeight: "1.5",
+              }}
+            >
+              Follow this step-by-step guide to become job-ready in{" "}
+              {learningRoadmap.length} days. You are free to move at your own
+              pace.
+            </p>
           </div>
           <div
             style={{
-              background: "var(--bg)",
-              height: 8,
-              borderRadius: 4,
-              overflow: "hidden",
-              border: "1px solid var(--border)",
+              flex: "0 1 280px",
+              maxWidth: "280px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.5rem",
             }}
           >
             <div
               style={{
-                width: `${progressPct}%`,
-                background: "var(--primary)",
-                height: "100%",
-                transition: "width 0.3s ease",
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div
-        style={{
-          padding: "1rem 0",
-          display: "flex",
-          flexDirection: "column",
-          gap: "1.5rem",
-        }}
-      >
-        {learningRoadmap.map((day, dayIndex) => {
-          const isDone = completedDaysSet.has(day.day);
-          const dayModules = day.modules
-            .map((id) => modulesMap.get(id))
-            .filter((m) => m !== undefined);
-          const dayProblems = dayModules.flatMap((m) => m!.problems);
-          const totalDayProblems = dayProblems.length;
-          const solvedDayProblems = dayProblems.filter((p) =>
-            solvedProblemsSet.has(p.id),
-          ).length;
-          const dayPuzzles = puzzlesByDayMap.get(day.day) || [];
-          const totalDayItems =
-            dayProblems.length +
-            dayPuzzles.length +
-            (day.mockInterview && day.mockInterview.company ? 1 : 0);
-          const solvedPuzzlesCount = dayPuzzles.filter((pz) =>
-            solvedPuzzlesSet.has(pz.id),
-          ).length;
-          const mockScore =
-            day.mockInterview && day.mockInterview.company
-              ? (progress.mockScores?.[day.mockInterview.company] ?? 0)
-              : 0;
-          const solvedMockCount = mockScore > 0 ? 1 : 0;
-          const solvedDayItems =
-            solvedDayProblems + solvedPuzzlesCount + solvedMockCount;
-          const problemProgressPct =
-            totalDayItems > 0
-              ? Math.round((solvedDayItems / totalDayItems) * 100)
-              : 100;
-
-          return (
-            <div
-              key={day.day}
-              style={{
                 display: "flex",
-                gap: "1.5rem",
-                opacity: isDone ? 0.75 : 1,
+                justifyContent: "space-between",
+                fontSize: "0.8rem",
+                color: "var(--muted)",
               }}
             >
-              {/* Timeline Spine Column */}
+              <span style={{ fontWeight: 600 }}>Track Progress</span>
+              <span style={{ fontWeight: "bold", color: "var(--primary)" }}>
+                {progressPct}% Complete
+              </span>
+            </div>
+            <div
+              style={{
+                background: "var(--bg)",
+                height: 8,
+                borderRadius: 4,
+                overflow: "hidden",
+                border: "1px solid var(--border)",
+              }}
+            >
               <div
                 style={{
+                  width: `${progressPct}%`,
+                  background: "var(--primary)",
+                  height: "100%",
+                  transition: "width 0.3s ease",
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            padding: "1rem 0",
+            display: "flex",
+            flexDirection: "column",
+            gap: "1.5rem",
+          }}
+        >
+          {learningRoadmap.map((day, dayIndex) => {
+            const isDone = completedDaysSet.has(day.day);
+            const dayModules = day.modules
+              .map((id) => modulesMap.get(id))
+              .filter((m) => m !== undefined);
+            const dayProblems = dayModules.flatMap((m) => m!.problems);
+            const totalDayProblems = dayProblems.length;
+            const solvedDayProblems = dayProblems.filter((p) =>
+              solvedProblemsSet.has(p.id),
+            ).length;
+            const dayPuzzles = puzzlesByDayMap.get(day.day) || [];
+            const totalDayItems =
+              dayProblems.length +
+              dayPuzzles.length +
+              (day.mockInterview && day.mockInterview.company ? 1 : 0);
+            const solvedPuzzlesCount = dayPuzzles.filter((pz) =>
+              solvedPuzzlesSet.has(pz.id),
+            ).length;
+            const mockScore =
+              day.mockInterview && day.mockInterview.company
+                ? (progress.mockScores?.[day.mockInterview.company] ?? 0)
+                : 0;
+            const solvedMockCount = mockScore > 0 ? 1 : 0;
+            const solvedDayItems =
+              solvedDayProblems + solvedPuzzlesCount + solvedMockCount;
+            const problemProgressPct =
+              totalDayItems > 0
+                ? Math.round((solvedDayItems / totalDayItems) * 100)
+                : 100;
+
+            return (
+              <div
+                key={day.day}
+                style={{
                   display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  position: "relative",
-                  width: "60px",
-                  flexShrink: 0,
+                  gap: "1.5rem",
+                  opacity: isDone ? 0.75 : 1,
                 }}
               >
-                {/* Connecting Line (don't show on last item) */}
-                {dayIndex < learningRoadmap.length - 1 && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "60px",
-                      bottom: "-1.5rem",
-                      width: "2px",
-                      background: isDone
-                        ? "color-mix(in srgb, var(--emerald) 50%, transparent)"
-                        : "color-mix(in srgb, var(--border) 50%, transparent)",
-                      zIndex: 0,
-                    }}
-                  />
-                )}
-                
-                {/* Circular Badge */}
+                {/* Timeline Spine Column */}
                 <div
                   style={{
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
-                    justifyContent: "center",
-                    background: isDone ? "var(--emerald)" : "var(--panel)",
-                    color: isDone ? "var(--hex-color-040d12)" : "var(--text)",
-                    border: isDone ? "none" : "1px solid var(--border)",
+                    position: "relative",
                     width: "60px",
-                    height: "60px",
-                    borderRadius: "50%",
-                    zIndex: 1,
-                    boxShadow: isDone ? "0 0 15px color-mix(in srgb, var(--emerald) 30%, transparent)" : "none",
+                    flexShrink: 0,
                   }}
                 >
-                  <span
-                    style={{
-                      fontSize: "0.75rem",
-                      opacity: 0.8,
-                      textTransform: "uppercase",
-                      fontWeight: 600,
-                    }}
-                  >
-                    Day
-                  </span>
-                  <span style={{ fontSize: "1.4rem", fontWeight: 900, lineHeight: 1.1 }}>
-                    {day.day}
-                  </span>
-                </div>
-              </div>
-
-              {/* Day Card Content */}
-              <div
-                className={`roadmap-day-card ${isDone ? "done" : ""}`}
-                onClick={(e) => {
-                  if (
-                    (e.target as HTMLElement).closest("button") ||
-                    (e.target as HTMLElement).closest("a")
-                  )
-                    return;
-                  setSelectedDayId(day.day);
-                  setActiveView("day-details");
-                }}
-                style={{
-                  background: "var(--panel)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "12px",
-                  padding: "1.5rem",
-                  display: "flex",
-                  flexDirection: "column",
-                  flex: 1,
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "var(--primary)";
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "var(--border)";
-                  e.currentTarget.style.transform = "none";
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  <div>
-                    <h3 style={{ margin: "0 0 0.25rem 0", fontSize: "1.2rem" }}>
-                      {day.title}
-                    </h3>
-                    <p style={{ margin: 0, fontSize: "0.9rem", opacity: 0.7 }}>
-                      Focus: {day.focus}
-                    </p>
-
-                    {(() => {
-                      const uniqueConcepts = Array.from(
-                        new Set(dayProblems.flatMap((p) => p.concepts)),
-                      );
-                      const estDurationMin =
-                        dayModules.length * 15 +
-                        totalDayProblems * 10 +
-                        dayPuzzles.length * 10 +
-                        (day.mockInterview && day.mockInterview.company
-                          ? 30
-                          : 0);
-                      const statusLabel = isDone
-                        ? "Completed"
-                        : solvedDayItems > 0
-                          ? "In Progress"
-                          : "Not Started";
-                      const statusClass = isDone
-                        ? "done"
-                        : solvedDayItems > 0
-                          ? "progress"
-                          : "todo";
-
-                      return (
-                        <div
-                          className="day-stats-row"
-                          style={{
-                            display: "flex",
-                            gap: "12px",
-                            alignItems: "center",
-                            marginTop: "6px",
-                            fontSize: "11px",
-                            flexWrap: "wrap",
-                          }}
-                        >
-                          <span
-                            className={`status-badge ${statusClass}`}
-                            style={{
-                              padding: "2px 8px",
-                              borderRadius: "4px",
-                              fontWeight: 700,
-                              fontSize: "10px",
-                              textTransform: "uppercase",
-                              background:
-                                statusClass === "done"
-                                  ? "rgba(48,230,149,0.1)"
-                                  : statusClass === "progress"
-                                    ? "rgba(56,217,255,0.1)"
-                                    : "rgba(255,255,255,0.03)",
-                              color:
-                                statusClass === "done"
-                                  ? "var(--emerald)"
-                                  : statusClass === "progress"
-                                    ? "var(--cyan)"
-                                    : "var(--muted)",
-                              border:
-                                "1px solid " +
-                                (statusClass === "done"
-                                  ? "rgba(48,230,149,0.15)"
-                                  : statusClass === "progress"
-                                    ? "rgba(56,217,255,0.2)"
-                                    : "var(--border)"),
-                            }}
-                          >
-                            {statusLabel}
-                          </span>
-                          <span style={{ color: "var(--muted)" }}>
-                            ⏱️ {estDurationMin} mins
-                          </span>
-                          {uniqueConcepts.length > 0 ? (
-                            <span style={{ color: "var(--muted)" }}>
-                              🧠 {uniqueConcepts.length} concepts
-                            </span>
-                          ) : null}
-                          <span style={{ color: "var(--muted)" }}>
-                            📝 {totalDayItems}{" "}
-                            {totalDayItems === 1 ? "exercise" : "exercises"}
-                          </span>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                  <button
-                    className={`icon-button ${isDone ? "primary" : ""}`}
-                    onClick={() => toggleDayComplete(day.day)}
-                    title={isDone ? "Mark incomplete" : "Mark as done"}
-                  >
-                    {isDone ? (
-                      <CheckCircle2 size={24} color="var(--emerald)" />
-                    ) : (
-                      <Circle size={24} />
-                    )}
-                  </button>
-                </div>
-
-                {totalDayItems > 0 && (
-                  <div
-                    style={{
-                      marginTop: "0.75rem",
-                      marginBottom: "0.5rem",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "1rem",
-                      fontSize: "0.85rem",
-                    }}
-                  >
-                    <span style={{ color: "var(--muted)", width: "130px" }}>
-                      Day Progress:
-                    </span>
+                  {/* Connecting Line (don't show on last item) */}
+                  {dayIndex < learningRoadmap.length - 1 && (
                     <div
                       style={{
-                        flex: 1,
-                        background: "var(--bg)",
-                        height: 6,
-                        borderRadius: 3,
-                        overflow: "hidden",
-                        border: "1px solid var(--border)",
+                        position: "absolute",
+                        top: "60px",
+                        bottom: "-1.5rem",
+                        width: "2px",
+                        background: isDone
+                          ? "color-mix(in srgb, var(--emerald) 50%, transparent)"
+                          : "color-mix(in srgb, var(--border) 50%, transparent)",
+                        zIndex: 0,
                       }}
-                    >
-                      <div
-                        style={{
-                          width: `${problemProgressPct}%`,
-                          background:
-                            problemProgressPct === 100
-                              ? "var(--emerald)"
-                              : "var(--cyan)",
-                          height: "100%",
-                          transition: "width 0.3s",
-                        }}
-                      />
-                    </div>
+                    />
+                  )}
+
+                  {/* Circular Badge */}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: isDone ? "var(--emerald)" : "var(--panel)",
+                      color: isDone ? "var(--hex-color-040d12)" : "var(--text)",
+                      border: isDone ? "none" : "1px solid var(--border)",
+                      width: "60px",
+                      height: "60px",
+                      borderRadius: "50%",
+                      zIndex: 1,
+                      boxShadow: isDone
+                        ? "0 0 15px color-mix(in srgb, var(--emerald) 30%, transparent)"
+                        : "none",
+                    }}
+                  >
                     <span
                       style={{
-                        fontWeight: "bold",
-                        color:
-                          problemProgressPct === 100
-                            ? "var(--emerald)"
-                            : "inherit",
+                        fontSize: "0.75rem",
+                        opacity: 0.8,
+                        textTransform: "uppercase",
+                        fontWeight: 600,
                       }}
                     >
-                      {solvedDayItems} / {totalDayItems}
+                      Day
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "1.4rem",
+                        fontWeight: 900,
+                        lineHeight: 1.1,
+                      }}
+                    >
+                      {day.day}
                     </span>
                   </div>
-                )}
+                </div>
 
+                {/* Day Card Content */}
                 <div
+                  className={`roadmap-day-card ${isDone ? "done" : ""}`}
+                  onClick={(e) => {
+                    if (
+                      (e.target as HTMLElement).closest("button") ||
+                      (e.target as HTMLElement).closest("a")
+                    )
+                      return;
+                    setSelectedDayId(day.day);
+                    setActiveView("day-details");
+                  }}
                   style={{
+                    background: "var(--panel)",
+                    border: "1px solid var(--border)",
+                    borderRadius: "12px",
+                    padding: "1.5rem",
                     display: "flex",
-                    gap: "1rem",
-                    marginTop: "1rem",
-                    flexWrap: "wrap",
+                    flexDirection: "column",
+                    flex: 1,
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "var(--primary)";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "var(--border)";
+                    e.currentTarget.style.transform = "none";
                   }}
                 >
-                  {dayModules.map((mod) => (
-                    <button
-                      key={mod!.id}
-                      className="secondary-button compact"
-                      onClick={() => {
-                        selectModule(mod!);
-                        setActiveView("modules");
+                  <div style={{ flex: 1 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        marginBottom: "0.5rem",
                       }}
-                      style={
-                        mod!.isHighWeight
-                          ? {
-                              borderColor: "rgba(56, 217, 255, 0.3)",
-                              background: "transparent",
-                            }
-                          : undefined
-                      }
                     >
-                      <BookOpen
-                        size={14}
-                        style={
-                          mod!.isHighWeight
-                            ? { color: "var(--cyan)" }
-                            : undefined
-                        }
-                      />{" "}
-                      Read: {mod!.title}{" "}
-                      {mod!.isHighWeight && (
-                        <span
+                      <div>
+                        <h3
                           style={{
-                            color: "var(--cyan)",
-                            marginLeft: "4px",
-                            fontWeight: "bold",
+                            margin: "0 0 0.25rem 0",
+                            fontSize: "1.2rem",
                           }}
                         >
-                          ⭐
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                  {dayProblems.map((p) => {
-                    const isHigh = roadmapModules.find(
-                      (m) => m.id === p.moduleId,
-                    )?.isHighWeight;
-                    return (
+                          {day.title}
+                        </h3>
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: "0.9rem",
+                            opacity: 0.7,
+                          }}
+                        >
+                          Focus: {day.focus}
+                        </p>
+
+                        {(() => {
+                          const uniqueConcepts = Array.from(
+                            new Set(dayProblems.flatMap((p) => p.concepts)),
+                          );
+                          const estDurationMin =
+                            dayModules.length * 15 +
+                            totalDayProblems * 10 +
+                            dayPuzzles.length * 10 +
+                            (day.mockInterview && day.mockInterview.company
+                              ? 30
+                              : 0);
+                          const statusLabel = isDone
+                            ? "Completed"
+                            : solvedDayItems > 0
+                              ? "In Progress"
+                              : "Not Started";
+                          const statusClass = isDone
+                            ? "done"
+                            : solvedDayItems > 0
+                              ? "progress"
+                              : "todo";
+
+                          return (
+                            <div
+                              className="day-stats-row"
+                              style={{
+                                display: "flex",
+                                gap: "12px",
+                                alignItems: "center",
+                                marginTop: "6px",
+                                fontSize: "11px",
+                                flexWrap: "wrap",
+                              }}
+                            >
+                              <span
+                                className={`status-badge ${statusClass}`}
+                                style={{
+                                  padding: "2px 8px",
+                                  borderRadius: "4px",
+                                  fontWeight: 700,
+                                  fontSize: "10px",
+                                  textTransform: "uppercase",
+                                  background:
+                                    statusClass === "done"
+                                      ? "rgba(48,230,149,0.1)"
+                                      : statusClass === "progress"
+                                        ? "rgba(56,217,255,0.1)"
+                                        : "rgba(255,255,255,0.03)",
+                                  color:
+                                    statusClass === "done"
+                                      ? "var(--emerald)"
+                                      : statusClass === "progress"
+                                        ? "var(--cyan)"
+                                        : "var(--muted)",
+                                  border:
+                                    "1px solid " +
+                                    (statusClass === "done"
+                                      ? "rgba(48,230,149,0.15)"
+                                      : statusClass === "progress"
+                                        ? "rgba(56,217,255,0.2)"
+                                        : "var(--border)"),
+                                }}
+                              >
+                                {statusLabel}
+                              </span>
+                              <span style={{ color: "var(--muted)" }}>
+                                ⏱️ {estDurationMin} mins
+                              </span>
+                              {uniqueConcepts.length > 0 ? (
+                                <span style={{ color: "var(--muted)" }}>
+                                  🧠 {uniqueConcepts.length} concepts
+                                </span>
+                              ) : null}
+                              <span style={{ color: "var(--muted)" }}>
+                                📝 {totalDayItems}{" "}
+                                {totalDayItems === 1 ? "exercise" : "exercises"}
+                              </span>
+                            </div>
+                          );
+                        })()}
+                      </div>
                       <button
-                        key={p.id}
-                        className="secondary-button compact outline"
-                        onClick={() => openInPlayground(p)}
-                        style={
-                          isHigh
-                            ? {
-                                borderColor: "rgba(56, 217, 255, 0.3)",
-                                background: "transparent",
-                              }
-                            : undefined
-                        }
-                        title={`Solve: ${p.title}`}
+                        className={`icon-button ${isDone ? "primary" : ""}`}
+                        onClick={() => toggleDayComplete(day.day)}
+                        title={isDone ? "Mark incomplete" : "Mark as done"}
                       >
-                        <Code2
-                          size={14}
-                          style={isHigh ? { color: "var(--cyan)" } : undefined}
-                        />{" "}
-                        Solve: {p.title}{" "}
-                        {isHigh && (
-                          <span
-                            style={{
-                              color: "var(--cyan)",
-                              marginLeft: "4px",
-                              fontWeight: "bold",
-                            }}
-                          >
-                            ⭐
-                          </span>
+                        {isDone ? (
+                          <CheckCircle2 size={24} color="var(--emerald)" />
+                        ) : (
+                          <Circle size={24} />
                         )}
                       </button>
-                    );
-                  })}
-                  {debugPuzzles
-                    .filter((p) => p.dayId === day.day)
-                    .map((puzzle) => (
-                      <button
-                        key={puzzle.id}
-                        className="secondary-button compact outline"
-                        onClick={() => {
-                          stopAutoTyping();
-                          setActivePuzzleId(puzzle.id);
-                          setPlaygroundMode("puzzle");
-                          const saved = getSavedPuzzleQuery(puzzle);
-                          updateEditorQuery(saved, "puzzle", puzzle.id);
-                          setActiveView("playground");
+                    </div>
+
+                    {totalDayItems > 0 && (
+                      <div
+                        style={{
+                          marginTop: "0.75rem",
+                          marginBottom: "0.5rem",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "1rem",
+                          fontSize: "0.85rem",
                         }}
-                        title={`Debug: ${puzzle.title}`}
                       >
-                        🧩 Debug: {puzzle.title}
-                      </button>
-                    ))}
-                  {day.mockInterview && (
-                    <button
-                      className="primary-button compact"
-                      onClick={() => {
-                        setActiveView("mocks");
+                        <span style={{ color: "var(--muted)", width: "130px" }}>
+                          Day Progress:
+                        </span>
+                        <div
+                          style={{
+                            flex: 1,
+                            background: "var(--bg)",
+                            height: 6,
+                            borderRadius: 3,
+                            overflow: "hidden",
+                            border: "1px solid var(--border)",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: `${problemProgressPct}%`,
+                              background:
+                                problemProgressPct === 100
+                                  ? "var(--emerald)"
+                                  : "var(--cyan)",
+                              height: "100%",
+                              transition: "width 0.3s",
+                            }}
+                          />
+                        </div>
+                        <span
+                          style={{
+                            fontWeight: "bold",
+                            color:
+                              problemProgressPct === 100
+                                ? "var(--emerald)"
+                                : "inherit",
+                          }}
+                        >
+                          {solvedDayItems} / {totalDayItems}
+                        </span>
+                      </div>
+                    )}
+
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "1rem",
+                        marginTop: "1rem",
+                        flexWrap: "wrap",
                       }}
                     >
-                      <Timer size={14} /> Mock: {day.mockInterview.company}
-                    </button>
-                  )}
+                      {dayModules.map((mod) => (
+                        <button
+                          key={mod!.id}
+                          className="secondary-button compact"
+                          onClick={() => {
+                            selectModule(mod!);
+                            setActiveView("modules");
+                          }}
+                          style={
+                            mod!.isHighWeight
+                              ? {
+                                  borderColor: "rgba(56, 217, 255, 0.3)",
+                                  background: "transparent",
+                                }
+                              : undefined
+                          }
+                        >
+                          <BookOpen
+                            size={14}
+                            style={
+                              mod!.isHighWeight
+                                ? { color: "var(--cyan)" }
+                                : undefined
+                            }
+                          />{" "}
+                          Read: {mod!.title}{" "}
+                          {mod!.isHighWeight && (
+                            <span
+                              style={{
+                                color: "var(--cyan)",
+                                marginLeft: "4px",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              ⭐
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                      {dayProblems.map((p) => {
+                        const isHigh = roadmapModules.find(
+                          (m) => m.id === p.moduleId,
+                        )?.isHighWeight;
+                        return (
+                          <button
+                            key={p.id}
+                            className="secondary-button compact outline"
+                            onClick={() => openInPlayground(p)}
+                            style={
+                              isHigh
+                                ? {
+                                    borderColor: "rgba(56, 217, 255, 0.3)",
+                                    background: "transparent",
+                                  }
+                                : undefined
+                            }
+                            title={`Solve: ${p.title}`}
+                          >
+                            <Code2
+                              size={14}
+                              style={
+                                isHigh ? { color: "var(--cyan)" } : undefined
+                              }
+                            />{" "}
+                            Solve: {p.title}{" "}
+                            {isHigh && (
+                              <span
+                                style={{
+                                  color: "var(--cyan)",
+                                  marginLeft: "4px",
+                                  fontWeight: "bold",
+                                }}
+                              >
+                                ⭐
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                      {debugPuzzles
+                        .filter((p) => p.dayId === day.day)
+                        .map((puzzle) => (
+                          <button
+                            key={puzzle.id}
+                            className="secondary-button compact outline"
+                            onClick={() => {
+                              stopAutoTyping();
+                              setActivePuzzleId(puzzle.id);
+                              setPlaygroundMode("puzzle");
+                              const saved = getSavedPuzzleQuery(puzzle);
+                              updateEditorQuery(saved, "puzzle", puzzle.id);
+                              setActiveView("playground");
+                            }}
+                            title={`Debug: ${puzzle.title}`}
+                          >
+                            🧩 Debug: {puzzle.title}
+                          </button>
+                        ))}
+                      {day.mockInterview && (
+                        <button
+                          className="primary-button compact"
+                          onClick={() => {
+                            setActiveView("mocks");
+                          }}
+                        >
+                          <Timer size={14} /> Mock: {day.mockInterview.company}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

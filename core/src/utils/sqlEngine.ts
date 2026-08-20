@@ -261,8 +261,6 @@ export async function runQuery(
   }
 }
 
-
-
 export async function getQueryPlan(sql: string): Promise<QueryPlanStep[]> {
   await initDatabase();
   if (workerInstance) {
@@ -580,4 +578,3 @@ export function exportDatabaseAsSql(
 ): string {
   return "-- SQL Database Export\n";
 }
-

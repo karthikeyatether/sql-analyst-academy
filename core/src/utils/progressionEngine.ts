@@ -7,16 +7,76 @@ export interface ProgressionLevel {
 }
 
 export const PROGRESSION_LEVELS: ProgressionLevel[] = [
-  { level: 1, title: "SQL Novice", minXP: 0, maxXP: 400, color: "var(--muted)" },
-  { level: 2, title: "Query Coder", minXP: 400, maxXP: 900, color: "var(--emerald)" },
-  { level: 3, title: "SQL Associate", minXP: 900, maxXP: 1600, color: "var(--cyan)" },
-  { level: 4, title: "Junior Analyst", minXP: 1600, maxXP: 2600, color: "var(--blue)" },
-  { level: 5, title: "SQL Engineer", minXP: 2600, maxXP: 4000, color: "var(--violet)" },
-  { level: 6, title: "Senior Data Analyst", minXP: 4000, maxXP: 5800, color: "var(--rose)" },
-  { level: 7, title: "Analytics Specialist", minXP: 5800, maxXP: 8000, color: "var(--amber)" },
-  { level: 8, title: "Lead SQL Engineer", minXP: 8000, maxXP: 11000, color: "var(--amber)" },
-  { level: 9, title: "Principal Data Architect", minXP: 11000, maxXP: 15000, color: "var(--cyan)" },
-  { level: 10, title: "Staff SQL Architect", minXP: 15000, maxXP: Infinity, color: "var(--cyan)" },
+  {
+    level: 1,
+    title: "SQL Novice",
+    minXP: 0,
+    maxXP: 400,
+    color: "var(--muted)",
+  },
+  {
+    level: 2,
+    title: "Query Coder",
+    minXP: 400,
+    maxXP: 900,
+    color: "var(--emerald)",
+  },
+  {
+    level: 3,
+    title: "SQL Associate",
+    minXP: 900,
+    maxXP: 1600,
+    color: "var(--cyan)",
+  },
+  {
+    level: 4,
+    title: "Junior Analyst",
+    minXP: 1600,
+    maxXP: 2600,
+    color: "var(--blue)",
+  },
+  {
+    level: 5,
+    title: "SQL Engineer",
+    minXP: 2600,
+    maxXP: 4000,
+    color: "var(--violet)",
+  },
+  {
+    level: 6,
+    title: "Senior Data Analyst",
+    minXP: 4000,
+    maxXP: 5800,
+    color: "var(--rose)",
+  },
+  {
+    level: 7,
+    title: "Analytics Specialist",
+    minXP: 5800,
+    maxXP: 8000,
+    color: "var(--amber)",
+  },
+  {
+    level: 8,
+    title: "Lead SQL Engineer",
+    minXP: 8000,
+    maxXP: 11000,
+    color: "var(--amber)",
+  },
+  {
+    level: 9,
+    title: "Principal Data Architect",
+    minXP: 11000,
+    maxXP: 15000,
+    color: "var(--cyan)",
+  },
+  {
+    level: 10,
+    title: "Staff SQL Architect",
+    minXP: 15000,
+    maxXP: Infinity,
+    color: "var(--cyan)",
+  },
 ];
 
 export interface UserStatsInput {
@@ -56,7 +116,9 @@ export function getProgressionLevel(totalXP: number): ProgressionLevel {
   return PROGRESSION_LEVELS[0];
 }
 
-export function getNextProgressionLevel(totalXP: number): ProgressionLevel | null {
+export function getNextProgressionLevel(
+  totalXP: number,
+): ProgressionLevel | null {
   for (let i = 0; i < PROGRESSION_LEVELS.length; i++) {
     if (totalXP < PROGRESSION_LEVELS[i].minXP) {
       return PROGRESSION_LEVELS[i];
@@ -74,10 +136,7 @@ export function calculateInterviewReadiness(stats: UserStatsInput): number {
 
   // Weighted formula: Modules 30%, Practice Problems 40%, Debug Puzzles 15%, Mock Exams 15%
   const score = Math.round(
-    modPct * 30 +
-    probPct * 40 +
-    puzPct * 15 +
-    mockPct * 15
+    modPct * 30 + probPct * 40 + puzPct * 15 + mockPct * 15,
   );
 
   return Math.min(100, Math.max(0, score));

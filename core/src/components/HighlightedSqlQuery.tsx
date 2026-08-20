@@ -34,7 +34,8 @@ export default function HighlightedSqlQuery({
     // Group 4: Secondary Keywords (AS, AND, OR, NOT, IN, BETWEEN, LIKE, IS NULL, IS NOT NULL, DISTINCT, CASE, WHEN, THEN, ELSE, END, ASC, DESC, UNION, ALL)
     // Group 5: Aggregate / Built-in Functions (COUNT, SUM, AVG, MIN, MAX, COALESCE, NULLIF, ROW_NUMBER, RANK, DENSE_RANK, LAG, LEAD, ROUND, CAST, UPPER, LOWER, TRIM, DATE, STRFTIME)
     // Group 6: Numbers (\b\d+\b)
-    const tokenRegex = /(--.*$)|('(?:''|[^'])*')|(\b(?:SELECT|FROM|WHERE|GROUP\s+BY|HAVING|ORDER\s+BY|LIMIT|LEFT\s+JOIN|RIGHT\s+JOIN|FULL\s+JOIN|CROSS\s+JOIN|INNER\s+JOIN|JOIN|WITH|ON|INSERT\s+INTO|UPDATE|DELETE\s+FROM|CREATE\s+TABLE|ALTER\s+TABLE)\b)|(\b(?:AS|AND|OR|NOT|IN|BETWEEN|LIKE|IS\s+NULL|IS\s+NOT\s+NULL|DISTINCT|CASE|WHEN|THEN|ELSE|END|ASC|DESC|UNION|ALL|EXISTS|OVER|PARTITION\s+BY|SET|VALUES)\b)|(\b(?:COUNT|SUM|AVG|MIN|MAX|COALESCE|NULLIF|ROW_NUMBER|RANK|DENSE_RANK|LAG|LEAD|ROUND|CAST|UPPER|LOWER|TRIM|DATE|STRFTIME|SUBSTR|LENGTH|ABS|REPLACE|NOW)\b)|(\b\d+(?:\.\d+)?\b)/gi;
+    const tokenRegex =
+      /(--.*$)|('(?:''|[^'])*')|(\b(?:SELECT|FROM|WHERE|GROUP\s+BY|HAVING|ORDER\s+BY|LIMIT|LEFT\s+JOIN|RIGHT\s+JOIN|FULL\s+JOIN|CROSS\s+JOIN|INNER\s+JOIN|JOIN|WITH|ON|INSERT\s+INTO|UPDATE|DELETE\s+FROM|CREATE\s+TABLE|ALTER\s+TABLE)\b)|(\b(?:AS|AND|OR|NOT|IN|BETWEEN|LIKE|IS\s+NULL|IS\s+NOT\s+NULL|DISTINCT|CASE|WHEN|THEN|ELSE|END|ASC|DESC|UNION|ALL|EXISTS|OVER|PARTITION\s+BY|SET|VALUES)\b)|(\b(?:COUNT|SUM|AVG|MIN|MAX|COALESCE|NULLIF|ROW_NUMBER|RANK|DENSE_RANK|LAG|LEAD|ROUND|CAST|UPPER|LOWER|TRIM|DATE|STRFTIME|SUBSTR|LENGTH|ABS|REPLACE|NOW)\b)|(\b\d+(?:\.\d+)?\b)/gi;
 
     const parts: React.ReactNode[] = [];
     let lastIndex = 0;
@@ -58,15 +59,21 @@ export default function HighlightedSqlQuery({
 
       if (comment) {
         parts.push(
-          <span key={`${lineIdx}-${match.index}`} style={{ color: "#6e7681", fontStyle: "italic" }}>
+          <span
+            key={`${lineIdx}-${match.index}`}
+            style={{ color: "#6e7681", fontStyle: "italic" }}
+          >
             {comment}
-          </span>
+          </span>,
         );
       } else if (stringLiteral) {
         parts.push(
-          <span key={`${lineIdx}-${match.index}`} style={{ color: "var(--emerald, #3fb950)", fontWeight: 500 }}>
+          <span
+            key={`${lineIdx}-${match.index}`}
+            style={{ color: "var(--emerald, #3fb950)", fontWeight: 500 }}
+          >
             {stringLiteral}
-          </span>
+          </span>,
         );
       } else if (majorClause) {
         parts.push(
@@ -79,7 +86,7 @@ export default function HighlightedSqlQuery({
             }}
           >
             {majorClause.toUpperCase()}
-          </span>
+          </span>,
         );
       } else if (secondaryKeyword) {
         parts.push(
@@ -91,7 +98,7 @@ export default function HighlightedSqlQuery({
             }}
           >
             {secondaryKeyword.toUpperCase()}
-          </span>
+          </span>,
         );
       } else if (func) {
         parts.push(
@@ -103,13 +110,16 @@ export default function HighlightedSqlQuery({
             }}
           >
             {func.toUpperCase()}
-          </span>
+          </span>,
         );
       } else if (numberLiteral) {
         parts.push(
-          <span key={`${lineIdx}-${match.index}`} style={{ color: "#ff7b72", fontWeight: 600 }}>
+          <span
+            key={`${lineIdx}-${match.index}`}
+            style={{ color: "#ff7b72", fontWeight: 600 }}
+          >
             {numberLiteral}
-          </span>
+          </span>,
         );
       }
 
@@ -133,7 +143,8 @@ export default function HighlightedSqlQuery({
         margin: 0,
         padding: "14px 18px",
         background: "transparent",
-        fontFamily: "var(--font-mono, 'JetBrains Mono', Consolas, 'Courier New', monospace)",
+        fontFamily:
+          "var(--font-mono, 'JetBrains Mono', Consolas, 'Courier New', monospace)",
         fontSize,
         lineHeight: "1.5",
         color: "var(--text, #e6edf3)",

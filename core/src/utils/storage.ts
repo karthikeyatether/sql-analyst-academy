@@ -37,7 +37,9 @@ export function getStorageItem<T>(key: string, fallback: T): T {
     s = localStorage.getItem(key);
     // Automatic fallback for canonical keys if primary key not present
     if (!s && key === StorageKeys.PROGRESS) {
-      s = localStorage.getItem(StorageKeys.PROGRESS_LEGACY) || localStorage.getItem("sql-aa-progress-v2");
+      s =
+        localStorage.getItem(StorageKeys.PROGRESS_LEGACY) ||
+        localStorage.getItem("sql-aa-progress-v2");
     } else if (!s && key === "sql-aa-query-history-b") {
       s = localStorage.getItem("sql-aa-query-b-v2");
     }
@@ -102,8 +104,6 @@ export function setStorageItem<T>(key: string, value: T): void {
     }
   }
 }
-
-
 
 export function subscribeToCrossTabSync(
   callback: (key: string, newValue: any) => void,

@@ -75,7 +75,8 @@ export function registerSchemaCompletions(
           kind: monacoInstance.languages.CompletionItemKind.Snippet,
           insertText: "SELECT * FROM ${1:table} LIMIT ${2:10};",
           insertTextRules:
-            monacoInstance.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            monacoInstance.languages.CompletionItemInsertTextRule
+              .InsertAsSnippet,
           detail: "Query all columns with limit",
           range,
         },
@@ -85,7 +86,8 @@ export function registerSchemaCompletions(
           insertText:
             "WITH ${1:cte_name} AS (\n  SELECT ${2:*}\n  FROM ${3:table}\n)\nSELECT *\nFROM ${1:cte_name};",
           insertTextRules:
-            monacoInstance.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            monacoInstance.languages.CompletionItemInsertTextRule
+              .InsertAsSnippet,
           detail: "Common Table Expression structure",
           range,
         },
@@ -95,7 +97,8 @@ export function registerSchemaCompletions(
           insertText:
             "${1:ROW_NUMBER()} OVER (\n  PARTITION BY ${2:group_col}\n  ORDER BY ${3:order_col} DESC\n) AS ${4:rank_val}",
           insertTextRules:
-            monacoInstance.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            monacoInstance.languages.CompletionItemInsertTextRule
+              .InsertAsSnippet,
           detail: "Window function with partition and order",
           range,
         },

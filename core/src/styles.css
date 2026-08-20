@@ -804,7 +804,9 @@ a {
   color: var(--muted);
   opacity: 0.8;
   flex-shrink: 0;
-  transition: color 0.2s, opacity 0.2s;
+  transition:
+    color 0.2s,
+    opacity 0.2s;
 }
 .search-shell:focus-within svg {
   color: var(--primary);
@@ -1252,8 +1254,6 @@ a {
   }
 }
 
-
-
 /* Q&A Cards */
 .qa-list {
   display: flex;
@@ -1437,7 +1437,6 @@ a {
   color: var(--faint);
 }
 
-
 /* lesson panel */
 .lesson-panel {
   display: flex;
@@ -1464,8 +1463,6 @@ a {
   gap: 8px;
   flex-shrink: 0;
 }
-
-
 
 .lesson-body {
   flex: 1;
@@ -2616,12 +2613,6 @@ details > p {
   line-height: 1.5;
 }
 
-
-
-
-
-
-
 /* MOCKS */
 .mock-grid {
   display: grid;
@@ -2637,7 +2628,10 @@ details > p {
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
-  transition: border-color 150ms, transform 200ms ease, box-shadow 200ms ease;
+  transition:
+    border-color 150ms,
+    transform 200ms ease,
+    box-shadow 200ms ease;
 }
 .mock-card:hover {
   border-color: rgba(56, 217, 255, 0.35);
@@ -2741,7 +2735,6 @@ details > p {
 }
 
 /* cheat sheet divider */
-
 
 /* RESPONSIVE */
 @media (max-width: 900px) {
@@ -3134,7 +3127,6 @@ details > p {
   font-size: 10px;
 }
 
-
 .physical-step-item {
   display: flex;
   align-items: flex-start;
@@ -3456,7 +3448,6 @@ details > p {
 }
 
 /* 30-day learning calendar modern */
-
 
 /* Q&A Accordion Panel styling */
 .qa-panel-wrap {
@@ -4061,7 +4052,6 @@ details > summary:focus-visible {
 
 /* Venn Diagram Sandboxing */
 
-
 /* Plan flowchart custom scrollbars */
 .physical-tree-list {
   scrollbar-width: thin;
@@ -4083,7 +4073,6 @@ details > summary:focus-visible {
   color: var(--cyan);
   background: rgba(56, 217, 255, 0.05);
 }
-
 
 /* Interactive Schema Autocomplete click triggers */
 .schema-insertable-item:hover {
@@ -4317,7 +4306,6 @@ details > summary:focus-visible {
 }
 
 /* VSplitPane diff layout adjustments */
-
 
 /* OLED Theme Overrides */
 :root.oled {
@@ -4648,11 +4636,24 @@ body,
 .toc-link.active {
   color: var(--toc-highlight, var(--cyan));
   border-left-color: var(--toc-highlight, var(--cyan));
-  background: linear-gradient(90deg, color-mix(in srgb, var(--toc-highlight, var(--cyan)) 10%, transparent) 0%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--toc-highlight, var(--cyan)) 10%, transparent) 0%,
+    transparent 100%
+  );
   font-weight: 600;
 }
 
-.narrative-body::-webkit-scrollbar { width: 6px; }
-.narrative-body::-webkit-scrollbar-track { background: transparent; }
-.narrative-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-.narrative-body::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+.narrative-body::-webkit-scrollbar {
+  width: 6px;
+}
+.narrative-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.narrative-body::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+.narrative-body::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}

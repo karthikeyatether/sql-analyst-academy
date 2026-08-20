@@ -33,13 +33,20 @@ export function formatProseText(text: string): React.ReactNode {
     // Handle **bold**
     if (part.startsWith("**") && part.endsWith("**") && part.length >= 4) {
       const inner = part.slice(2, -2);
-      return <strong key={index} style={{ color: "var(--text)", fontWeight: 700 }}>{inner}</strong>;
+      return (
+        <strong key={index} style={{ color: "var(--text)", fontWeight: 700 }}>
+          {inner}
+        </strong>
+      );
     }
 
     // Handle `code`
     if (part.startsWith("`") && part.endsWith("`") && part.length >= 2) {
       const inner = part.slice(1, -1);
-      const isSqlKeyword = /^(SELECT|FROM|WHERE|GROUP\s+BY|HAVING|ORDER\s+BY|LIMIT|LEFT\s+JOIN|INNER\s+JOIN|JOIN|WITH|CTE|COALESCE|NULLIF|OVER|PARTITION\s+BY|ROW_NUMBER|RANK|DENSE_RANK|LAG|LEAD|CASE|WHEN|THEN|ELSE|END|DISTINCT|COUNT|SUM|AVG|MIN|MAX|AND|OR|NOT|IN|BETWEEN|LIKE|IS\s+NULL|IS\s+NOT\s+NULL)$/i.test(inner.trim());
+      const isSqlKeyword =
+        /^(SELECT|FROM|WHERE|GROUP\s+BY|HAVING|ORDER\s+BY|LIMIT|LEFT\s+JOIN|INNER\s+JOIN|JOIN|WITH|CTE|COALESCE|NULLIF|OVER|PARTITION\s+BY|ROW_NUMBER|RANK|DENSE_RANK|LAG|LEAD|CASE|WHEN|THEN|ELSE|END|DISTINCT|COUNT|SUM|AVG|MIN|MAX|AND|OR|NOT|IN|BETWEEN|LIKE|IS\s+NULL|IS\s+NOT\s+NULL)$/i.test(
+          inner.trim(),
+        );
 
       if (isSqlKeyword) {
         return (
@@ -81,11 +88,19 @@ export function formatProseText(text: string): React.ReactNode {
 
     // Handle *italic*
     if (part.startsWith("*") && part.endsWith("*") && part.length >= 2) {
-      return <em key={index} style={{ color: "var(--text-secondary)", fontStyle: "italic" }}>{part.slice(1, -1)}</em>;
+      return (
+        <em
+          key={index}
+          style={{ color: "var(--text-secondary)", fontStyle: "italic" }}
+        >
+          {part.slice(1, -1)}
+        </em>
+      );
     }
 
     // Plain text: scan for standalone SQL keywords to add helpful hover tooltip
-    const keywordRegex = /\b(SELECT|FROM|WHERE|GROUP\s+BY|HAVING|ORDER\s+BY|LIMIT|LEFT\s+JOIN|INNER\s+JOIN|\bJOIN\b|WITH|CTE|COALESCE|NULLIF|OVER|PARTITION\s+BY|ROW_NUMBER|RANK|DENSE_RANK|LAG|LEAD|CASE|WHEN|THEN|ELSE|END|DISTINCT|COUNT|SUM|AVG|MIN|MAX)\b/gi;
+    const keywordRegex =
+      /\b(SELECT|FROM|WHERE|GROUP\s+BY|HAVING|ORDER\s+BY|LIMIT|LEFT\s+JOIN|INNER\s+JOIN|\bJOIN\b|WITH|CTE|COALESCE|NULLIF|OVER|PARTITION\s+BY|ROW_NUMBER|RANK|DENSE_RANK|LAG|LEAD|CASE|WHEN|THEN|ELSE|END|DISTINCT|COUNT|SUM|AVG|MIN|MAX)\b/gi;
     const subParts = part.split(keywordRegex);
 
     if (subParts.length === 1) return part;
@@ -93,12 +108,17 @@ export function formatProseText(text: string): React.ReactNode {
     return subParts.map((sub, sIdx) => {
       if (
         sub.match(
-          /^(SELECT|FROM|WHERE|GROUP\s+BY|HAVING|ORDER\s+BY|LIMIT|LEFT\s+JOIN|INNER\s+JOIN|JOIN|WITH|CTE|COALESCE|NULLIF|OVER|PARTITION\s+BY|ROW_NUMBER|RANK|DENSE_RANK|LAG|LEAD|CASE|WHEN|THEN|ELSE|END|DISTINCT|COUNT|SUM|AVG|MIN|MAX)$/i
+          /^(SELECT|FROM|WHERE|GROUP\s+BY|HAVING|ORDER\s+BY|LIMIT|LEFT\s+JOIN|INNER\s+JOIN|JOIN|WITH|CTE|COALESCE|NULLIF|OVER|PARTITION\s+BY|ROW_NUMBER|RANK|DENSE_RANK|LAG|LEAD|CASE|WHEN|THEN|ELSE|END|DISTINCT|COUNT|SUM|AVG|MIN|MAX)$/i,
         )
       ) {
         return (
-          <SqlSyntaxTooltip key={`${index}-${sIdx}`} keyword={sub.toLowerCase().trim()}>
-            <span style={{ color: "var(--cyan)", fontWeight: 600, cursor: "help" }}>
+          <SqlSyntaxTooltip
+            key={`${index}-${sIdx}`}
+            keyword={sub.toLowerCase().trim()}
+          >
+            <span
+              style={{ color: "var(--cyan)", fontWeight: 600, cursor: "help" }}
+            >
               {sub.toUpperCase()}
             </span>
           </SqlSyntaxTooltip>
@@ -198,11 +218,10 @@ function CleanSqlSnippetBlock({ codeText }: { codeText: string }) {
 
 function VisualDataDiagram({ lines }: { lines: string[] }) {
   // Normalize lines and trim outer blank rows
-  const cleanLines = lines
-    .filter((l, idx) => {
-      if (idx === 0 || idx === lines.length - 1) return l.trim().length > 0;
-      return true;
-    });
+  const cleanLines = lines.filter((l, idx) => {
+    if (idx === 0 || idx === lines.length - 1) return l.trim().length > 0;
+    return true;
+  });
 
   const content = cleanLines.join("\n");
   if (!content.trim()) return null;
@@ -243,7 +262,8 @@ function VisualDataDiagram({ lines }: { lines: string[] }) {
           margin: 0,
           padding: "14px 18px",
           background: "transparent",
-          fontFamily: "var(--font-mono, 'JetBrains Mono', Consolas, 'Courier New', monospace)",
+          fontFamily:
+            "var(--font-mono, 'JetBrains Mono', Consolas, 'Courier New', monospace)",
           fontSize: "13px",
           lineHeight: "1.45",
           color: "var(--text)",
@@ -261,7 +281,9 @@ function VisualDataDiagram({ lines }: { lines: string[] }) {
 function RenderMarkdownTable({ rows }: { rows: string[] }) {
   if (rows.length === 0) return null;
 
-  const contentRows = rows.filter((r) => !/^\s*\|?\s*[-:]+[-| :]*\s*\|?\s*$/.test(r));
+  const contentRows = rows.filter(
+    (r) => !/^\s*\|?\s*[-:]+[-| :]*\s*\|?\s*$/.test(r),
+  );
   if (contentRows.length === 0) return null;
 
   const parseRow = (line: string) => {
@@ -292,7 +314,12 @@ function RenderMarkdownTable({ rows }: { rows: string[] }) {
         }}
       >
         <thead>
-          <tr style={{ background: "var(--panel2, rgba(255,255,255,0.03))", borderBottom: "1px solid var(--border)" }}>
+          <tr
+            style={{
+              background: "var(--panel2, rgba(255,255,255,0.03))",
+              borderBottom: "1px solid var(--border)",
+            }}
+          >
             {headerCells.map((cell, idx) => (
               <th
                 key={idx}
@@ -315,8 +342,12 @@ function RenderMarkdownTable({ rows }: { rows: string[] }) {
             <tr
               key={rIdx}
               style={{
-                borderBottom: rIdx < bodyRows.length - 1 ? "1px solid var(--border)" : "none",
-                background: rIdx % 2 === 1 ? "rgba(255,255,255,0.015)" : "transparent",
+                borderBottom:
+                  rIdx < bodyRows.length - 1
+                    ? "1px solid var(--border)"
+                    : "none",
+                background:
+                  rIdx % 2 === 1 ? "rgba(255,255,255,0.015)" : "transparent",
               }}
             >
               {r.map((cell, cIdx) => (
@@ -325,7 +356,10 @@ function RenderMarkdownTable({ rows }: { rows: string[] }) {
                   style={{
                     padding: "8px 14px",
                     color: "var(--text-secondary)",
-                    fontFamily: cell.includes("'") || /^\d+$/.test(cell) ? "var(--font-mono, monospace)" : "inherit",
+                    fontFamily:
+                      cell.includes("'") || /^\d+$/.test(cell)
+                        ? "var(--font-mono, monospace)"
+                        : "inherit",
                     fontSize: "12.5px",
                   }}
                 >
@@ -365,12 +399,23 @@ function CheckpointCard({
       }}
     >
       <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
-        <HelpCircle size={18} style={{ color: "var(--cyan)", flexShrink: 0, marginTop: "2px" }} />
+        <HelpCircle
+          size={18}
+          style={{ color: "var(--cyan)", flexShrink: 0, marginTop: "2px" }}
+        />
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: "13px", color: "var(--text)" }}>
+          <div
+            style={{ fontWeight: 700, fontSize: "13px", color: "var(--text)" }}
+          >
             Quick Check
           </div>
-          <p style={{ margin: "4px 0 8px 0", fontSize: "13.5px", color: "var(--text-secondary)" }}>
+          <p
+            style={{
+              margin: "4px 0 8px 0",
+              fontSize: "13.5px",
+              color: "var(--text-secondary)",
+            }}
+          >
             {formatProseText(question)}
           </p>
           {displayAnswer && (
@@ -468,10 +513,22 @@ function SqlExecutionPipelineWidget() {
               borderRadius: "6px",
             }}
           >
-            <div style={{ fontSize: "11px", color: "var(--amber)", fontWeight: 800 }}>
+            <div
+              style={{
+                fontSize: "11px",
+                color: "var(--amber)",
+                fontWeight: 800,
+              }}
+            >
               #{s.num} {s.name}
             </div>
-            <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>
+            <div
+              style={{
+                fontSize: "11px",
+                color: "var(--text-muted)",
+                marginTop: "2px",
+              }}
+            >
               {s.desc}
             </div>
           </div>
@@ -487,7 +544,7 @@ function isSqlLine(line: string): boolean {
   if (!trimmed) return false;
   return (
     /^(SELECT|WITH|FROM|WHERE|GROUP\s+BY|HAVING|ORDER\s+BY|LIMIT|JOIN|LEFT\s+JOIN|RIGHT\s+JOIN|FULL\s+JOIN|CROSS\s+JOIN|INNER\s+JOIN|\[INNER\]\s+JOIN|ON|AND|OR|UNION|CREATE|INSERT|UPDATE|DELETE|SET|VALUES|CASE|WHEN|THEN|ELSE|END|--|\/\*|\*\/)/i.test(
-      trimmed
+      trimmed,
     ) ||
     /;\s*$/.test(trimmed) ||
     /^[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+/.test(trimmed)
@@ -506,7 +563,11 @@ function isDiagramLine(line: string): boolean {
   // Side by side table headers or diagram notes
   if (/^[a-zA-Z0-9_]+:\s+[a-zA-Z0-9_]+:/.test(trimmed)) return true;
   if (/^\(no\s+orders/i.test(trimmed)) return true;
-  if (/^[A-Za-z0-9_\s]+(?:table|data|flow|scan|structure)\s*:/i.test(trimmed) && trimmed.length < 40) return true;
+  if (
+    /^[A-Za-z0-9_\s]+(?:table|data|flow|scan|structure)\s*:/i.test(trimmed) &&
+    trimmed.length < 40
+  )
+    return true;
   return false;
 }
 
@@ -533,7 +594,7 @@ export default function LessonProse({
         <CleanSqlSnippetBlock
           key={`code-block-${elements.length}`}
           codeText={codeText}
-        />
+        />,
       );
     }
     codeBuffer = [];
@@ -545,7 +606,7 @@ export default function LessonProse({
       <VisualDataDiagram
         key={`diagram-${elements.length}`}
         lines={[...diagramBuffer]}
-      />
+      />,
     );
     diagramBuffer = [];
   }
@@ -556,7 +617,7 @@ export default function LessonProse({
       <RenderMarkdownTable
         key={`table-${elements.length}`}
         rows={[...tableBuffer]}
-      />
+      />,
     );
     tableBuffer = [];
   }
@@ -578,7 +639,12 @@ export default function LessonProse({
             flexDirection: "column",
             gap: "8px",
             color: "var(--text-secondary)",
-            fontSize: fontSize === "large" ? "15.5px" : fontSize === "relaxed" ? "14.5px" : "14px",
+            fontSize:
+              fontSize === "large"
+                ? "15.5px"
+                : fontSize === "relaxed"
+                  ? "14.5px"
+                  : "14px",
             lineHeight: "1.7",
           }}
         >
@@ -587,7 +653,7 @@ export default function LessonProse({
               {formatProseText(it)}
             </li>
           ))}
-        </ol>
+        </ol>,
       );
     } else {
       elements.push(
@@ -600,7 +666,12 @@ export default function LessonProse({
             flexDirection: "column",
             gap: "8px",
             color: "var(--text-secondary)",
-            fontSize: fontSize === "large" ? "15.5px" : fontSize === "relaxed" ? "14.5px" : "14px",
+            fontSize:
+              fontSize === "large"
+                ? "15.5px"
+                : fontSize === "relaxed"
+                  ? "14.5px"
+                  : "14px",
             lineHeight: "1.7",
           }}
         >
@@ -609,7 +680,7 @@ export default function LessonProse({
               {formatProseText(it)}
             </li>
           ))}
-        </ul>
+        </ul>,
       );
     }
     listBuffer = null;
@@ -665,7 +736,11 @@ export default function LessonProse({
     }
 
     // 3. Markdown Table Detection (| Col 1 | Col 2 |)
-    if (trimmed.startsWith("|") && trimmed.endsWith("|") && trimmed.includes("|")) {
+    if (
+      trimmed.startsWith("|") &&
+      trimmed.endsWith("|") &&
+      trimmed.includes("|")
+    ) {
       flushCode();
       flushDiagram();
       flushList();
@@ -733,20 +808,25 @@ export default function LessonProse({
     }
 
     // 7. SQL Execution Pipeline Widget trigger
-    if (/order of execution|execution pipeline|how sql executes/i.test(trimmed) && trimmed.length < 50) {
+    if (
+      /order of execution|execution pipeline|how sql executes/i.test(trimmed) &&
+      trimmed.length < 50
+    ) {
       flushCode();
       flushDiagram();
-      elements.push(<SqlExecutionPipelineWidget key={`pipeline-${elements.length}`} />);
+      elements.push(
+        <SqlExecutionPipelineWidget key={`pipeline-${elements.length}`} />,
+      );
       continue;
     }
 
     // 8. Admonitions & Callouts
     const tipMatch = trimmed.match(/^(?:💡\s*)?(?:Tip|Pro-Tip|Hint):\s*(.*)$/i);
     const warnMatch = trimmed.match(
-      /^(?:⚠️\s*)?(?:Warning|Caution|Trap|Common Mistake):\s*(.*)$/i
+      /^(?:⚠️\s*)?(?:Warning|Caution|Trap|Common Mistake):\s*(.*)$/i,
     );
     const checkpointMatch = trimmed.match(
-      /^(?:❓\s*)?(?:Check Your Understanding|Question|Quick Check):\s*(.*?)(?:\s*(?:Answer|Explanation):\s*(.*))?$/i
+      /^(?:❓\s*)?(?:Check Your Understanding|Question|Quick Check):\s*(.*?)(?:\s*(?:Answer|Explanation):\s*(.*))?$/i,
     );
 
     if (tipMatch) {
@@ -760,7 +840,8 @@ export default function LessonProse({
             margin: "16px 0",
             padding: "14px 18px",
             background: "color-mix(in srgb, var(--emerald) 8%, var(--panel))",
-            border: "1px solid color-mix(in srgb, var(--emerald) 30%, transparent)",
+            border:
+              "1px solid color-mix(in srgb, var(--emerald) 30%, transparent)",
             borderRadius: "8px",
             display: "flex",
             gap: "12px",
@@ -768,12 +849,29 @@ export default function LessonProse({
             width: "100%",
           }}
         >
-          <Lightbulb size={18} style={{ color: "var(--emerald)", flexShrink: 0, marginTop: "2px" }} />
-          <div style={{ fontSize: "14px", color: "var(--text-secondary)", lineHeight: "1.6" }}>
-            <strong style={{ color: "var(--emerald)", display: "block", marginBottom: "2px" }}>Pro Tip</strong>
+          <Lightbulb
+            size={18}
+            style={{ color: "var(--emerald)", flexShrink: 0, marginTop: "2px" }}
+          />
+          <div
+            style={{
+              fontSize: "14px",
+              color: "var(--text-secondary)",
+              lineHeight: "1.6",
+            }}
+          >
+            <strong
+              style={{
+                color: "var(--emerald)",
+                display: "block",
+                marginBottom: "2px",
+              }}
+            >
+              Pro Tip
+            </strong>
             {formatProseText(tipMatch[1])}
           </div>
-        </div>
+        </div>,
       );
       continue;
     }
@@ -789,7 +887,8 @@ export default function LessonProse({
             margin: "16px 0",
             padding: "14px 18px",
             background: "color-mix(in srgb, var(--amber) 8%, var(--panel))",
-            border: "1px solid color-mix(in srgb, var(--amber) 30%, transparent)",
+            border:
+              "1px solid color-mix(in srgb, var(--amber) 30%, transparent)",
             borderRadius: "8px",
             display: "flex",
             gap: "12px",
@@ -797,12 +896,29 @@ export default function LessonProse({
             width: "100%",
           }}
         >
-          <AlertTriangle size={18} style={{ color: "var(--amber)", flexShrink: 0, marginTop: "2px" }} />
-          <div style={{ fontSize: "14px", color: "var(--text-secondary)", lineHeight: "1.6" }}>
-            <strong style={{ color: "var(--amber)", display: "block", marginBottom: "2px" }}>Common Trap & Pitfall</strong>
+          <AlertTriangle
+            size={18}
+            style={{ color: "var(--amber)", flexShrink: 0, marginTop: "2px" }}
+          />
+          <div
+            style={{
+              fontSize: "14px",
+              color: "var(--text-secondary)",
+              lineHeight: "1.6",
+            }}
+          >
+            <strong
+              style={{
+                color: "var(--amber)",
+                display: "block",
+                marginBottom: "2px",
+              }}
+            >
+              Common Trap & Pitfall
+            </strong>
             {formatProseText(warnMatch[1])}
           </div>
-        </div>
+        </div>,
       );
       continue;
     }
@@ -815,13 +931,16 @@ export default function LessonProse({
           key={`checkpoint-${elements.length}`}
           question={checkpointMatch[1]}
           explanation={checkpointMatch[2]}
-        />
+        />,
       );
       continue;
     }
 
     // 9. SQL Statement Detection & Accumulation
-    const startsSql = /^(SELECT|WITH|CREATE\s+TABLE|INSERT\s+INTO|UPDATE|DELETE\s+FROM)\b/i.test(trimmed);
+    const startsSql =
+      /^(SELECT|WITH|CREATE\s+TABLE|INSERT\s+INTO|UPDATE|DELETE\s+FROM)\b/i.test(
+        trimmed,
+      );
     if (startsSql) {
       flushCode();
       flushDiagram();
@@ -843,14 +962,19 @@ export default function LessonProse({
         key={`p-${elements.length}`}
         style={{
           margin: "12px 0 16px 0",
-          fontSize: fontSize === "large" ? "16px" : fontSize === "relaxed" ? "15px" : "14px",
+          fontSize:
+            fontSize === "large"
+              ? "16px"
+              : fontSize === "relaxed"
+                ? "15px"
+                : "14px",
           lineHeight: "1.75",
           color: "var(--text-secondary)",
           width: "100%",
         }}
       >
         {formatProseText(trimmed)}
-      </p>
+      </p>,
     );
   }
 
